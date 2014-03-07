@@ -13,24 +13,25 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.game.GameResult;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RankActivity extends FragmentActivity {
 
     protected TableLayout mTable;
-    protected TextView mNoRecord;
-    protected List<GameResult> mResults = new ArrayList<GameResult>();
-    protected static final String RESULTS = "results";
+    protected TextView mTextRecord;
+    protected List<GameResult> mResults;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rank);
-        mResults = (List<GameResult>) getIntent().getSerializableExtra(RESULTS);
+
+        mResults = (List<GameResult>) getIntent().getSerializableExtra(Globals.KEY_GAME_RESULTS);
+
         // get views and set listeners
         setupViews();
         // adjust layouts according to the screen resolution
@@ -38,8 +39,8 @@ public class RankActivity extends FragmentActivity {
     }
 
     private void setupViews() {
-        mTable = (TableLayout) findViewById(R.id.tableLayoutRocketRank);
-        mNoRecord = (TextView) findViewById(R.id.rankNoRecordTextView);
+        mTable      = (TableLayout) findViewById(R.id.tableLayoutRocketRank);
+        mTextRecord = (TextView) findViewById(R.id.rankNoRecordTextView);
     }
 
     private void adjustLayout() {
@@ -64,9 +65,9 @@ public class RankActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         if (mResults == null || mResults.size() == 0) {
-            mNoRecord.setVisibility(View.VISIBLE);
+            mTextRecord.setVisibility(View.VISIBLE);
         } else {
-            mNoRecord.setVisibility(View.GONE);
+            mTextRecord.setVisibility(View.GONE);
             for (int i = 0; i < mResults.size(); ++i) {
                 TableRow tablerow = new TableRow(getApplicationContext());
                 tablerow.setBackgroundColor(Color.rgb(255, 255, 255));

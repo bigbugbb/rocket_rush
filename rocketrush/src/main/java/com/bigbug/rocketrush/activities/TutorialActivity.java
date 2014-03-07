@@ -170,9 +170,9 @@ public class TutorialActivity extends FragmentActivity {
         }
 
         @Override
-        public void onPause() {
-            mTutorialView.onPause();
-            super.onPause();
+        public void onDestroyView() {
+            super.onDestroyView();
+            mTutorialView.onDestroy();
         }
 
         /**
@@ -211,7 +211,7 @@ public class TutorialActivity extends FragmentActivity {
                 }
             }
 
-            public void onPause() {
+            public void onDestroy() {
                 if (mImage != null) {
                     mImage.recycle();
                     mImage = null;

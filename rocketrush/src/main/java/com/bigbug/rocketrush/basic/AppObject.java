@@ -86,6 +86,7 @@ public abstract class AppObject {
         mVisible     = true;
         mMovable     = false;
         mSelected    = false;
+        mCollidable  = true;
         mImageLoaded = false;
         mImages = new ArrayList<Bitmap>();
     }

@@ -77,6 +77,7 @@ public class Application extends android.app.Application {
 
                     switch (msg.what) {
                     case MESSAGE_DRAW_GRAPH:
+                        removeMessages(MESSAGE_DRAW_GRAPH);
                         if (mDrawing) {
                             Callable<Integer> callable = (Callable<Integer>) msg.obj;
                             if (callable != null) {
@@ -132,6 +133,7 @@ public class Application extends android.app.Application {
 
                     switch (msg.what) {
                     case MESSAGE_UPDATE_DATA:
+                        removeMessages(MESSAGE_UPDATE_DATA);
                         if (mUpdating) {
                             Callable<Integer> callable = (Callable<Integer>) msg.obj;
                             if (callable != null) {

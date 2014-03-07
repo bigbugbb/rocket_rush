@@ -7,6 +7,7 @@ import android.graphics.Rect;
 
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppPage;
+import com.bigbug.rocketrush.media.BackgroundMusic;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.List;
@@ -21,6 +22,8 @@ public class HomePage extends AppPage {
 
     private List<Bitmap> mBitmaps;
 
+    protected BackgroundMusic mBackgroundMusic = BackgroundMusic.getInstance();
+
     public HomePage(Context context) {
         super(context);
     }
@@ -28,14 +31,25 @@ public class HomePage extends AppPage {
     @Override
     public void start() {
         mBitmaps = BitmapHelper.loadBitmaps(getContext(), new int[] { R.drawable.home_background, R.drawable.home_cloud });
+
+        mBackgroundMusic.create(mContext, R.raw.bkg_music_1);
+        mBackgroundMusic.play();
     }
 
     @Override
     public void stop() {
+        mBackgroundMusic.pause();
+        mBackgroundMusic.stop();
+
         for (Bitmap bitmap : mBitmaps) {
             bitmap.recycle();
         }
         mBitmaps = null;
+    }
+
+    @Override
+    public void reset() {
+        mBackgroundMusic.reset();
     }
 
     @Override

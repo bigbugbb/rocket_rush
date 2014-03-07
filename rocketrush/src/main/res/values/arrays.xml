@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="game_dialog_items">
+        <item>Restart</item>
+        <item>Exit</item>
+    </string-array>
+</resources>

@@ -15,23 +15,28 @@ import java.util.List;
 
 public class Rocket extends AppObject {
 	protected final static int IMAGE_COUNT = 4; // the same size of the total number of bitmaps
+
 	protected int mCanvasWidth  = 0;
 	protected int mCanvasHeight = 0;
 	protected int mLeftDuration  = 0;
 	protected int mRightDuration = 0;
 	protected int mUpDuration    = 0;
+
 	protected int mVibrateDuration = 0;	
 	protected int mVibrateCount = 0;
 	protected final static int MIN_VIBRATE_DURATION = 160;
 	protected final static int MAX_VIBRATE_DURATION = 240;
+
 	protected float mUpper  = 0;
 	protected float mBottom = 0;	
 	protected float mCollideArea[] = new float[4];
 	public final static float DEFAULT_SPEED_X = 8;
 	public final static float DEFAULT_SPEED_Y = 4;
+
 	// rocket's area used to detect collision
 	protected Rect mRect = new Rect();
 	protected List<AppObject> mCollideWith = new ArrayList<AppObject>();
+
 	// reward list notes the rewards bounding to this rocket
 	protected List<Reward> mRewards = new ArrayList<Reward>();
 	
@@ -40,8 +45,8 @@ public class Rocket extends AppObject {
 
 		setKind(ROCKET);
 		setMovable(true);	
-		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);
-		setMaxSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);			
+		setSpeed(DEFAULT_SPEED_X * mDip, DEFAULT_SPEED_Y * mDip);
+		setMaxSpeed(DEFAULT_SPEED_X * mDip, DEFAULT_SPEED_Y * mDip);
 		setZOrder(ZOrders.ROCKET);
 
         loadImages(new int[]{ R.drawable.ship_1, R.drawable.ship_2, R.drawable.ship_3, R.drawable.ship_4 });

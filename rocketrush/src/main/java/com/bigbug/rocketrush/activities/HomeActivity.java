@@ -1,12 +1,14 @@
 package com.bigbug.rocketrush.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -14,11 +16,15 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 
 import com.bigbug.rocketrush.Application;
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.game.GameResult;
+import com.bigbug.rocketrush.game.GameResults;
 import com.bigbug.rocketrush.pages.HomePage;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 import com.bigbug.rocketrush.views.GraphView;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -170,7 +176,6 @@ public class HomeActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(HomeActivity.this, GameActivity.class));
-                finish();
             }
         });
 
@@ -209,7 +214,9 @@ public class HomeActivity extends FragmentActivity {
         btnRank.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this, RankActivity.class));
+                Intent intent = new Intent(HomeActivity.this, RankActivity.class);
+                intent.putExtra(Globals.KEY_GAME_RESULTS, getGameResults());
+                startActivity(intent);
             }
         });
 
@@ -236,5 +243,21 @@ public class HomeActivity extends FragmentActivity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
+    }
+
+    protected GameResults getGameResults() {
+        GameResults results = new GameResults();
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        int size = sp.getInt(Globals.KEY_RANK_SIZE, 0);
+        for (int i = 0; i < size; ++i) {
+            int score   = sp.getInt(Globals.KEY_RANK_SCORE + i, 0);
+            String date = sp.getString(Globals.KEY_RANK_TIME + i, "");
+            GameResult result = new GameResult(score, date);
+            results.add(result);
+        }
+        Collections.sort(results, Collections.reverseOrder());
+
+        return results;
     }
 }

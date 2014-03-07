@@ -12,7 +12,7 @@ import com.bigbug.rocketrush.basic.AppScale;
 public class Timer extends Utility {
 
 	protected Paint mPaint = null;
-	protected int mTime = 40;
+	protected int mTime = 3;
 	protected int mOneSecond = 1000;
 	protected String mTextTime = "Time " + mTime;
 	protected int mCanvasWidth  = 0;

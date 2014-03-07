@@ -2,16 +2,22 @@ package com.bigbug.rocketrush.pages;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.activities.SettingActivity;
+import com.bigbug.rocketrush.basic.AppCtrl;
 import com.bigbug.rocketrush.basic.AppObject;
 import com.bigbug.rocketrush.basic.AppPage;
+import com.bigbug.rocketrush.game.CtrlEvent;
 import com.bigbug.rocketrush.game.GameEvent;
 import com.bigbug.rocketrush.game.GameScene;
 import com.bigbug.rocketrush.game.SceneEvent;
@@ -19,15 +25,32 @@ import com.bigbug.rocketrush.game.StateEvent;
 import com.bigbug.rocketrush.media.BackgroundMusic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
-public class GamePage extends AppPage {
+public class GamePage extends AppPage implements SensorEventListener {
 
     /**
      * Game scene which contains all game elements
      */
     private GameScene mScene;
+
+    /**
+     * Listener which triggered when the game status has changed
+     */
+    private OnGameStatusChangedListener mListener;
+
+    /**
+     * Queue to receive and retrieve game control events
+     */
+    private ConcurrentLinkedQueue<CtrlEvent> mEventQueue;
+
+    /**
+     * Game controlls generated from user input or sensors
+     */
+    private List<AppCtrl> mGameCtrls = new ArrayList<AppCtrl>();
 
     /**
      * Background music
@@ -51,6 +74,7 @@ public class GamePage extends AppPage {
     public GamePage(Context context) {
         super(context);
 
+        mListener = (OnGameStatusChangedListener) context;
         mMusicIndex = 1;
 
         mScene = new GameScene(context);
@@ -65,19 +89,21 @@ public class GamePage extends AppPage {
                     final StateEvent stateEvent = (StateEvent) event;
 
                     if (stateEvent.mWhat == StateEvent.STATE_OVER) {
-                        handler.sendMessage(handler.obtainMessage(StateEvent.STATE_OVER, stateEvent.mExtra));
-
-                        // unregister some listeners
                         mScene.setInteractive(false);
-                        handler.post(new Runnable() {
+                        // Trigger callback method
+                        if (mListener != null) {
+                            final HashMap<String, Object> results = new HashMap<String, Object>();
+                            results.put(Globals.KEY_DISTANCE, stateEvent.mExtra);
+                            mListener.onGameOver(results);
+                        }
 
+                        handler.post(new Runnable() {
                             @Override
                             public void run() {
                                 mBackgroundMusic.create(mContext, mMusicIDs[0]);
                                 mBackgroundMusic.setLooping(false);
                                 mBackgroundMusic.play();
                             }
-
                         });
                     }
                 } else if (event.mEventType == GameEvent.EVENT_SCENE) {
@@ -138,6 +164,9 @@ public class GamePage extends AppPage {
                 }
             }
         });
+
+        mGameCtrls  = new ArrayList<AppCtrl>(10);
+        mEventQueue = new ConcurrentLinkedQueue<CtrlEvent>();
     }
 
     @Override
@@ -181,7 +210,43 @@ public class GamePage extends AppPage {
 
     @Override
     public void onUpdate() {
+        // Retrieve the control event
+        final CtrlEvent event = mEventQueue.poll();
+
+        if (event != null) {
+            // Interpret the control event and generate proper game controls
+            if (event.mWhat == GameEvent.SENSOR_ACCELEROMETER) {
+                if (event.mAccX >= 2) {
+                    mGameCtrls.add(new AppCtrl(AppCtrl.MOVE_LEFT));
+                } else if (event.mAccX <= -2) {
+                    mGameCtrls.add(new AppCtrl(AppCtrl.MOVE_RIGHT));
+                }
+                if (Math.abs(event.mAccY) >= 13) {
+                    mGameCtrls.add(new AppCtrl(AppCtrl.MOVE_VERT));
+                }
+            }
+        }
+
+        // Generate rewards and barriers if condition is satisfied.
+        mScene.updateReward();
+        mScene.updateBarriers();
+
+        // Perform the operation on the game objects based on the game controls
+        List<AppObject> objects = mScene.getGameObjects();
+        for (AppObject obj : objects) {
+            for (AppCtrl ctrl : mGameCtrls) {
+                obj.operate(ctrl);
+            }
+        }
+        mGameCtrls.clear();
+
+        // Update the scene
         mScene.onUpdate();
+
+        // Detect the object collision
+        for (AppObject obj : objects) {
+            obj.detectCollision(objects);
+        }
     }
 
     @Override
@@ -192,5 +257,42 @@ public class GamePage extends AppPage {
     @Override
     public void onSizeChanged(int width, int height) {
         mScene.onSizeChanged(width, height);
+    }
+
+    private float mLastX;
+    private float mLastY;
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
+
+            if (mLastX <= -2 && x > -2 && x < 2) {
+                mEventQueue.clear();
+            } else if (mLastX >= 2 && x > -2 && x < 2) {
+                mEventQueue.clear();
+            } else if (Math.abs(x) >= 2 || Math.abs(y) >= 13) {
+                if (mEventQueue.size() > 4) {
+                    return;
+                }
+                mEventQueue.add(new CtrlEvent((int) x, (int) y, (int) z));
+            }
+
+            mLastX = x;
+            mLastY = y;
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    /**
+     * OnGameStatusChangedListener
+     */
+    public interface OnGameStatusChangedListener {
+        void onGameOver(final HashMap<String, Object> results);
     }
 }

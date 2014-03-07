@@ -202,6 +202,9 @@ public class GameScene extends BaseScene {
 
     @Override
     public void onSizeChanged(int width, int height) {
+        mWidth  = width;
+        mHeight = height;
+
         for (AppObject obj : mObjects) {
             obj.onSizeChanged(width, height);
         }
@@ -277,8 +280,8 @@ public class GameScene extends BaseScene {
             bird.setX(right ? -bird.getWidth() : mWidth);
             bird.setY(mRandom.nextInt(mHeight - (mHeight >> 1) - (accTime > 0 ? (mHeight >> 2) : 0)));
             bird.initSpeeds(
-                (right ? mRandom.nextInt(3) + 5 : -5 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX,
-                3f,
+                ((right ? mRandom.nextInt(3) + 5 : -5 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX) * mDip,
+                3f * mDip,
                 accTime
             );
             bird.onSizeChanged(mWidth, mHeight);
@@ -313,9 +316,9 @@ public class GameScene extends BaseScene {
             asteroid.setX(right ? -asteroid.getWidth() : mWidth);
             asteroid.setY(mRandom.nextInt(mHeight >> 3) - (accTime > 0 ? (mHeight >> 3) : 0));
             asteroid.initSpeeds(
-                    (right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX * mDip,
-                    (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip,
-                    accTime
+                (right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX * mDip,
+                (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip,
+                accTime
             );
             asteroid.onSizeChanged(mWidth, mHeight);
             asteroid.setOnCollideListener(this);
@@ -373,19 +376,15 @@ public class GameScene extends BaseScene {
                 alient.setX(right ? -alient.getWidth() : mWidth);
                 alient.setY(mRandom.nextInt(mHeight >> 5) - (accTime > 0 ? (mHeight >> 3) : 0));
                 alient.initSpeeds(
-                        (right ? mRandom.nextInt(6) + 7 : -7 - mRandom.nextInt(6)) * mDip,
-                        (mRandom.nextInt(4) + 2) * mDip,
-                        accTime
+                    (right ? mRandom.nextInt(6) + 7 : -7 - mRandom.nextInt(6)) * mDip,
+                    (mRandom.nextInt(4) + 2) * mDip,
+                    accTime
                 );
             } else if (aliType == 1) {
                 float offset = alient.getWidth();
                 alient.setX(offset + mRandom.nextInt((int) (mWidth - offset - offset - offset)));
                 alient.setY(-alient.getHeight());
-                alient.initSpeeds(
-                        6 * mDip,
-                        (mRandom.nextInt(5) + 2) * mDip,
-                        accTime
-                );
+                alient.initSpeeds(6 * mDip, (mRandom.nextInt(5) + 2) * mDip, accTime);
             }
             alient.onSizeChanged(mWidth, mHeight);
             alient.setOnCollideListener(this);
@@ -536,10 +535,10 @@ public class GameScene extends BaseScene {
 
         @Override
         public void onLifeChanged(float life) {
-            if (life == 0) { // compare a float, not good, modify later if necessary
-                GameEvent e = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_LIFE);
-                e.mExtra = Integer.valueOf(mOdometer.getDistance());
-                mListener.onGameEvent(e);
+            if (life <= 0.001f) {
+                GameEvent event = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_LIFE);
+                event.mExtra = Integer.valueOf(mOdometer.getDistance());
+                mListener.onGameEvent(event);
             }
         }
     };
