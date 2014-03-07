@@ -3,9 +3,7 @@ package com.bigbug.rocketrush;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Message;
+import android.os.*;
 import android.util.Log;
 
 import java.util.concurrent.Callable;
@@ -40,13 +38,22 @@ public class Application extends android.app.Application {
     public static final int RESULT_IGNORE  = 1;
     public static final int RESULT_CANCEL  = 2;
 
+    /**
+     * Singleton instance of Application
+     */
     private static Application sApplication;
 
+    /**
+     * Drawer thread and Updater thread.
+     */
     private static HandlerThread sDrawer  = getHandlerThread("Drawer");
-    private static HandlerThread sUpdater = getHandlerThread("Updator");
+    private static HandlerThread sUpdater = getHandlerThread("Updater");
 
-    private static Handler sDrawerHandler;
-    private static Handler sUpdateHandler;
+    /**
+     * Handlers bound to the drawer thread and updater thread
+     */
+    private Handler mDrawerHandler;
+    private Handler mUpdateHandler;
 
     @Override
     public void onCreate() {
@@ -54,7 +61,7 @@ public class Application extends android.app.Application {
 
         sApplication = this;
 
-        sDrawerHandler = new Handler(sDrawer.getLooper()) {
+        mDrawerHandler = new Handler(sDrawer.getLooper()) {
 
             private boolean mDrawing = false;
 
@@ -109,7 +116,7 @@ public class Application extends android.app.Application {
             }
         };
 
-        sUpdateHandler = new Handler(sUpdater.getLooper()) {
+        mUpdateHandler = new Handler(sUpdater.getLooper()) {
 
             private boolean mUpdating = false;
 
@@ -178,16 +185,16 @@ public class Application extends android.app.Application {
     }
 
     public static Handler getUpdateHandler() {
-        return sUpdateHandler;
+        return sApplication.mUpdateHandler;
     }
 
     public static Handler getDrawerHandler() {
-        return sDrawerHandler;
+        return sApplication.mDrawerHandler;
     }
 
     private static HandlerThread getHandlerThread(final String name) {
 
-        final HandlerThread thread = new HandlerThread(name, android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        final HandlerThread thread = new HandlerThread(name, android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
 
         thread.start();
 

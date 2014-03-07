@@ -1,11 +1,13 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
+
+import com.bigbug.rocketrush.basic.AppScale;
 
 public class LifeBar extends Utility {
 
@@ -28,19 +30,20 @@ public class LifeBar extends Utility {
 	protected float mLife = 1f;
 
 	// OnLifeChangedListener
-	protected OnLifeChangedListener mLifeChangedListener = null; 
+	protected OnLifeChangedListener mLifeChangedListener;
 
-	public LifeBar(Resources res) {
-		super(res);
+	public LifeBar(Context context) {
+		super(context);
+
 		setKind(LIFEBAR);
 		setZOrder(ZOrders.LIFEBAR);
 		
 		mPaint0.setColor(Color.WHITE);
 		mPaint0.setStyle(Style.FILL);
 		mPaint0.setAntiAlias(true);
-		mPaint0.setTextSize(30);
+		mPaint0.setTextSize(AppScale.doScaleT(30));
 		mPaint0.setFakeBoldText(true);
-		mPaint0.setShadowLayer(2, 1, 1, Color.BLACK);		
+		mPaint0.setShadowLayer(2 * mDip, mDip, mDip, Color.BLACK);
 
 		mPaint2.setAntiAlias(true);		    
 		mPaint2.setARGB(120, 255, 255, 255);
@@ -50,7 +53,7 @@ public class LifeBar extends Utility {
 		mPaint3.setARGB(255, 86, 217, 7);
 		mPaint3.setStyle(Style.FILL);
 		
-		r3.right = 78 + mWidth * mLife;
+		r3.right = 78 * mDip + mWidth * mLife;
 	}
 	
 	public float getLife() {
@@ -59,7 +62,7 @@ public class LifeBar extends Utility {
 
 	public void lifeChange(float change) {
 		mLife = Math.max(Math.min(mLife + change, 1f), 0);
-		r3.right = 78 + mWidth * mLife;
+		r3.right = 78 * mDip + mWidth * mLife;
 		
 		if (mLife <= 0.33) {
 	    	mPaint3.setARGB(255, 230, 0, 0);
@@ -83,12 +86,12 @@ public class LifeBar extends Utility {
 		if (!mEnable) {
 			return;
 		}
-		r3.right = 78 + mWidth * mLife;
+		r3.right = 78 * mDip + mWidth * mLife;
 	}
 	
 	@Override
 	public void onDraw(Canvas c) {
-		c.drawText("HP", 24, 40, mPaint0);   	    
+		c.drawText("HP", 24 * mDip, 40 * mDip, mPaint0);
 	    c.drawRect(r2, mPaint2);	    
 	    c.drawRect(r3, mPaint3);
 	}
@@ -99,23 +102,19 @@ public class LifeBar extends Utility {
 		mCanvasWidth  = width;
 		mCanvasHeight = height;
 	    
-	    r2.left   = 78;
-	    r2.top    = 23;
-	    r2.right  = 68 + width / 3f;
-	    r2.bottom = 39;
+	    r2.left   = 73 * mDip;
+	    r2.top    = 25 * mDip;
+	    r2.right  = 68 * mDip + width / 3f;
+	    r2.bottom = 40 * mDip;
 	    
-	    r3.left   = 78;
-	    r3.top    = 23;
-	    r3.right  = 68 + width / 3f;
-	    r3.bottom = 39;
+	    r3.left   = 73 * mDip;
+	    r3.top    = 25 * mDip;
+	    r3.right  = 68 * mDip + width / 3f;
+	    r3.bottom = 40 * mDip;
 	    
 	    mWidth = r3.right - r3.left;
 	    
-	    if (width <= 480) {
-	    	mPaint0.setTextSize(27);
-	    } else {
-	    	mPaint0.setTextSize(32);
-	    }
+	    mPaint0.setTextSize(AppScale.doScaleT(27));
 	}
 
 	public interface OnLifeChangedListener {

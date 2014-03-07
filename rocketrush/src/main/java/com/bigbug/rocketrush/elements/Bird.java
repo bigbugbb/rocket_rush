@@ -1,42 +1,34 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Bird extends Barrier {
-	protected final static int IMAGE_COUNT = 2; // the same size of the total number of bitmaps
+
 	protected static boolean sImageLoaded = false;
 	protected static List<Bitmap> sImages = new ArrayList<Bitmap>();
 	protected Bitmap mImage = null;		
-	protected Random mRand = new Random();
-	
-	public static void loadImages(Resources res) {
+
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
-		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565;   
-		
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bird_1, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bird_2, options));
+
+        sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public Bird(Resources res, boolean right) {
-		super(res);
-		loadImages(res);
+	public Bird(Context context, boolean right) {
+		super(context);
+		loadImages(context, new int[] { R.drawable.bird_1, R.drawable.bird_2 });
 		setKind(BIRD);
 		setMovable(true);	
 		setZOrder(ZOrders.BIRD);		

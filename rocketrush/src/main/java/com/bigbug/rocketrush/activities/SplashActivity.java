@@ -12,11 +12,11 @@ import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
 import android.view.Display;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.bigbug.rocketrush.Application;
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppScale;
 import com.bigbug.rocketrush.utils.BitmapHelper;
@@ -51,24 +51,29 @@ public class SplashActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setupScale();
+        // Setup the app scale which is used to scale the bitmap according to the screen dimension
+        Display display = getWindowManager().getDefaultDisplay();
+        AppScale.calcScale(display.getWidth(), display.getHeight(), false);
 
+        // Create the layout group and add the views
         mRootLayout = new RelativeLayout(this);
         mRootLayout.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
         mSplashView = new SplashView(this, null);
         mRootLayout.addView(mSplashView);
 
+        // Set content view
         setContentView(mRootLayout);
 
+        // Get the handler to perform data updating
         mHandler = Application.getUpdateHandler();
     }
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         getPreferences(MODE_PRIVATE).edit().putBoolean(KEY_GAME_OPENED, true).commit();
         mSplashView.release();
-        super.onDestroy();
     }
 
     @Override
@@ -86,11 +91,12 @@ public class SplashActivity extends FragmentActivity {
                 int progress = mSplashView.getProgress();
 
                 if (progress < 100) {
+                    // Update splash data
+                    mSplashView.updateProgress(mSplashView.getProgress() + 1);
+
                     synchronized (mLock) {
                         try {
-                            // Update splash data
-                            mSplashView.updateProgress(mSplashView.getProgress() + 1);
-                            mLock.wait(20);
+                            mLock.wait(Globals.DATA_UPDATE_INTERVAL);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -117,21 +123,6 @@ public class SplashActivity extends FragmentActivity {
 
         // Stop data updating
         mHandler.sendMessage(mHandler.obtainMessage(Application.MESSAGE_STOP_UPDATING));
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-        case KeyEvent.KEYCODE_BACK:
-            return true;
-        }
-
-        return super.onKeyDown(keyCode, event);
-    }
-
-    private void setupScale() {
-        Display display = getWindowManager().getDefaultDisplay();
-        AppScale.calcScale(display.getWidth(), display.getHeight(), false);
     }
 
     /**
@@ -202,7 +193,6 @@ public class SplashActivity extends FragmentActivity {
 
         public void updateProgress(int progress) {
             mProgress = progress;
-
             new Handler(Looper.getMainLooper()).post(new Runnable() {
 
                 @Override

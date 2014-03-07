@@ -6,9 +6,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.activities.SettingActivity;
@@ -24,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class GamePage extends AppPage implements GameEvent.OnGameEventListener {
+public class GamePage extends AppPage {
 
     /**
      * Game scene which contains all game elements
@@ -53,9 +51,93 @@ public class GamePage extends AppPage implements GameEvent.OnGameEventListener {
     public GamePage(Context context) {
         super(context);
 
-        mScene = new GameScene(context);
-        mScene.setOnGameEventListener(this);
         mMusicIndex = 1;
+
+        mScene = new GameScene(context);
+        mScene.setOnGameEventListener(new GameEvent.OnGameEventListener() {
+
+            @Override
+            public void onGameEvent(GameEvent event) {
+
+                final Handler handler = new Handler(Looper.getMainLooper());
+
+                if (event.mEventType == GameEvent.EVENT_STATE) {
+                    final StateEvent stateEvent = (StateEvent) event;
+
+                    if (stateEvent.mWhat == StateEvent.STATE_OVER) {
+                        handler.sendMessage(handler.obtainMessage(StateEvent.STATE_OVER, stateEvent.mExtra));
+
+                        // unregister some listeners
+                        mScene.setInteractive(false);
+                        handler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                mBackgroundMusic.create(mContext, mMusicIDs[0]);
+                                mBackgroundMusic.setLooping(false);
+                                mBackgroundMusic.play();
+                            }
+
+                        });
+                    }
+                } else if (event.mEventType == GameEvent.EVENT_SCENE) {
+                    final SceneEvent sceneEvent = (SceneEvent) event;
+
+                    if (sceneEvent.mWhat == SceneEvent.SCENE_MILESTONE) {
+                        final int level = mScene.onLevelUp();
+
+                        handler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if (level == 1) {
+                                    mMusicIndex = 1;
+                                } else if (level == 3 || level == 5) {
+                                    ++mMusicIndex;
+                                }
+                                mBackgroundMusic.create(mContext, mMusicIDs[mMusicIndex]);
+                                mBackgroundMusic.play();
+                            }
+
+                        });
+
+                    } else if (sceneEvent.mWhat == SceneEvent.SCENE_COLLIDE) {
+                        handler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                int soundID = 0;
+
+                                switch (sceneEvent.mMsg.what) {
+                                case AppObject.PROTECTION:
+                                    soundID = mSoundIDs.get(0);
+                                    break;
+                                case AppObject.TIMEBONUS:
+                                    soundID = mSoundIDs.get(1);
+                                    break;
+                                case AppObject.ALIENT:
+                                    soundID = mSoundIDs.get(2);
+                                    break;
+                                case AppObject.BIRD:
+                                    soundID = mSoundIDs.get(3);
+                                    break;
+                                case AppObject.ASTEROID:
+                                    soundID = mSoundIDs.get(4);
+                                    break;
+                                case AppObject.THUNDER:
+                                    soundID = mSoundIDs.get(4);
+                                    break;
+                                }
+
+                                float volume = PreferenceManager.getDefaultSharedPreferences(mContext).getInt(SettingActivity.SFX_KEY, 40) / 100f;
+                                mSoundPool.play(soundID, volume, volume, 10, 0, 1);
+                            }
+
+                        });
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -78,6 +160,8 @@ public class GamePage extends AppPage implements GameEvent.OnGameEventListener {
 
     @Override
     public void stop() {
+        mScene.release();
+
         mBackgroundMusic.pause();
         mBackgroundMusic.stop();
 
@@ -91,9 +175,7 @@ public class GamePage extends AppPage implements GameEvent.OnGameEventListener {
 
     @Override
     public void reset() {
-        synchronized (mScene) {
-            mScene.reset();
-        }
+        mScene.reset();
         mMusicIndex = 1;
     }
 
@@ -109,86 +191,6 @@ public class GamePage extends AppPage implements GameEvent.OnGameEventListener {
 
     @Override
     public void onSizeChanged(int width, int height) {
-        mWidth  = width;
-        mHeight = height;
         mScene.onSizeChanged(width, height);
-    }
-
-    @Override
-    public void onGameEvent(GameEvent event) {
-
-        if (event.mEventType == GameEvent.EVENT_STATE) {
-            final StateEvent stateEvent = (StateEvent) event;
-            if (stateEvent.mWhat == StateEvent.STATE_OVER) {
-                Message msg = mHandler.obtainMessage();
-                msg.what = StateEvent.STATE_OVER;
-                msg.obj  = stateEvent.mExtra;
-                mHandler.sendMessage(msg);
-                // unregister some listeners
-                mScene.closeInteraction();
-                ((FragmentActivity) mContext).runOnUiThread(new Runnable() {
-                    public void run() {
-                        mBackgroundMusic.create(mContext, mMusicIDs[0]);
-                        mBackgroundMusic.setLooping(false);
-                        mBackgroundMusic.play();
-                    }
-                });
-            }
-        } else if (event.mEventType == GameEvent.EVENT_SCENE) {
-            final SceneEvent sceneEvent = (SceneEvent) event;
-            if (sceneEvent.mWhat == SceneEvent.SCENE_MILESTONE) {
-                int level = mScene.onLevelUp();
-                // not good to do the cast here, modify later
-                if (level == 3 || level == 5) {
-                    ((FragmentActivity) mContext).runOnUiThread(new Runnable() {
-                        public void run() {
-                            ++mMusicIndex;
-                            mBackgroundMusic.create(mContext, mMusicIDs[mMusicIndex]);
-                            mBackgroundMusic.play();
-                        }
-                    });
-                } else if (level == 1) { // a new loop
-                    ((FragmentActivity) mContext).runOnUiThread(new Runnable() {
-                        public void run() {
-                            mMusicIndex = 1;
-                            mBackgroundMusic.create(mContext, mMusicIDs[mMusicIndex]);
-                            mBackgroundMusic.play();
-                        }
-                    });
-                }
-            } else if (sceneEvent.mWhat == SceneEvent.SCENE_COLLIDE) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-                    public void run() {
-
-                        int soundID = 0;
-
-                        switch (sceneEvent.mMsg.what) {
-                            case AppObject.PROTECTION:
-                                soundID = mSoundIDs.get(0);
-                                break;
-                            case AppObject.TIMEBONUS:
-                                soundID = mSoundIDs.get(1);
-                                break;
-                            case AppObject.ALIENT:
-                                soundID = mSoundIDs.get(2);
-                                break;
-                            case AppObject.BIRD:
-                                soundID = mSoundIDs.get(3);
-                                break;
-                            case AppObject.ASTEROID:
-                                soundID = mSoundIDs.get(4);
-                                break;
-                            case AppObject.THUNDER:
-                                soundID = mSoundIDs.get(4);
-                                break;
-                        }
-
-                        float volume = PreferenceManager.getDefaultSharedPreferences(mContext).getInt(SettingActivity.SFX_KEY, 40) / 100f;
-                        mSoundPool.play(soundID, volume, volume, 10, 0, 1);
-                    }
-                });
-            }
-        }
     }
 }

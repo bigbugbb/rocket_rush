@@ -1,14 +1,13 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppCtrl;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,31 +24,25 @@ public class BackgroundNear extends Background {
 	public final static float DEFAULT_SPEED_Y = 3f;
 	
 	protected boolean mSwitching[] = { false, false };
-	protected boolean mDrawTrans = false;
 	protected int mImageIndex[] = { 0, 0 };
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
 		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565;
-        
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bg1_near, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bg2_near, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bg3_near, options));
+		sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public BackgroundNear(Resources res) {
-		super(res);
-		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);
-		setMaxSpeed(0, DEFAULT_SPEED_Y * 3);
-		setAccSpeed(0, DEFAULT_SPEED_Y / (1000 / Globals.DATA_UPDATE_INTERVAL));
+	public BackgroundNear(Context context) {
+		super(context);
+		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y * mDip);
+		setMaxSpeed(0, DEFAULT_SPEED_Y * 3 * mDip);
+		setAccSpeed(0, DEFAULT_SPEED_Y * mDip / (1000 / Globals.DATA_UPDATE_INTERVAL));
 		setZOrder(ZOrders.BACKGROUND_NEAR);
-		loadImages(res);
+
+		loadImages(context, new int[] { R.drawable.bg1_near, R.drawable.bg2_near, R.drawable.bg3_near });
 		setWidth(sImages.get(0).getWidth());
 		setHeight(sImages.get(0).getHeight());
 	}

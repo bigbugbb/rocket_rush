@@ -1,15 +1,13 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppCtrl;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,30 +29,23 @@ public class BackgroundFar extends Background {
 	protected int mImageIndex[] = { 0, 0 };
 	protected int mTransIndex = BACKGROUND_COUNT - 1;
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
-		
-		Options options = new Options();
-		options.inPurgeable = true;
-		options.inPreferredConfig = Config.RGB_565;
-		
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bg1_far, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bg2_far, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.bg3_far, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.b1_to_b2, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.b2_to_b3, options));
+
+        sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public BackgroundFar(Resources res) {
-		super(res);
-		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);
-		setMaxSpeed(0, DEFAULT_SPEED_Y * 3);
-		setAccSpeed(0, DEFAULT_SPEED_Y / (1000 / Globals.DATA_UPDATE_INTERVAL));
+	public BackgroundFar(Context context) {
+		super(context);
+		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y * mDip);
+		setMaxSpeed(0, DEFAULT_SPEED_Y * 3 * mDip);
+		setAccSpeed(0, DEFAULT_SPEED_Y * mDip / (1000 / Globals.DATA_UPDATE_INTERVAL));
 		setZOrder(ZOrders.BACKGROUND_FAR);
-		loadImages(res);
+
+		loadImages(context, new int[] { R.drawable.bg1_far, R.drawable.bg2_far, R.drawable.bg3_far, R.drawable.b1_to_b2, R.drawable.b2_to_b3 });
 		setWidth(sImages.get(0).getWidth());
 		setHeight(sImages.get(0).getHeight());
 	}

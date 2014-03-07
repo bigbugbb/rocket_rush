@@ -1,15 +1,16 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 
 import com.bigbug.rocketrush.Globals;
 
 
 public class TrickyAlient extends Alient {
+
 	private int mType = 0;
 	
-	public TrickyAlient(Resources res, int type) {
-		super(res);
+	public TrickyAlient(Context context, int type) {
+		super(context);
 		mType = type;
 	}
 	

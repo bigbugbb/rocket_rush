@@ -1,14 +1,16 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 
 import com.bigbug.rocketrush.basic.AppObject;
 
 public class Utility extends AppObject {
-	protected boolean mEnable = true;
 
-	protected Utility(Resources res) {
-		super(res);
+	protected boolean mEnable;
+
+	protected Utility(Context context) {
+		super(context);
+        mEnable = true;
 	}
 
 	public void setEnable(boolean enable) {

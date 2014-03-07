@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -10,8 +10,8 @@ public class Background extends AppObject {
 
 	protected Bitmap mImage = null;
 	
-	public Background(Resources res) {
-		super(res);	
+	public Background(Context context) {
+		super(context);
 		setKind(BACKGROUND);
 		setMovable(false);
 		setCollidable(false);

@@ -20,7 +20,7 @@ public class TutorialProgress extends View
      */
     private Paint mPaint;
     private Paint mPaintFocus;
-    private Paint mShadowOuterPaint;
+//    private Paint mShadowOuterPaint;
 
     public TutorialProgress(Context context, AttributeSet attrs) {
         super(context, attrs);

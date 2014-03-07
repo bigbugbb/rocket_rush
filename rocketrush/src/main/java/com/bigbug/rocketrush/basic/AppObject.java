@@ -1,11 +1,11 @@
 package com.bigbug.rocketrush.basic;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
+
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +43,8 @@ public abstract class AppObject {
     protected float mAccSpeedX;
     protected float mAccSpeedY;
 
+    protected float mDip;
+
     protected int       mID;
     protected int       mKind;
     protected int       mZOrder;
@@ -50,13 +52,16 @@ public abstract class AppObject {
     protected boolean   mMovable;
     protected boolean   mSelected;
     protected boolean   mCollidable;
-    protected Resources mRes;
     protected boolean   mImageLoaded;
     protected List<Bitmap> mImages;
 
+    protected Context   mContext;
+
     protected OnCollideListener mOnCollideListener;
 
-    protected AppObject(Resources res) {
+    protected AppObject(Context context) {
+
+        mContext = context;
 
         mX = 0;
         mY = 0;
@@ -73,13 +78,14 @@ public abstract class AppObject {
         mAccSpeedX = 0;
         mAccSpeedY = 0;
 
+        mDip = context.getResources().getDisplayMetrics().density;
+
         mID          = -1;
         mKind        = UNKNOWN;
         mZOrder      = 0;
         mVisible     = true;
         mMovable     = false;
         mSelected    = false;
-        mRes         = res;
         mImageLoaded = false;
         mImages = new ArrayList<Bitmap>();
     }
@@ -90,26 +96,7 @@ public abstract class AppObject {
         }
         mImageLoaded = true;
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPurgeable  = true;
-        options.inPreferredConfig = Config.RGB_565;
-        for (int id : resIDs) {
-            Bitmap origin = BitmapFactory.decodeResource(mRes, id, options);
-            Bitmap scaled = null;
-            // scale the image according to the current screen resolution
-            float dstWidth  = AppScale.doScaleW(origin.getWidth());
-            float dstHeight = AppScale.doScaleH(origin.getHeight());
-            if (dstWidth != origin.getWidth() || dstHeight != origin.getHeight()) {
-                scaled = Bitmap.createScaledBitmap(origin, (int) dstWidth, (int) dstHeight, true);
-            }
-            // add to the image list
-            if (scaled != null) {
-                origin.recycle(); // explicit call to avoid out of memory
-                mImages.add(scaled);
-            } else {
-                mImages.add(origin);
-            }
-        }
+        mImages = BitmapHelper.loadBitmaps(mContext, resIDs);
     }
 
     public void release() {
@@ -281,10 +268,6 @@ public abstract class AppObject {
     public void setCollidable(boolean collidable) { mCollidable = collidable; }
 
     public boolean getCollidable() { return mCollidable; }
-
-    public void setResources(Resources res) {
-        mRes = res;
-    }
 
     public void setID(int id) {
         mID = id;

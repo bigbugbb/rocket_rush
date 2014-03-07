@@ -13,5 +13,7 @@ public class Globals {
 
     public static final boolean IS_EXCEPTION_SUPPRESSION_ENABLED = false;
 
-    public static final int DATA_UPDATE_INTERVAL = 20;
+    public static final int DATA_UPDATE_INTERVAL = 25;
+
+    public static final int GRAPH_DRAW_INTERVAL = 15;
 }

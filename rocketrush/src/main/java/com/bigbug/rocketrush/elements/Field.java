@@ -1,20 +1,19 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppObject;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Field extends Reward {
-	protected final static int IMAGE_COUNT = 2; // the same size of the total number of bitmaps
-	protected final static int IMAGE_UNBOUND_START = 0; 
+
+	protected final static int IMAGE_UNBOUND_START = 0;
 	protected final static int IMAGE_BOUND_START   = 2;
 	protected static boolean sImageLoaded = false;	
 	protected static List<Bitmap> sImages = new ArrayList<Bitmap>();
@@ -24,24 +23,18 @@ public class Field extends Reward {
 	// save for objects collided with this field
 	protected List<AppObject> mCollideWith = new ArrayList<AppObject>();
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
 		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565; 
-        
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.single_protector_1, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.single_protector_2, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.protection_bubble, options));
+		sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public Field(Resources res) {
-		super(res);
-		loadImages(res);
+	public Field(Context context) {
+		super(context);
+		loadImages(context, new int[] { R.drawable.single_protector_1, R.drawable.single_protector_2, R.drawable.protection_bubble });
 		setKind(PROTECTION);
 		setZOrder(ZOrders.PROTECTION);
 		setWidth(sImages.get(IMAGE_UNBOUND_START).getWidth());
@@ -101,7 +94,7 @@ public class Field extends Reward {
 	@Override
 	protected void drawBound(Canvas c) {
 		if (mVisible) {
-			c.drawBitmap(sImages.get(IMAGE_BOUND_START), mX, mY - 11f, null);
+			c.drawBitmap(sImages.get(IMAGE_BOUND_START), mX, mY - 11f * mDip, null);
 		}
 	}
 

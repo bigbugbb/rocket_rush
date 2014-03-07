@@ -1,13 +1,12 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,42 +14,28 @@ import java.util.Random;
 
 
 public class Alient extends Barrier {
+
 	protected final static int IMAGE_COUNT = 12; // the same size of the total number of bitmaps
 	protected static boolean sImageLoaded = false;	
 	protected static List<Bitmap> sImages = new ArrayList<Bitmap>();	
 	protected Random mRand = new Random();
 	protected boolean mSpeedUnchangeable = false;
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
 		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565;
-
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient01, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient02, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient03, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient04, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient05, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient06, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient07, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient08, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient09, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient10, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient11, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.alient12, options));
+		sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public Alient(Resources res) {
-		super(res);		
+	public Alient(Context context) {
+		super(context);
 		setKind(ALIENT);
 		setMovable(true);	
 		setZOrder(ZOrders.ALIENT);
-		loadImages(res);
+		loadImages(context, new int[] { R.drawable.alient01, R.drawable.alient02, R.drawable.alient03, R.drawable.alient04, R.drawable.alient05, R.drawable.alient06, R.drawable.alient07, R.drawable.alient08, R.drawable.alient09, R.drawable.alient10, R.drawable.alient11, R.drawable.alient12 });
 		setWidth(sImages.get(0).getWidth());
 		setHeight(sImages.get(0).getHeight());	
 	}
@@ -100,29 +85,29 @@ public class Alient extends Barrier {
 		float offsetY = 0;
 		
 		if (kind == ROCKET) {
-			offsetY = 10;
+			offsetY = 10 * mDip;
 		} else if (kind == PROTECTION) {
-			offsetY = 16;
+			offsetY = 16 * mDip;
 		}
 				
 		if (cX <= x && cY <= y - offsetY) {
-			mSpeedX = -8;
-			mSpeedY = -8;
+			mSpeedX = -8 * mDip;
+			mSpeedY = -8 * mDip;
 		} else if (cX <= x && cY <= y + offsetY) {
-			mSpeedX = -12;
-			mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2);
+			mSpeedX = -12 * mDip;
+			mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2) * mDip;
 		} else if (cX <= x && cY > y + offsetY) {
-			mSpeedX = -8;
-			mSpeedY = 8;
+			mSpeedX = -8 * mDip;
+			mSpeedY = 8 * mDip;
 		} else if (cX > x && cY <= y - offsetY) {
-			mSpeedX = 8;
-			mSpeedY = -8;
+			mSpeedX = 8 * mDip;
+			mSpeedY = -8 * mDip;
 		} else if (cX > x && cY <= y + offsetY) {
-			mSpeedX = 12;
-			mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2);
+			mSpeedX = 12 * mDip;
+			mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2) * mDip;
 		} else {
-			mSpeedX = 8;
-			mSpeedY = 8;
+			mSpeedX = 8 * mDip;
+			mSpeedY = 8 * mDip;
 		}
 		
 		mSpeedUnchangeable = true;

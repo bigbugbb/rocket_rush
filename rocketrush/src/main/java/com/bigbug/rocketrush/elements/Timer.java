@@ -1,12 +1,13 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 
 import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.basic.AppScale;
 
 public class Timer extends Utility {
 
@@ -18,8 +19,9 @@ public class Timer extends Utility {
 	protected int mCanvasHeight = 0;
 	protected OnTimeUpdateListener mTimeUpdateListener = null;
 	
-	public Timer(Resources res) {
-		super(res);
+	public Timer(Context context) {
+		super(context);
+
 		setKind(TIMER);
 		setMovable(false);
 		setCollidable(false);
@@ -28,9 +30,9 @@ public class Timer extends Utility {
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mPaint.setColor(Color.WHITE);
 		mPaint.setStyle(Style.FILL);
-		mPaint.setTextSize(30);
+		mPaint.setTextSize(AppScale.doScaleT(30));
 		mPaint.setFakeBoldText(true);
-		mPaint.setShadowLayer(2, 1, 1, Color.BLACK);		
+		mPaint.setShadowLayer(2 * mDip, mDip, mDip, Color.BLACK);
 	}
 	
 	public void setOnTimeUpdateListener(OnTimeUpdateListener listener) {
@@ -78,7 +80,7 @@ public class Timer extends Utility {
 			}
 		}
 		mHalfSecond -= Globals.DATA_UPDATE_INTERVAL;
-		c.drawText(mTextTime, mCanvasWidth - mPaint.measureText(mTextTime) - 24, 40, mPaint);
+		c.drawText(mTextTime, mCanvasWidth - mPaint.measureText(mTextTime) - 24 * mDip, 40 * mDip, mPaint);
 	}
 
 	@Override
@@ -86,11 +88,7 @@ public class Timer extends Utility {
 		mCanvasWidth  = width;
 		mCanvasHeight = height;
 		
-		if (width <= 480) {
-			mPaint.setTextSize(32);
-		} else {
-			mPaint.setTextSize(40);
-		}
+		mPaint.setTextSize(AppScale.doScaleT(32));
 	}
 	
 	public interface OnTimeUpdateListener {

@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 
 import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.basic.AppScale;
 
 public class Level extends Utility {
 	protected int mLevel = 1;
@@ -24,9 +25,10 @@ public class Level extends Utility {
 	protected Paint mPaint = null;
 	protected Paint mPaintContainer = new Paint();
 	protected Rect mContainer = new Rect();
-	
-	public Level(Resources res) {
-		super(res);
+
+	public Level(Context context) {
+		super(context);
+
 		setKind(LEVEL);
 		setMovable(true);
 		setCollidable(false);
@@ -37,8 +39,8 @@ public class Level extends Utility {
 		mPaint.setStyle(Style.FILL);
 		mPaint.setTypeface(Typeface.SERIF);
 		mPaint.setFakeBoldText(true);
-		mPaint.setTextSize(40);
-		mPaint.setShadowLayer(4, 1, 1, Color.DKGRAY);
+		mPaint.setTextSize(AppScale.doScaleT(40));
+		mPaint.setShadowLayer(4 * mDip, mDip, mDip, Color.DKGRAY);
 		mPaint.setTextAlign(Paint.Align.CENTER);
 		
 		mPaintContainer.setARGB(80, 0, 0, 0);
@@ -94,11 +96,11 @@ public class Level extends Utility {
 		float centerX = (mWidth + mTextWidth) / 2;		
 		mSpeedX = centerX / (DEFAULT_MOVE_DURATION / Globals.DATA_UPDATE_INTERVAL);
 		
-		mX = -mTextWidth/2;
+		mX = -mTextWidth / 2;
 		
-		mContainer.top = (int) (mHeight * 0.5f - 110);
-		mContainer.bottom = (int) (mHeight * 0.5f + 90);
+		mContainer.top = (int) (mHeight * 0.5f - 110 * mDip);
+		mContainer.bottom = (int) (mHeight * 0.5f + 90 * mDip);
 		mContainer.left = 0;
-		mContainer.right = (int) (mWidth);
+		mContainer.right = (int) mWidth;
 	}
 }

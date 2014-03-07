@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 
 import com.bigbug.rocketrush.basic.AppCtrl;
 import com.bigbug.rocketrush.basic.AppObject;
@@ -11,8 +11,8 @@ public class Barrier extends AppObject {
 	protected int mCanvasHeight = 0;
 	protected int mAccMoveDuration = 0;
 	
-	protected Barrier(Resources res) {
-		super(res);		
+	protected Barrier(Context context) {
+		super(context);
 	}
 
 	public void triggerCollideEffect(int kind, float x, float y) {}

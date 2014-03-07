@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.basic.AppCtrl;
@@ -14,17 +14,19 @@ public class Reward extends AppObject {
 	protected int mCanvasWidth  = 0;
 	protected int mCanvasHeight = 0;
 	protected boolean mBound = false;
-	protected Rocket mRocket = null;
+
 	protected long mBoundTimeout   = 0;
 	protected long mUnboundTimeout = 0; 
 	protected long mBegTime = System.currentTimeMillis();
+
+    protected Rocket mRocket;
 	
-	public Reward(Resources res) {
-		super(res);		
+	public Reward(Context context) {
+		super(context);
 		setMovable(true);				
 		setTimeout(20000, 18000);
 		// set speed for unbound state
-		setSpeed(3 + mRand.nextInt(3), 3 + mRand.nextInt(2));
+		setSpeed((3 + mRand.nextInt(3)) * mDip, (3 + mRand.nextInt(2)) * mDip);
 	}
 	
 	public void setTimeout(long boundTimeout, long unboundTimeout) {

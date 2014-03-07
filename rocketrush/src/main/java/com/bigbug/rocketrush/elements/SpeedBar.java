@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -11,13 +11,17 @@ import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.basic.AppCtrl;
 
 public class SpeedBar extends Utility {
-	protected Bitmap mImage = null;
+
+	protected Bitmap mImage;
+
 	// canvas size
-	protected int mCanvasWidth  = 0;
-	protected int mCanvasHeight = 0;
+	protected int mCanvasWidth;
+	protected int mCanvasHeight;
+
 	// bottom
-	protected float mBarTop    = 0;
-	protected float mBarBottom = 0;
+	protected float mBarTop;
+	protected float mBarBottom;
+
 	// bad name, but short : P
 	protected Paint mPaint1 = new Paint();
 	protected Paint mPaint2 = new Paint(); 
@@ -27,20 +31,23 @@ public class SpeedBar extends Utility {
 	protected RectF r2 = new RectF();
 	protected RectF r3 = new RectF();
 	protected RectF rShadow = new RectF();
+
 	// duration for move up, the same as Rocket
 	protected int mUpDuration = 0;
 
-	public SpeedBar(Resources res) {
-		super(res);
+	public SpeedBar(Context context) {
+		super(context);
+
+        mDip = context.getResources().getDisplayMetrics().density;
 
 		setKind(SPEEDBAR);
-		setSpeed(0, 1);
+		setSpeed(0, mDip);
 		setCollidable(false);
 		setZOrder(ZOrders.SPEEDBAR);
 		
 		mPaint1.setAntiAlias(true);
 		mPaint1.setARGB(180, 0, 0, 0);                 
-		mPaint1.setStrokeWidth(4.0f);
+		mPaint1.setStrokeWidth(3.0f * mDip);
 		mPaint1.setStyle(Style.STROKE);
 		
 		mPaint2.setAntiAlias(true);		    
@@ -52,19 +59,11 @@ public class SpeedBar extends Utility {
 		mPaint3.setStyle(Style.FILL);
 		
 		mPaintShadow.setARGB(70, 0, 0, 0);
-		mPaintShadow.setStrokeWidth(4.0f);
+		mPaintShadow.setStrokeWidth(3.0f * mDip);
 		mPaintShadow.setStyle(Style.STROKE);
 		mPaintShadow.setAntiAlias(true);
 	}
-	
-	public SpeedBar(Resources res, Bitmap image) {
-		super(res);
-		setKind(SPEEDBAR);
-		setCollidable(false);
-		setZOrder(ZOrders.SPEEDBAR);
-		setImage(image);
-	}
-	
+
 	public void setImage(Bitmap image) {
 		mImage = image;
 	}
@@ -83,10 +82,10 @@ public class SpeedBar extends Utility {
 	
 	@Override
 	public void onDraw(Canvas c) {
-		c.drawRoundRect(rShadow, 15, 15, mPaintShadow);
-		c.drawRoundRect(r1, 12, 12, mPaint1);	    	    
-	    c.drawRoundRect(r2, 9, 9, mPaint2);	    
-	    c.drawRoundRect(r3, 9, 9, mPaint3);
+		c.drawRoundRect(rShadow, 15 * mDip, 15 * mDip, mPaintShadow);
+		c.drawRoundRect(r1, 12 * mDip, 12 * mDip, mPaint1);
+	    c.drawRoundRect(r2, 9 * mDip, 9 * mDip, mPaint2);
+	    c.drawRoundRect(r3, 9 * mDip, 9 * mDip, mPaint3);
 	}
 
 	// too many magic numbers in the class, I will modify later. :P
@@ -95,28 +94,28 @@ public class SpeedBar extends Utility {
 		mCanvasWidth  = width;
 		mCanvasHeight = height;
 		
-		r1.left   = 30;
+		r1.left   = 30 * mDip;
 	    r1.top    = mCanvasHeight * 0.58f;
-	    r1.right  = 50;
+	    r1.right  = 42 * mDip;
 	    r1.bottom = mCanvasHeight * 0.9f;
 	    
-	    r2.left   = 32;
-	    r2.top    = mCanvasHeight * 0.58f + 2;
-	    r2.right  = 48;
-	    r2.bottom = mCanvasHeight * 0.9f - 2;
+	    r2.left   = 32 * mDip;
+	    r2.top    = mCanvasHeight * 0.58f + 2 * mDip;
+	    r2.right  = 40 * mDip;
+	    r2.bottom = mCanvasHeight * 0.9f - 2 * mDip;
 	    
-	    r3.left   = 32;
-	    r3.top    = mCanvasHeight * 0.9f - 2;
-	    r3.right  = 48;
-	    r3.bottom = mCanvasHeight * 0.9f - 2;
+	    r3.left   = 32 * mDip;
+	    r3.top    = mCanvasHeight * 0.9f - 2 * mDip;
+	    r3.right  = 40 * mDip;
+	    r3.bottom = mCanvasHeight * 0.9f - 2 * mDip;
 	    
-	    rShadow.left   = 26;
-	    rShadow.top    = mCanvasHeight * 0.58f - 4;
-	    rShadow.right  = 54;
-	    rShadow.bottom = mCanvasHeight * 0.9f + 4;
+	    rShadow.left   = 26 * mDip;
+	    rShadow.top    = mCanvasHeight * 0.58f - 4 * mDip;
+	    rShadow.right  = 46 * mDip;
+	    rShadow.bottom = mCanvasHeight * 0.9f + 4 * mDip;
 	    
-	    mBarTop    = mCanvasHeight * 0.58f + 2;
-	    mBarBottom = mCanvasHeight * 0.9f - 2;
+	    mBarTop    = mCanvasHeight * 0.58f + 2 * mDip;
+	    mBarBottom = mCanvasHeight * 0.9f - 2 * mDip;
 	    mY = mBarBottom;
 	    setSpeed(0, (mBarBottom - mBarTop) / (3000f / Globals.DATA_UPDATE_INTERVAL));
 	}

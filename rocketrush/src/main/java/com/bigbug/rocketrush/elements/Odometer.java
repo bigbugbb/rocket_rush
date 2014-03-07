@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -8,6 +8,7 @@ import android.graphics.Paint.Style;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.basic.AppCtrl;
+import com.bigbug.rocketrush.basic.AppScale;
 
 public class Odometer extends Utility {
 
@@ -20,8 +21,8 @@ public class Odometer extends Utility {
 	public final static float DEFAULT_SPEED_X = 0;
 	public final static float DEFAULT_SPEED_Y = 3f;
 	
-	public Odometer(Resources res) {
-		super(res);
+	public Odometer(Context context) {
+		super(context);
 		setKind(ODOMETER);
 		setCollidable(false);
 		setZOrder(ZOrders.ODOMETER);
@@ -29,15 +30,16 @@ public class Odometer extends Utility {
 		setMaxSpeed(0, DEFAULT_SPEED_Y * 3);
 		setAccSpeed(0, DEFAULT_SPEED_Y / (1000 / Globals.DATA_UPDATE_INTERVAL));
 		
-		mX = 24; mY = 82;
+		mX = 24 * mDip;
+        mY = 72 * mDip;
 		
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mPaint.setARGB(255, 0, 0, 0);
 		mPaint.setStyle(Style.FILL);	
 		mPaint.setColor(Color.WHITE);
-		mPaint.setTextSize(30);
+		mPaint.setTextSize(AppScale.doScaleT(30));
 		mPaint.setFakeBoldText(true);
-		mPaint.setShadowLayer(2, 1, 1, Color.BLACK);		
+		mPaint.setShadowLayer(2 * mDip, mDip, mDip, Color.BLACK);
 	}
 	
 	public int getDistance() {
@@ -84,8 +86,7 @@ public class Odometer extends Utility {
 
 	@Override
 	public void onDraw(Canvas c) {
-		String s = "Distance   " + mOdometer / 10 + " / " + mMilestone / 10;
-		c.drawText(s, mX, mY, mPaint);
+		c.drawText(String.format("Distance%6d / %d", mOdometer / 10, mMilestone / 10), mX, mY, mPaint);
 	}
 	
 	public interface OnOdometerUpdateListener {
@@ -95,10 +96,6 @@ public class Odometer extends Utility {
 
 	@Override
 	public void onSizeChanged(int width, int height) {
-		if (width <= 480) {
-			mPaint.setTextSize(27);
-	    } else {
-	    	mPaint.setTextSize(32);
-	    }
+		mPaint.setTextSize(AppScale.doScaleT(27));
 	}
 }

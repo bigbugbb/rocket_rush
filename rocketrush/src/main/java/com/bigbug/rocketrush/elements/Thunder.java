@@ -1,43 +1,39 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Thunder extends Barrier {
-	protected final static int IMAGE_COUNT = 1; // the same size of the total number of bitmaps
-	protected static boolean sImageLoaded = false;	
+
+	protected static boolean sImageLoaded = false;
 	protected static List<Bitmap> sImages = new ArrayList<Bitmap>();	
 	protected int mPeriod = 0;
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
-		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565; 
-		
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.thunder, options));
+
+		sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 
-	public Thunder(Resources res) {
-		super(res);		
+	public Thunder(Context context) {
+		super(context);
 		setKind(THUNDER);
 		setMovable(true);	
 		setVisible(false);
 		setCollidable(false);
 		setZOrder(ZOrders.THUNDER);
-		loadImages(res);
+
+		loadImages(context, new int[] { R.drawable.thunder });
 		setWidth(sImages.get(0).getWidth());
 		setHeight(sImages.get(0).getHeight());	
 	}

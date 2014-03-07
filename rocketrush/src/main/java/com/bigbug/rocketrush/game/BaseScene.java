@@ -14,8 +14,6 @@ import java.util.List;
 
 public class BaseScene extends AppObject implements AppObject.OnCollideListener {
 
-    protected Context mContext;
-
     protected int mWidth;
     protected int mHeight;
 
@@ -25,8 +23,7 @@ public class BaseScene extends AppObject implements AppObject.OnCollideListener 
     protected GameEvent.OnGameEventListener mListener;
 
     public BaseScene(Context context) {
-        super(context.getResources());
-        mContext = context;
+        super(context);
         mBarriers = new ArrayList<Barrier>();
         mObjects  = new ArrayList<AppObject>();
     }
@@ -48,7 +45,6 @@ public class BaseScene extends AppObject implements AppObject.OnCollideListener 
         }
         mObjects.clear();
         mBarriers.clear();
-        System.gc();
     }
 
     public void onSizeChanged(int width, int height) {

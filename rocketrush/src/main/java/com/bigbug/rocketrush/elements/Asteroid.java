@@ -1,13 +1,12 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,52 +25,33 @@ public class Asteroid extends Barrier {
 	protected boolean mExplode = false;
 	protected int mExplodeIndex = 0;
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
 		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565;
-        
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid01, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid02, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid03, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid04, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid05, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid06, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid07, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid08, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid09, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid10, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid11, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid12, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid_explode1, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid_explode2, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid_explode3, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.asteroid_explode4, options));
+		sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public Asteroid(Resources res) {
-		super(res);
-		loadImages(res);
+	public Asteroid(Context context) {
+		super(context);
+		loadImages(context, new int[] { R.drawable.asteroid01, R.drawable.asteroid02, R.drawable.asteroid03, R.drawable.asteroid04, R.drawable.asteroid05, R.drawable.asteroid06, R.drawable.asteroid07, R.drawable.asteroid08, R.drawable.asteroid09, R.drawable.asteroid10, R.drawable.asteroid11, R.drawable.asteroid12, R.drawable.asteroid_explode1, R.drawable.asteroid_explode2, R.drawable.asteroid_explode3, R.drawable.asteroid_explode4 });
 		setKind(ASTEROID);
 		setMovable(true);	
 		setZOrder(ZOrders.ASTEROID);		
 		setImage(sImages.get(mRand.nextInt(ASTEROID_COUNT)));
 	}
-
-	public Asteroid(Resources res, Bitmap image) {
-		super(res);
-		loadImages(res);
-		setKind(ASTEROID);
-		setMovable(true);		
-		setZOrder(ZOrders.ASTEROID);
-		setImage(sImages.get(mRand.nextInt(ASTEROID_COUNT)));		
-	}
-	
+//
+//	public Asteroid(Context context, Bitmap image) {
+//		super(context);
+//		loadImages(context, new int[] { R.drawable.asteroid01, R.drawable.asteroid02, R.drawable.asteroid03, R.drawable.asteroid04, R.drawable.asteroid05, R.drawable.asteroid06, R.drawable.asteroid07, R.drawable.asteroid08, R.drawable.asteroid09, R.drawable.asteroid10, R.drawable.asteroid11, R.drawable.asteroid12, R.drawable.asteroid_explode1, R.drawable.asteroid_explode2, R.drawable.asteroid_explode3, R.drawable.asteroid_explode4 });
+//		setKind(ASTEROID);
+//		setMovable(true);
+//		setZOrder(ZOrders.ASTEROID);
+//		setImage(sImages.get(mRand.nextInt(ASTEROID_COUNT)));
+//	}
+//
 	public void initSpeeds(float x, float y, int accTime) {		
 		float accSpeedY = y / (1000 / Globals.DATA_UPDATE_INTERVAL);
 		setSpeed(x, y + accSpeedY * accTime);
@@ -125,26 +105,26 @@ public class Asteroid extends Barrier {
 		if (kind == ROCKET) {
 			float cX = mX + mWidth * 0.5f;
 			float cY = mY + mHeight * 0.5f;
-			float offsetY = 10;				
+			float offsetY = 10 * mDip;
 					
 			if (cX <= x && cY <= y - offsetY) {
-				mSpeedX = -8;
-				mSpeedY = -8;
+				mSpeedX = -8 * mDip;
+				mSpeedY = -8 * mDip;
 			} else if (cX <= x && cY <= y + offsetY) {
-				mSpeedX = -12;
-				mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2);
+				mSpeedX = -12 * mDip;
+				mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2) * mDip;
 			} else if (cX <= x && cY > y + offsetY) {
-				mSpeedX = -8;
-				mSpeedY = 8;
+				mSpeedX = -8 * mDip;
+				mSpeedY = 8 * mDip;
 			} else if (cX > x && cY <= y - offsetY) {
-				mSpeedX = 8;
-				mSpeedY = -8;
+				mSpeedX = 8 * mDip;
+				mSpeedY = -8 * mDip;
 			} else if (cX > x && cY <= y + offsetY) {
-				mSpeedX = 12;
-				mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2);
+				mSpeedX = 12 * mDip;
+				mSpeedY = (mRand.nextInt(2) == 0 ? 2 : -2) * mDip;
 			} else {
-				mSpeedX = 8;
-				mSpeedY = 8;
+				mSpeedX = 8 * mDip;
+				mSpeedY = 8 * mDip;
 			}			
 			mSpeedUnchangeable = true;
 		} else if (kind == PROTECTION) {

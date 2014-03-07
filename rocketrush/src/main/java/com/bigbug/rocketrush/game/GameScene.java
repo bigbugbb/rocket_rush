@@ -28,14 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateListener,
-                                                    LifeBar.OnLifeChangedListener,
-                                                    Timer.OnTimeUpdateListener,
-                                                    TimeBonus.OnGotTimeBonusListener,
-                                                    Curtain.OnCurtainEventListener {
+public class GameScene extends BaseScene {
 
     /**
-     * The main actor
+     * The leading role
      */
     private Rocket mRocket;
 
@@ -52,16 +48,26 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
     private BackgroundNear mBackgroundNear;
 
     /**
-     * Game elements with game events
+     * Game elements which may generate game events
      */
     private Level    mLevel;
     private Odometer mOdometer;
     private Timer 	 mTimer;
     private Curtain  mCurtain;
 
+    /**
+     * The current loop. Each loop has 6 levels.
+     */
     private int mCurLoop;
+
+    /**
+     * The current level. Game difficulty increases as the level increases.
+     */
     private int mCurLevel;
 
+    /**
+     * Random object used to generate barriers based on the property assigned to the level.
+     */
     private Random mRandom;
 
     public GameScene(Context context) {
@@ -77,10 +83,12 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
     public void reset() {
         mCurLevel = 1;
         mCurLoop  = 1;
+
         mProbBird    = 95;
         mProbAster   = 195;
         mProbAlient  = 145;
         mProbThunder = 255;
+
         release();
         load();
     }
@@ -89,46 +97,47 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
 
         // Create game elements
         if (mBackgroundFar == null) {
-            mBackgroundFar = new BackgroundFar(mRes);
+            mBackgroundFar = new BackgroundFar(mContext);
             mObjects.add(mBackgroundFar);
         }
         if (mBackgroundNear == null) {
-            mBackgroundNear = new BackgroundNear(mRes);
+            mBackgroundNear = new BackgroundNear(mContext);
             mObjects.add(mBackgroundNear);
         }
         if (mSpeedBar == null) {
-            mSpeedBar = new SpeedBar(mRes);
+            mSpeedBar = new SpeedBar(mContext);
             mObjects.add(mSpeedBar);
         }
         if (mRocket == null) {
-            mRocket = new Rocket(mRes);
+            mRocket = new Rocket(mContext);
             mRocket.setOnCollideListener(this);
             mObjects.add(mRocket);
         }
         if (mLevel == null) {
-            mLevel = new Level(mRes);
+            mLevel = new Level(mContext);
             mObjects.add(mLevel);
         }
         if (mOdometer == null) {
-            mOdometer = new Odometer(mRes);
-            mOdometer.setOdometerUpdateListener(this);
+            mOdometer = new Odometer(mContext);
+            mOdometer.setOdometerUpdateListener(mOdometerListener);
             mObjects.add(mOdometer);
         }
         if (mLifeBar == null) {
-            mLifeBar = new LifeBar(mRes);
-            mLifeBar.setOnLifeChangedListener(this);
+            mLifeBar = new LifeBar(mContext);
+            mLifeBar.setOnLifeChangedListener(mLifebarListener);
             mObjects.add(mLifeBar);
         }
         if (mTimer == null) {
-            mTimer = new Timer(mRes);
-            mTimer.setOnTimeUpdateListener(this);
+            mTimer = new Timer(mContext);
+            mTimer.setOnTimeUpdateListener(mTimerListener);
             mObjects.add(mTimer);
         }
         if (mCurtain == null) {
-            mCurtain = new Curtain(mRes);
-            mCurtain.setCurtainEventListener(this);
+            mCurtain = new Curtain(mContext);
+            mCurtain.setCurtainEventListener(mCurtainListener);
             mObjects.add(mCurtain);
         }
+
         if (mWidth > 0 || mHeight > 0) {
             for (AppObject obj : mObjects) {
                 obj.onSizeChanged(mWidth, mHeight);
@@ -155,48 +164,26 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
         mCurtain  = null;
     }
 
-    public void openInteraction() {
+    public void setInteractive(boolean interactive) {
         if (mRocket != null) {
-            mRocket.setMovable(true);
-            mRocket.setOnCollideListener(this);
+            mRocket.setMovable(interactive);
+            mRocket.setCollidable(interactive);
+            mRocket.setOnCollideListener(interactive ? this : null);
         }
         if (mOdometer != null) {
-            mOdometer.setOdometerUpdateListener(this);
-            mOdometer.setEnable(true);
+            mOdometer.setOdometerUpdateListener(interactive ? mOdometerListener : null);
+            mOdometer.setEnable(interactive);
         }
         if (mLifeBar != null) {
-            mLifeBar.setOnLifeChangedListener(this);
-            mLifeBar.setEnable(true);
+            mLifeBar.setOnLifeChangedListener(interactive ? mLifebarListener : null);
+            mLifeBar.setEnable(interactive);
         }
         if (mSpeedBar != null) {
-            mSpeedBar.setEnable(true);
+            mSpeedBar.setEnable(interactive);
         }
         if (mTimer != null) {
-            mTimer.setOnTimeUpdateListener(this);
-            mTimer.setEnable(true);
-        }
-    }
-
-    public void closeInteraction() {
-        if (mRocket != null) {
-            mRocket.setMovable(false);
-            mRocket.setCollidable(false);
-            mRocket.setOnCollideListener(null);
-        }
-        if (mOdometer != null) {
-            mOdometer.setOdometerUpdateListener(null);
-            mOdometer.setEnable(false);
-        }
-        if (mLifeBar != null) {
-            mLifeBar.setOnLifeChangedListener(null);
-            mLifeBar.setEnable(false);
-        }
-        if (mSpeedBar != null) {
-            mSpeedBar.setEnable(false);
-        }
-        if (mTimer != null) {
-            mTimer.setOnTimeUpdateListener(null);
-            mTimer.setEnable(false);
+            mTimer.setOnTimeUpdateListener(interactive ? mTimerListener : null);
+            mTimer.setEnable(interactive);
         }
     }
 
@@ -286,7 +273,7 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
         // Generate flying red chicken
         if (mRandom.nextInt(probability) == 1) {
             boolean right = mRandom.nextBoolean();
-            Bird bird = new Bird(mRes, right);
+            Bird bird = new Bird(mContext, right);
             bird.setX(right ? -bird.getWidth() : mWidth);
             bird.setY(mRandom.nextInt(mHeight - (mHeight >> 1) - (accTime > 0 ? (mHeight >> 2) : 0)));
             bird.initSpeeds(
@@ -310,10 +297,10 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
         // generate asteroid
         int type = mRandom.nextInt(probability);
         if (type == 1) {
-            Asteroid asteroid = new Asteroid(mRes);
+            Asteroid asteroid = new Asteroid(mContext);
             asteroid.setX(mRandom.nextInt((int) (mWidth - asteroid.getWidth() + 1)));
             asteroid.setY(0 - asteroid.getHeight());
-            asteroid.initSpeeds(0, (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY, accTime);
+            asteroid.initSpeeds(0, (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip, accTime);
             asteroid.onSizeChanged(mWidth, mHeight);
             asteroid.setOnCollideListener(this);
             mBarriers.add(asteroid);
@@ -321,13 +308,13 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
             // order by Z
             orderByZ(mObjects);
         } else if (type == 2) {
-            Asteroid asteroid = new Asteroid(mRes);
+            Asteroid asteroid = new Asteroid(mContext);
             boolean right = mRandom.nextBoolean();
             asteroid.setX(right ? -asteroid.getWidth() : mWidth);
             asteroid.setY(mRandom.nextInt(mHeight >> 3) - (accTime > 0 ? (mHeight >> 3) : 0));
             asteroid.initSpeeds(
-                    (right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX,
-                    (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY,
+                    (right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX * mDip,
+                    (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip,
                     accTime
             );
             asteroid.onSizeChanged(mWidth, mHeight);
@@ -379,15 +366,15 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
 
             int aliType = mRandom.nextInt(2);
 
-            Alient alient = new TrickyAlient(mRes, aliType);
+            Alient alient = new TrickyAlient(mContext, aliType);
 
             if (aliType == 0) {
                 boolean right = mRandom.nextBoolean();
                 alient.setX(right ? -alient.getWidth() : mWidth);
                 alient.setY(mRandom.nextInt(mHeight >> 5) - (accTime > 0 ? (mHeight >> 3) : 0));
                 alient.initSpeeds(
-                        (right ? mRandom.nextInt(6) + 7 : -7 - mRandom.nextInt(6)),
-                        mRandom.nextInt(4) + 2,
+                        (right ? mRandom.nextInt(6) + 7 : -7 - mRandom.nextInt(6)) * mDip,
+                        (mRandom.nextInt(4) + 2) * mDip,
                         accTime
                 );
             } else if (aliType == 1) {
@@ -395,8 +382,8 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
                 alient.setX(offset + mRandom.nextInt((int) (mWidth - offset - offset - offset)));
                 alient.setY(-alient.getHeight());
                 alient.initSpeeds(
-                        6,
-                        (mRandom.nextInt(5) + 2),
+                        6 * mDip,
+                        (mRandom.nextInt(5) + 2) * mDip,
                         accTime
                 );
             }
@@ -415,11 +402,11 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
         // Generate flying red chicken
         if (mRandom.nextInt(probability) == 1) {
 
-            Thunder thunder = new Thunder(mRes);
+            Thunder thunder = new Thunder(mContext);
 
             thunder.setX(mRandom.nextInt((int) (mWidth - thunder.getWidth())));
             thunder.setY(-thunder.getHeight());
-            thunder.initSpeeds(0, 3f, 0);
+            thunder.initSpeeds(0, 3f * mDip, 0);
             thunder.onSizeChanged(mWidth, mHeight);
             thunder.setOnCollideListener(this);
             mBarriers.add(thunder);
@@ -433,13 +420,13 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
     // Probabilities for creating reward
     protected int mProbReward = 1250;
 
-    // Flag to indicate whether to generate the time bonus
+    // Flag to indicate whether the time bonus should be generated
     protected boolean mGenerateTimeBonus = false;
 
     public void updateReward() {
 
         if (mRandom.nextInt(mProbReward) == 0) {
-            Field field = new Field(mRes);
+            Field field = new Field(mContext);
 
             field.setX(mRandom.nextInt((int) (mWidth - field.getWidth())));
             field.setY(-field.getHeight());
@@ -452,13 +439,13 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
         }
 
         if (mGenerateTimeBonus) {
-            TimeBonus timeBonus = new TimeBonus(mRes);
+            TimeBonus timeBonus = new TimeBonus(mContext);
 
             timeBonus.setX(mRandom.nextInt((int) (mWidth - timeBonus.getWidth())));
             timeBonus.setY(-timeBonus.getHeight());
             timeBonus.onSizeChanged(mWidth, mHeight);
             timeBonus.setOnCollideListener(this);
-            timeBonus.setOnGotTimeBonusListener(this);
+            timeBonus.setOnGotTimeBonusListener(mTimebonusListener);
             mObjects.add(timeBonus);
 
             // Order by Z
@@ -510,78 +497,97 @@ public class GameScene extends BaseScene implements Odometer.OnOdometerUpdateLis
     @Override
     public void onCollide(AppObject obj, List<AppObject> collideWith) {
 
-        int kind = obj.getKind();
-
         // Trigger collide effects for all barriers
         float centerX = obj.getX() + obj.getWidth() * 0.5f;
         float centerY = obj.getY() + obj.getHeight() * 0.5f;
+
         for (AppObject object : collideWith) {
-            try {
-                Barrier b = (Barrier) object;
-                if (kind == AppObject.ROCKET) {
-                    Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-                    vibrator.vibrate(30);
+            if (object instanceof Barrier) {
+                Barrier barrier = (Barrier) object;
+                if (obj.getKind() == AppObject.ROCKET) {
+                    ((Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
                     mLifeBar.lifeChange(-0.334f);
                 }
-                b.triggerCollideEffect(kind, centerX, centerY);
-            } catch (ClassCastException e) {
-                ; // do nothing, just continue
-            } finally {
-                Message msg = new Message();
-                msg.what = object.getKind();
-                GameEvent e = new SceneEvent(SceneEvent.SCENE_COLLIDE, msg);
-                mListener.onGameEvent(e);
+                barrier.triggerCollideEffect(obj.getKind(), centerX, centerY);
             }
+            Message msg = new Message();
+            msg.what = object.getKind();
+            GameEvent event = new SceneEvent(SceneEvent.SCENE_COLLIDE, msg);
+            mListener.onGameEvent(event);
         }
         orderByZ(mObjects);
     }
 
-    public void onReachTarget(int odometer) {
-        mLifeBar.lifeChange(0.01f);
-    }
-
-    public void onReachMilestone(int odometer) {
-        Message msg = new Message();
-        msg.what = odometer;
-        GameEvent e = new SceneEvent(SceneEvent.SCENE_MILESTONE, msg);
-        mListener.onGameEvent(e);
-    }
-
-    public void onLifeChanged(float life) {
-        if (life == 0) { // compare a float, not good, modify later if necessary
-            GameEvent e = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_LIFE);
-            e.mExtra = Integer.valueOf(mOdometer.getDistance());
-            mListener.onGameEvent(e);
+    private Odometer.OnOdometerUpdateListener mOdometerListener = new Odometer.OnOdometerUpdateListener() {
+        @Override
+        public void onReachTarget(int odometer) {
+            mLifeBar.lifeChange(0.01f);
         }
-    }
 
-    public void onTimeUpdate(int curTime) {
-        if (curTime == 0) {
-            GameEvent e = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_TIME);
-            e.mExtra = Integer.valueOf(mOdometer.getDistance());
-            mListener.onGameEvent(e);
+        @Override
+        public void onReachMilestone(int odometer) {
+            Message msg = new Message();
+            msg.what = odometer;
+            mListener.onGameEvent(new SceneEvent(SceneEvent.SCENE_MILESTONE, msg));
         }
-    }
+    };
 
-    public void onGotTimeBonus(int bonus) {
-        mTimer.addBonusTime(bonus);
-    }
+    private LifeBar.OnLifeChangedListener mLifebarListener = new LifeBar.OnLifeChangedListener() {
 
-    public void onCurtainClosed() {
-        mCurtain.setDelay(1000);
-        mCurtain.open();
-        // switch background
-        mBackgroundFar.switchToFirst();
-        mBackgroundNear.switchToFirst();
-    }
+        @Override
+        public void onLifeChanged(float life) {
+            if (life == 0) { // compare a float, not good, modify later if necessary
+                GameEvent e = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_LIFE);
+                e.mExtra = Integer.valueOf(mOdometer.getDistance());
+                mListener.onGameEvent(e);
+            }
+        }
+    };
 
-    public void onCurtainOpened() {
-        openInteraction();
-    }
+    private Timer.OnTimeUpdateListener mTimerListener = new Timer.OnTimeUpdateListener() {
 
-    public void onCurtainPreClosing() {
-        closeInteraction();
-    }
+        @Override
+        public void onTimeUpdate(int curTime) {
+            if (curTime == 0) {
+                GameEvent event = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_TIME);
+                event.mExtra = Integer.valueOf(mOdometer.getDistance());
+                mListener.onGameEvent(event);
+            }
+        }
+    };
 
-    public void onCurtainPreOpening() {}
+    private TimeBonus.OnGotTimeBonusListener mTimebonusListener = new TimeBonus.OnGotTimeBonusListener() {
+
+        @Override
+        public void onGotTimeBonus(int bonus) {
+            mTimer.addBonusTime(bonus);
+        }
+    };
+
+    private Curtain.OnCurtainEventListener mCurtainListener = new Curtain.OnCurtainEventListener() {
+
+        @Override
+        public void onCurtainPreClosing() {
+            setInteractive(false);
+        }
+
+        @Override
+        public void onCurtainClosed() {
+            mCurtain.setDelay(1000);
+            mCurtain.open();
+            // switch background
+            mBackgroundFar.switchToFirst();
+            mBackgroundNear.switchToFirst();
+        }
+
+        @Override
+        public void onCurtainPreOpening() {
+
+        }
+
+        @Override
+        public void onCurtainOpened() {
+            setInteractive(true);
+        }
+    };
 }

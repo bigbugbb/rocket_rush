@@ -1,9 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
@@ -18,8 +15,6 @@ import java.util.List;
 
 public class Rocket extends AppObject {
 	protected final static int IMAGE_COUNT = 4; // the same size of the total number of bitmaps
-	protected static boolean sImageLoaded = false;	
-	protected static List<Bitmap> sImages = new ArrayList<Bitmap>();	
 	protected int mCanvasWidth  = 0;
 	protected int mCanvasHeight = 0;
 	protected int mLeftDuration  = 0;
@@ -39,33 +34,19 @@ public class Rocket extends AppObject {
 	protected List<AppObject> mCollideWith = new ArrayList<AppObject>();
 	// reward list notes the rewards bounding to this rocket
 	protected List<Reward> mRewards = new ArrayList<Reward>();
-
-	public static void loadImages(Resources res) {
-		if (sImageLoaded) {
-			return;
-		}
-		sImageLoaded = true;
-		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565;   
-        
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.ship_1, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.ship_2, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.ship_3, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.ship_4, options));
-	}
 	
-	public Rocket(Resources res) {
-		super(res);
+	public Rocket(Context context) {
+		super(context);
+
 		setKind(ROCKET);
 		setMovable(true);	
 		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);
 		setMaxSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);			
 		setZOrder(ZOrders.ROCKET);
-		loadImages(res);
-		setWidth(sImages.get(0).getWidth());
-		setHeight(sImages.get(0).getHeight());				
+
+        loadImages(new int[]{ R.drawable.ship_1, R.drawable.ship_2, R.drawable.ship_3, R.drawable.ship_4 });
+        setWidth(mImages.get(0).getWidth());
+        setHeight(mImages.get(0).getHeight());
 	}
 
 	public int getAccTime() {
@@ -95,7 +76,7 @@ public class Rocket extends AppObject {
 		if (mCurIndex == IMAGE_COUNT) {
 			mCurIndex = 0;
 		}
-		c.drawBitmap(sImages.get(mCurIndex++), mX, mY, null);				
+		c.drawBitmap(mImages.get(mCurIndex++), mX, mY, null);
 	}
 	
 	@Override
@@ -118,11 +99,11 @@ public class Rocket extends AppObject {
 		if (mVibrateDuration > 0) {					
 			if (mVibrateDuration == MIN_VIBRATE_DURATION) { // first
 				mVibrateCount = 0;
-				mX += -3;				
+				mX += -3 * mDip;
 			} else if (mVibrateDuration == Globals.DATA_UPDATE_INTERVAL) {
-				mX += 3;
+				mX += 3 * mDip;
 			} else {
-				mX += (mVibrateCount & 1) == 0 ? -6 : 6;  
+				mX += ((mVibrateCount & 1) == 0 ? -6 : 6) * mDip;
 			}
 			++mVibrateCount;
 			mVibrateDuration -= Globals.DATA_UPDATE_INTERVAL;
@@ -132,14 +113,6 @@ public class Rocket extends AppObject {
 		mRect.top    = (int)(mY + mCollideArea[1]);
 		mRect.right  = (int)(mX + mCollideArea[2]);
 		mRect.bottom = (int)(mY + mCollideArea[3]);
-	}
-
-	@Override
-	public void release() {
-//		for (Bitmap image : sImages) {
-//			image.recycle();				
-//		}
-		super.release();
 	}
 
 	@Override
@@ -156,8 +129,8 @@ public class Rocket extends AppObject {
 	
 		mUpper  = (mCanvasHeight - mHeight) * 9 / 20;
 		mBottom = (mCanvasHeight - mHeight) / 2 + mCanvasHeight / 4;
-		setSpeed(DEFAULT_SPEED_X, (mBottom - mUpper) / (float)(3000 / Globals.DATA_UPDATE_INTERVAL));
-		setMaxSpeed(DEFAULT_SPEED_X, (mBottom - mUpper) / (float)(3000 / Globals.DATA_UPDATE_INTERVAL));
+		setSpeed(DEFAULT_SPEED_X * mDip, (mBottom - mUpper) / (float)(3000 / Globals.DATA_UPDATE_INTERVAL));
+		setMaxSpeed(DEFAULT_SPEED_X * mDip, (mBottom - mUpper) / (float)(3000 / Globals.DATA_UPDATE_INTERVAL));
 	}
 
 	@Override

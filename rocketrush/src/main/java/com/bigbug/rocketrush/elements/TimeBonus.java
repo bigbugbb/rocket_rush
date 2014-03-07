@@ -1,13 +1,12 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppObject;
+import com.bigbug.rocketrush.utils.BitmapHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,23 +27,18 @@ public class TimeBonus extends Reward {
 	// OnGotTimeBonusListener
 	protected OnGotTimeBonusListener mListener = null;
 	
-	public static void loadImages(Resources res) {
+	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
 		}
 		sImageLoaded = true;
 		
-		BitmapFactory.Options options = new BitmapFactory.Options(); 
-        options.inPurgeable = true;
-        options.inPreferredConfig = Config.RGB_565; 
-		
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.single_time_bonus_1, options));
-		sImages.add(BitmapFactory.decodeResource(res, R.drawable.single_time_bonus_2, options));
+		sImages = BitmapHelper.loadBitmaps(context, resIDs);
 	}
 	
-	public TimeBonus(Resources res) {
-		super(res);
-		loadImages(res);
+	public TimeBonus(Context context) {
+		super(context);
+		loadImages(context, new int[] { R.drawable.single_time_bonus_1, R.drawable.single_time_bonus_2 });
 		setKind(TIMEBONUS);
 		setZOrder(ZOrders.TIMEBONUS);
 		setWidth(sImages.get(IMAGE_UNBOUND_START).getWidth());

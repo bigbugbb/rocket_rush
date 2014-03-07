@@ -1,6 +1,6 @@
 package com.bigbug.rocketrush.elements;
 
-import android.content.res.Resources;
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -21,8 +21,8 @@ public class Curtain extends Utility {
 	protected int mOpenDuration  = 0;
 	protected OnCurtainEventListener mListener = null;
 	
-	public Curtain(Resources res) {
-		super(res);
+	public Curtain(Context context) {
+		super(context);
 		setKind(CURTAIN);
 		setMovable(false);
 		setCollidable(false);
@@ -100,7 +100,6 @@ public class Curtain extends Utility {
 		c.drawRect(0, 0, mWidth, mBottom, mPaint);
 		c.drawRect(0, mUpper, mWidth, mHeight, mPaint);
 		if (mDelayDuration > 0) {
-			float textWidth = mPaintText.measureText("Next Loop");			
 			c.drawText("Next Loop", mWidth / 2, mHeight / 2, mPaintText);
 		}
 	}

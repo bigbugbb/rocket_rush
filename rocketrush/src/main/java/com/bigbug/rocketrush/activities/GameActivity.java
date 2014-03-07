@@ -8,6 +8,7 @@ import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
 import com.bigbug.rocketrush.Application;
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.pages.GamePage;
 import com.bigbug.rocketrush.views.GraphView;
@@ -16,13 +17,24 @@ import java.util.concurrent.Callable;
 
 public class GameActivity extends FragmentActivity {
 
-    // the view for drawing anything
+    /**
+     * The surface view on which to draw the game elements
+     */
     private GraphView mGraphView;
 
+    /**
+     * The page object interacts with the game scene
+     */
     private GamePage mGamePage;
 
+    /**
+     * Handler for data updating
+     */
     private Handler mUpdater;
 
+    /**
+     * Handler for drawing the graph
+     */
     private Handler mDrawer;
 
     @Override
@@ -30,15 +42,18 @@ public class GameActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        // get views and set listeners
-        setupViews();
-        // adjust layouts according to the screen resolution
-        adjustLayout();
+        mGamePage = new GamePage(this);
 
         mDrawer  = Application.getDrawerHandler();
         mUpdater = Application.getUpdateHandler();
 
-        mGamePage = new GamePage(this);
+        mGraphView = (GraphView) findViewById(R.id.view_graph);
+        mGraphView.setPage(mGamePage);
+
+        getWindow().setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
     }
 
     @Override
@@ -77,9 +92,7 @@ public class GameActivity extends FragmentActivity {
                     c = holder.lockCanvas(null);
                     synchronized (holder) {
                         if (c != null) {
-                            synchronized (mGamePage) {
-                                mGamePage.onDraw(c);
-                            }
+                            mGamePage.onDraw(c);
                         }
                     }
                 } finally {
@@ -90,7 +103,7 @@ public class GameActivity extends FragmentActivity {
 
                 synchronized (mLock) {
                     try {
-                        mLock.wait(20);
+                        mLock.wait(Globals.GRAPH_DRAW_INTERVAL);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -108,13 +121,11 @@ public class GameActivity extends FragmentActivity {
 
             public Integer call() {
 
-                synchronized (mGamePage) {
-                    mGamePage.onUpdate();
-                }
+                mGamePage.onUpdate();
 
                 synchronized (mLock) {
                     try {
-                        mLock.wait(20);
+                        mLock.wait(Globals.DATA_UPDATE_INTERVAL);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -131,22 +142,9 @@ public class GameActivity extends FragmentActivity {
 
         // Stop drawing background
         mDrawer.sendMessage(mDrawer.obtainMessage(Application.MESSAGE_STOP_DRAWING));
+
         // Stop updating data
         mUpdater.sendMessage(mUpdater.obtainMessage(Application.MESSAGE_STOP_UPDATING));
     }
 
-    private void setupViews() {
-        mGraphView = (GraphView) findViewById(R.id.view_graph);
-    }
-
-    private void adjustLayout() {
-        getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-        );
-        getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
-        );
-    }
 }
