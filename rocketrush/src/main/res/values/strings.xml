@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RocketRush</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="title_activity_menu">MenuActivity</string>
+    <string name="title_activity_setting">SettingActivity</string>
+    <string name="title_activity_about">AboutActivity</string>
+
+    <string name="rocket_rush_app">RocketRush</string>
+    <string name="sound_title">Sound</string>
+    <string name="sound_summary">Enable sound effects</string>
+    <string name="vibrate_title">Vibrate</string>
+    <string name="vibrate_summary">Enable vibration</string>
+    <string name="about_title">About</string>
+    <string name="about_design">Designer</string>
+    <string name="about_develop">Developer</string>
+    <string name="about_designer">Wang Wenjing</string>
+    <string name="about_developer">Bo Bin</string>
+    <string name="about_img_rkt_credit">Image of The Rocket</string>
+    <string name="about_img_rkt_credit_owner">Nathanial Wilson</string>
+    <string name="about_img_credit">Other Image Resouces</string>
+    <string name="about_img_credit_owner">IconFinder</string>
+    <string name="about_description_title">Description</string>
+    <string name="about_description">Rocket Rush is a game to encourage you to take exercises and get sweating in one minute!
+In this game, all you need to do is to keep squatting down and standing up to make your rocket rush higher in the sky.  You may also get into some small troubles with our cute enemies. In short, with Rocket Rush, you will definitely enjoy  the time of exercising and sweating, and in the end get a better body.</string>
+    <string name="about_start">Start RocketRush</string>
+
+</resources>

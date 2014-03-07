@@ -1,0 +1,65 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    tools:context="com.bigbug.rocketrush.activities.HomeActivity">
+
+    <com.bigbug.rocketrush.views.GraphView
+        android:id="@+id/view_graph"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical" >
+
+        <ImageButton
+            android:id="@+id/btn_start_game"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingTop="60dp"
+            android:background="#00000000" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal" >
+
+            <ImageButton
+                android:id="@+id/btn_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:background="#00000000" />
+
+            <ImageButton
+                android:id="@+id/btn_help"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:background="#00000000" />
+
+            <ImageButton
+                android:id="@+id/btn_rank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:background="#00000000" />
+
+            <ImageButton
+                android:id="@+id/btn_about"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00000000" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

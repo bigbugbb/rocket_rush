@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/tutorial_layout_root"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent"
+             android:orientation="vertical" >
+
+    <!-- Include Tab Indicator  -->
+    <!-- <include
+        layout="@layout/indicator"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"  /> -->
+
+    <android.support.v4.view.ViewPager
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/view_pager" />
+
+    <com.bigbug.rocketrush.views.TutorialProgress
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#00000000"
+        android:id="@+id/view_progress" />
+
+    <ImageButton
+        android:id="@+id/btn_end_tutorial"
+        android:background="#00000000"
+        android:contentDescription="back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+
+</FrameLayout>

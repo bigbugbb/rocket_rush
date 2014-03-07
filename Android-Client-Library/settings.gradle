@@ -1,0 +1,2 @@
+include ':android-client-library-amp'
+include ':android-client-library'

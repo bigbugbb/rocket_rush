@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rocketrankRoot"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="#00000000"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Rank"
+        android:gravity="center"
+        android:textColor="@color/red"
+        android:typeface="serif"
+        android:paddingBottom="6dp"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/rankNoRecordTextView"
+        android:text="You don't have any rush history."
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="#666"
+        android:textSize="16sp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:visibility="gone"
+        android:textStyle="bold" />
+
+    <ScrollView
+        android:id="@+id/rocketrankScrollView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#fff"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp">
+
+        <TableLayout
+            android:id="@+id/tableLayoutRocketRank"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#fff"
+            android:stretchColumns="*" >
+
+        </TableLayout>
+
+    </ScrollView>
+
+</LinearLayout>
