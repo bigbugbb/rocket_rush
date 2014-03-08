@@ -1,17 +1,5 @@
 package com.localytics.android;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -31,6 +19,18 @@ import com.localytics.android.LocalyticsProvider.AmpDisplayedDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRuleEventDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Helper class to handle amp session-related work on the {@link LocalyticsAmpSession#sSessionHandlerThread}.

@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 
 import com.bigbug.rocketrush.basic.AppObject;
-import com.bigbug.rocketrush.elements.Barrier;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +16,12 @@ public class BaseScene extends AppObject implements AppObject.OnCollideListener 
     protected int mWidth;
     protected int mHeight;
 
-    protected List<Barrier>   mBarriers;
     protected List<AppObject> mObjects;
 
     protected GameEvent.OnGameEventListener mListener;
 
     public BaseScene(Context context) {
         super(context);
-        mBarriers = new ArrayList<Barrier>();
         mObjects  = new ArrayList<AppObject>();
     }
 
@@ -40,11 +37,7 @@ public class BaseScene extends AppObject implements AppObject.OnCollideListener 
         for (AppObject obj : mObjects) {
             obj.release();
         }
-        for (AppObject obj : mBarriers) {
-            obj.release();
-        }
         mObjects.clear();
-        mBarriers.clear();
     }
 
     public void onSizeChanged(int width, int height) {

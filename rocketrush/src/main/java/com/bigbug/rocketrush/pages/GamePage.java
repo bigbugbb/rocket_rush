@@ -22,7 +22,7 @@ import com.bigbug.rocketrush.game.GameEvent;
 import com.bigbug.rocketrush.game.GameScene;
 import com.bigbug.rocketrush.game.SceneEvent;
 import com.bigbug.rocketrush.game.StateEvent;
-import com.bigbug.rocketrush.media.BackgroundMusic;
+import com.bigbug.rocketrush.utils.MusicPlayer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +59,7 @@ public class GamePage extends AppPage implements SensorEventListener {
 
     private int mMusicIndex;
 
-    private BackgroundMusic mBackgroundMusic = BackgroundMusic.getInstance();
+    private MusicPlayer mMusicPlayer;
 
     /**
      * Sound effects
@@ -76,6 +76,7 @@ public class GamePage extends AppPage implements SensorEventListener {
 
         mListener = (OnGameStatusChangedListener) context;
         mMusicIndex = 1;
+        mMusicPlayer = new MusicPlayer(context);
 
         mScene = new GameScene(context);
         mScene.setOnGameEventListener(new GameEvent.OnGameEventListener() {
@@ -100,9 +101,10 @@ public class GamePage extends AppPage implements SensorEventListener {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                mBackgroundMusic.create(mContext, mMusicIDs[0]);
-                                mBackgroundMusic.setLooping(false);
-                                mBackgroundMusic.play();
+                                // Play game over music
+                                mMusicPlayer.create(mMusicIDs[0]);
+                                mMusicPlayer.setLooping(false);
+                                mMusicPlayer.play();
                             }
                         });
                     }
@@ -116,13 +118,16 @@ public class GamePage extends AppPage implements SensorEventListener {
 
                             @Override
                             public void run() {
+                                // Switch to next background music
                                 if (level == 1) {
                                     mMusicIndex = 1;
                                 } else if (level == 3 || level == 5) {
                                     ++mMusicIndex;
+                                } else {
+                                    return;
                                 }
-                                mBackgroundMusic.create(mContext, mMusicIDs[mMusicIndex]);
-                                mBackgroundMusic.play();
+                                mMusicPlayer.create(mMusicIDs[mMusicIndex]);
+                                mMusicPlayer.play();
                             }
 
                         });
@@ -155,7 +160,7 @@ public class GamePage extends AppPage implements SensorEventListener {
                                     break;
                                 }
 
-                                float volume = PreferenceManager.getDefaultSharedPreferences(mContext).getInt(SettingActivity.SFX_KEY, 40) / 100f;
+                                float volume = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext()).getInt(SettingActivity.KEY_SFX, 40) / 100f;
                                 mSoundPool.play(soundID, volume, volume, 10, 0, 1);
                             }
 
@@ -170,11 +175,12 @@ public class GamePage extends AppPage implements SensorEventListener {
     }
 
     @Override
-    public void start() {
+    public void create() {
+        super.create();
+
         mScene.load();
 
-        mBackgroundMusic.create(mContext, mMusicIDs[mMusicIndex]);
-        mBackgroundMusic.play();
+        mMusicPlayer.create(mMusicIDs[mMusicIndex]);
 
         if (mSoundPool == null) {
             mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
@@ -183,33 +189,49 @@ public class GamePage extends AppPage implements SensorEventListener {
                 mSoundIDs.add(Integer.valueOf(soundID));
             }
         }
-
-        super.start();
     }
 
     @Override
-    public void stop() {
+    public void destroy() {
+        super.destroy();
+
         mScene.release();
 
-        mBackgroundMusic.pause();
-        mBackgroundMusic.stop();
+        mMusicPlayer.destroy();
 
         if (mSoundPool != null) {
             mSoundPool.release();
             mSoundPool = null;
         }
+    }
 
-        super.stop();
+    @Override
+    public void resume() {
+        mMusicPlayer.play();
+    }
+
+    @Override
+    public void pause() {
+        mMusicPlayer.pause();
     }
 
     @Override
     public void reset() {
         mScene.reset();
         mMusicIndex = 1;
+        mMusicPlayer.create(mMusicIDs[mMusicIndex]);
     }
 
     @Override
     public void onUpdate() {
+
+        // Surface has not been created
+        if (mWidth == 0 || mHeight == 0) {
+            return;
+        }
+
+        final List<AppObject> objects = mScene.getGameObjects();
+
         // Retrieve the control event
         final CtrlEvent event = mEventQueue.poll();
 
@@ -232,9 +254,8 @@ public class GamePage extends AppPage implements SensorEventListener {
         mScene.updateBarriers();
 
         // Perform the operation on the game objects based on the game controls
-        List<AppObject> objects = mScene.getGameObjects();
-        for (AppObject obj : objects) {
-            for (AppCtrl ctrl : mGameCtrls) {
+        for (AppCtrl ctrl : mGameCtrls) {
+            for (AppObject obj : objects) {
                 obj.operate(ctrl);
             }
         }
@@ -243,7 +264,7 @@ public class GamePage extends AppPage implements SensorEventListener {
         // Update the scene
         mScene.onUpdate();
 
-        // Detect the object collision
+        // After update the objects' positions, detect collision between each object
         for (AppObject obj : objects) {
             obj.detectCollision(objects);
         }
@@ -256,6 +277,8 @@ public class GamePage extends AppPage implements SensorEventListener {
 
     @Override
     public void onSizeChanged(int width, int height) {
+        mWidth  = width;
+        mHeight = height;
         mScene.onSizeChanged(width, height);
     }
 
@@ -288,6 +311,10 @@ public class GamePage extends AppPage implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    public MusicPlayer getMusicPlayer() {
+        return mMusicPlayer;
+    }
 
     /**
      * OnGameStatusChangedListener

@@ -7,8 +7,8 @@ import android.graphics.Rect;
 
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppPage;
-import com.bigbug.rocketrush.media.BackgroundMusic;
 import com.bigbug.rocketrush.utils.BitmapHelper;
+import com.bigbug.rocketrush.utils.MusicPlayer;
 
 import java.util.List;
 
@@ -22,24 +22,27 @@ public class HomePage extends AppPage {
 
     private List<Bitmap> mBitmaps;
 
-    protected BackgroundMusic mBackgroundMusic = BackgroundMusic.getInstance();
+    private MusicPlayer mMusicPlayer;
 
     public HomePage(Context context) {
         super(context);
+        mMusicPlayer = new MusicPlayer(context);
     }
 
     @Override
-    public void start() {
+    public void create() {
+        super.create();
+
         mBitmaps = BitmapHelper.loadBitmaps(getContext(), new int[] { R.drawable.home_background, R.drawable.home_cloud });
 
-        mBackgroundMusic.create(mContext, R.raw.bkg_music_1);
-        mBackgroundMusic.play();
+        mMusicPlayer.create(R.raw.bkg_music_1);
     }
 
     @Override
-    public void stop() {
-        mBackgroundMusic.pause();
-        mBackgroundMusic.stop();
+    public void destroy() {
+        super.destroy();
+
+        mMusicPlayer.destroy();
 
         for (Bitmap bitmap : mBitmaps) {
             bitmap.recycle();
@@ -48,8 +51,18 @@ public class HomePage extends AppPage {
     }
 
     @Override
+    public void start() {
+        mMusicPlayer.play();
+    }
+
+    @Override
+    public void stop() {
+        mMusicPlayer.pause();
+    }
+
+    @Override
     public void reset() {
-        mBackgroundMusic.reset();
+        mMusicPlayer.reset();
     }
 
     @Override
@@ -81,5 +94,9 @@ public class HomePage extends AppPage {
         mY = 0;
 
         mRect = new Rect(0, 0, mWidth, mHeight);
+    }
+
+    public MusicPlayer getMusicPlayer() {
+        return mMusicPlayer;
     }
 }

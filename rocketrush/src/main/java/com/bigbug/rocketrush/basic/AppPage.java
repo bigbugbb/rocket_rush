@@ -45,30 +45,9 @@ public abstract class AppPage implements GestureDetector.OnGestureListener
         mLastSelObject = null;
     }
 
-    public void resume() {
-    }
+    public void create() {}
 
-    public void pause() {
-    }
-
-    public void start() {
-    }
-
-    public void stop() {
-    }
-
-    public void reset() {
-    }
-
-    public void restart() {
-        pause();
-        stop();
-        reset();
-        start();
-        resume();
-    }
-
-    public void release() {
+    public void destroy() {
         for (AppObject obj : mObjects) {
             try {
                 obj.release();
@@ -78,6 +57,26 @@ public abstract class AppPage implements GestureDetector.OnGestureListener
         }
         mObjects.clear();
         System.gc();
+    }
+
+    public void resume() {}
+
+    public void pause() {}
+
+    public void start() {}
+
+    public void stop() {}
+
+    public void reset() {}
+
+    public void restart() {
+        pause();
+        stop();
+        destroy();
+        create();
+        reset();
+        start();
+        resume();
     }
 
     public Context getContext() {
@@ -90,13 +89,6 @@ public abstract class AppPage implements GestureDetector.OnGestureListener
 
     public boolean isEnabled() {
         return mEnable;
-    }
-
-    public void onAppEvent(AppEvent e) {
-    }
-
-    protected void setHandler(Handler handler) {
-        mHandler = handler;
     }
 
     public void onSizeChanged(int width, int height) {

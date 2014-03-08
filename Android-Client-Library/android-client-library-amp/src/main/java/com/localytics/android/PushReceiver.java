@@ -1,8 +1,5 @@
 package com.localytics.android;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,6 +12,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
 
 import com.localytics.android.LocalyticsProvider.InfoDbColumns;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class PushReceiver extends BroadcastReceiver 
 {

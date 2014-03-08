@@ -1,14 +1,5 @@
 package com.localytics.android;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Handler;
@@ -19,6 +10,15 @@ import android.webkit.JavascriptInterface;
 
 import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 import com.localytics.android.LocalyticsProvider.IdentifiersDbColumns;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * This class implements the JavaScriptAPI interface.

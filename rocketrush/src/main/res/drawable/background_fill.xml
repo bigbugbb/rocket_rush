@@ -5,7 +5,7 @@
         android:endColor="#FF555555"
         android:angle="90" />
 
-    <corners android:radius="5px" />
+    <corners android:radius="8px" />
 
     <stroke
         android:width="2dp"

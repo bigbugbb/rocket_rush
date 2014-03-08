@@ -1,16 +1,16 @@
 package com.localytics.android;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Environment;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LocalyticsAmpSession extends LocalyticsSession 
 {    

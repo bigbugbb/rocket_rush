@@ -20,9 +20,6 @@ import java.util.List;
 
 public class GameOverDialog extends FragmentActivity {
 
-    public final static int RETRY = RESULT_FIRST_USER + 0;
-    public final static int BACK  = RESULT_FIRST_USER + 1;
-
     private HashMap<String, Object> mResults;
 
     private TextView mTextView = null;
@@ -47,7 +44,7 @@ public class GameOverDialog extends FragmentActivity {
         btnRetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setResult(RETRY);
+                setResult(Globals.RESTART_GAME);
                 finish();
             }
         });
@@ -60,7 +57,7 @@ public class GameOverDialog extends FragmentActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setResult(BACK);
+                setResult(Globals.STOP_GAME);
                 finish();
             }
         });
@@ -98,8 +95,6 @@ public class GameOverDialog extends FragmentActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
-            setResult(BACK);
-            finish();
             return true;
         }
         return super.onKeyDown(keyCode, event);

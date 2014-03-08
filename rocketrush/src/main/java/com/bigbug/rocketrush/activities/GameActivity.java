@@ -10,8 +10,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.view.WindowManager;
 
 import com.bigbug.rocketrush.Application;
@@ -28,6 +30,8 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 public class GameActivity extends FragmentActivity implements GamePage.OnGameStatusChangedListener {
+
+    private final static String TAG = "GameActivity";
 
     /**
      * The surface view on which to draw the game elements
@@ -56,6 +60,7 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
         setContentView(R.layout.activity_game);
 
         mGamePage = new GamePage(this);
+        mGamePage.create();
 
         mDrawer  = Application.getDrawerHandler();
         mUpdater = Application.getUpdateHandler();
@@ -63,32 +68,42 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
         mGraphView = (GraphView) findViewById(R.id.view_graph);
         mGraphView.setPage(mGamePage);
 
-        getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+              View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mGamePage.destroy();
     }
 
     @Override
     public void onStart() {
+        Log.d(TAG, "onStart");
         super.onStart();
-        mGamePage.start();
     }
 
     @Override
     public void onStop() {
+        Log.d(TAG, "onStop");
         super.onStop();
-        mGamePage.stop();
     }
 
     @Override
     public void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
+
+        mGamePage.resume();
 
         // Register accelerometer sensor listener
         final SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -159,7 +174,10 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
 
     @Override
     public void onPause() {
+        Log.d(TAG, "onPause");
         super.onPause();
+
+        mGamePage.pause();
 
         // Stop drawing background
         mDrawer.sendMessage(mDrawer.obtainMessage(Application.MESSAGE_STOP_DRAWING));
@@ -172,14 +190,18 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
         sensorManager.unregisterListener(mGamePage);
     }
 
-    private final static int GAMEOVER_DIALOG_REQUEST = 1;
+    /**
+     * Dialog request, used by onActivityResult
+     */
+    private final static int GAMEMENU_DIALOG_REQUEST = 1;
+    private final static int GAMEOVER_DIALOG_REQUEST = 2;
 
     @Override
     public void onGameOver(final HashMap<String, Object> results) {
 
-        Intent i = new Intent(GameActivity.this, GameOverDialog.class);
-        i.putExtra(Globals.KEY_GAME_RESULTS, results);
-        startActivityForResult(i, GAMEOVER_DIALOG_REQUEST);
+        Intent intent = new Intent(GameActivity.this, GameOverDialog.class);
+        intent.putExtra(Globals.KEY_GAME_RESULTS, results);
+        startActivityForResult(intent, GAMEOVER_DIALOG_REQUEST);
 
         int distance = (Integer) results.get(Globals.KEY_DISTANCE);
         recordGameResult(distance, DateFormat.getDateInstance().format(new Date()));
@@ -189,12 +211,8 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
-            new GameMenuDialog(new Runnable() {
-                @Override
-                public void run() {
-                    mGamePage.restart();
-                }
-            }).show(getSupportFragmentManager(), "GameMenuDialog");
+            Intent intent = new Intent(this, GameMenuDialog.class);
+            startActivityForResult(intent, GAMEMENU_DIALOG_REQUEST);
             return true;
         }
 
@@ -203,12 +221,27 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == GAMEOVER_DIALOG_REQUEST) {
-            if (resultCode == GameOverDialog.RETRY) {
+        Log.d(TAG, "onActivityResult");
+
+        switch (requestCode) {
+        case GAMEMENU_DIALOG_REQUEST:
+            if (resultCode == Globals.RESTART_GAME) {
+                Log.d(TAG, "mGamePage.restart()");
                 mGamePage.restart();
-            } else if (resultCode == GameOverDialog.BACK) {
+            } else if (resultCode == Globals.STOP_GAME) {
                 finish();
+                overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
             }
+            break;
+        case GAMEOVER_DIALOG_REQUEST:
+            if (resultCode == Globals.RESTART_GAME) {
+                Log.d(TAG, "mGamePage.restart()");
+                mGamePage.restart();
+            } else if (resultCode == Globals.STOP_GAME) {
+                finish();
+                overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
+            }
+            break;
         }
     }
 

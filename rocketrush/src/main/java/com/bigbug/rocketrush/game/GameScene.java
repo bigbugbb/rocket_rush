@@ -70,6 +70,11 @@ public class GameScene extends BaseScene {
      */
     private Random mRandom;
 
+    /**
+     * The list of objects that can be removed because they are invisible.
+     */
+    private List<AppObject> mRemovables;
+
     public GameScene(Context context) {
         super(context);
 
@@ -77,6 +82,8 @@ public class GameScene extends BaseScene {
         mCurLevel = 1;
 
         mRandom = new Random();
+
+        mRemovables = new ArrayList<AppObject>(10);
     }
 
     @Override
@@ -213,26 +220,21 @@ public class GameScene extends BaseScene {
     @Override
     public void updateBarriers() {
 
-        // Surface has not been created
-        if (mWidth == 0 || mHeight == 0) {
-            return;
-        }
-
         // Remove invisible barriers
-        List<AppObject> invisibles = null;
-        for (AppObject b : mBarriers) {
-            float x = b.getX(), y = b.getY();
-            if (x < -(mWidth >> 2) || x > (mWidth + (mWidth >> 2)) || y > mHeight) {
-                if (invisibles == null) {
-                    invisibles = new ArrayList<AppObject>();
+        for (AppObject obj : mObjects) {
+            if (obj instanceof Barrier) {
+                float x = obj.getX();
+                float y = obj.getY();
+                // If it's invisible, add it to the remove list.
+                if (x < -(mWidth >> 2) || x > (mWidth + (mWidth >> 2)) || y > mHeight) {
+                    mRemovables.add(obj);
+                    obj.release();
                 }
-                invisibles.add(b);
-                b.release();
             }
         }
-        if (invisibles != null) {
-            mBarriers.removeAll(invisibles);
-            mObjects.removeAll(invisibles);
+        if (mRemovables.size() > 0) {
+            mObjects.removeAll(mRemovables);
+            mRemovables.clear();
         }
 
         // Create barriers based on the current game progress
@@ -280,13 +282,12 @@ public class GameScene extends BaseScene {
             bird.setX(right ? -bird.getWidth() : mWidth);
             bird.setY(mRandom.nextInt(mHeight - (mHeight >> 1) - (accTime > 0 ? (mHeight >> 2) : 0)));
             bird.initSpeeds(
-                ((right ? mRandom.nextInt(3) + 5 : -5 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX) * mDip,
-                3f * mDip,
-                accTime
+                    ((right ? mRandom.nextInt(3) + 5 : -5 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX) * mDip,
+                    3f * mDip,
+                    accTime
             );
             bird.onSizeChanged(mWidth, mHeight);
             bird.setOnCollideListener(this);
-            mBarriers.add(bird);
             mObjects.add(bird);
 
             // Order by Z
@@ -306,7 +307,6 @@ public class GameScene extends BaseScene {
             asteroid.initSpeeds(0, (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip, accTime);
             asteroid.onSizeChanged(mWidth, mHeight);
             asteroid.setOnCollideListener(this);
-            mBarriers.add(asteroid);
             mObjects.add(asteroid);
             // order by Z
             orderByZ(mObjects);
@@ -316,13 +316,12 @@ public class GameScene extends BaseScene {
             asteroid.setX(right ? -asteroid.getWidth() : mWidth);
             asteroid.setY(mRandom.nextInt(mHeight >> 3) - (accTime > 0 ? (mHeight >> 3) : 0));
             asteroid.initSpeeds(
-                (right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX * mDip,
-                (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip,
-                accTime
+                    (right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX * mDip,
+                    (mRandom.nextInt(3) + 2) * mLevel.mSpeedScaleY * mDip,
+                    accTime
             );
             asteroid.onSizeChanged(mWidth, mHeight);
             asteroid.setOnCollideListener(this);
-            mBarriers.add(asteroid);
             mObjects.add(asteroid);
             // order by Z
             orderByZ(mObjects);
@@ -337,34 +336,6 @@ public class GameScene extends BaseScene {
         // Generate alient
         int type = mRandom.nextInt(probability);
 
-//		if (type == 1) {
-//			Alient ali = new Alient(mRes);
-//			ali.setX(mRandom.nextInt((int)(mWidth - ali.getWidth() + 1)));
-//			ali.setY(0 - ali.getHeight());
-//			ali.initSpeeds(0, (mRandom.nextInt(4) + 3) * mLevel.mSpeedScaleY, accTime);
-//			ali.onSizeChanged(mWidth, mHeight);
-//			ali.setOnCollideListener(this);
-//			mBarriers.add(ali);
-//			mObjects.add(ali);
-//			// order by Z
-//			orderByZ(mObjects);
-//		} else if (type == 2) {
-//			Alient ali = new Alient(mRes);
-//			boolean right = mRandom.nextBoolean();
-//			ali.setX(right ? -ali.getWidth() : mWidth + ali.getWidth());
-//			ali.setY(mRandom.nextInt(mHeight >> 3));
-//			ali.initSpeeds(
-//				(right ? mRandom.nextInt(3) + 3 : -3 - mRandom.nextInt(3)) * mLevel.mSpeedScaleX,
-//				(mRandom.nextInt(4) + 3) * mLevel.mSpeedScaleY,
-//				accTime
-//			);
-//			ali.onSizeChanged(mWidth, mHeight);
-//			ali.setOnCollideListener(this);
-//			mBarriers.add(ali);
-//			mObjects.add(ali);
-//			// order by Z
-//			orderByZ(mObjects);
-//		}
         if (type == 3) {
 
             int aliType = mRandom.nextInt(2);
@@ -388,7 +359,6 @@ public class GameScene extends BaseScene {
             }
             alient.onSizeChanged(mWidth, mHeight);
             alient.setOnCollideListener(this);
-            mBarriers.add(alient);
             mObjects.add(alient);
 
             // Order by Z
@@ -408,7 +378,6 @@ public class GameScene extends BaseScene {
             thunder.initSpeeds(0, 3f * mDip, 0);
             thunder.onSizeChanged(mWidth, mHeight);
             thunder.setOnCollideListener(this);
-            mBarriers.add(thunder);
             mObjects.add(thunder);
 
             // Order by Z
@@ -425,16 +394,29 @@ public class GameScene extends BaseScene {
     public void updateReward() {
 
         if (mRandom.nextInt(mProbReward) == 0) {
-            Field field = new Field(mContext);
+            /**
+             * If there is no field, generate a field.
+             */
+            boolean hasField = false;
+            for (AppObject obj : mObjects) {
+                if (obj instanceof Field) {
+                    hasField = true;
+                    break;
+                }
+            }
 
-            field.setX(mRandom.nextInt((int) (mWidth - field.getWidth())));
-            field.setY(-field.getHeight());
-            field.onSizeChanged(mWidth, mHeight);
-            field.setOnCollideListener(this);
-            mObjects.add(field);
+            if (!hasField) {
+                Field field = new Field(mContext);
 
-            // Order by Z
-            orderByZ(mObjects);
+                field.setX(mRandom.nextInt((int) (mWidth - field.getWidth())));
+                field.setY(-field.getHeight());
+                field.onSizeChanged(mWidth, mHeight);
+                field.setOnCollideListener(this);
+                mObjects.add(field);
+
+                // Order by Z
+                orderByZ(mObjects);
+            }
         }
 
         if (mGenerateTimeBonus) {

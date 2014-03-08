@@ -7,10 +7,10 @@
 
     <style name="GameDialogTheme" parent="@android:style/Theme.Dialog">
         <item name="android:windowNoTitle">true</item>
-        <item name="android:background">#00000000</item>
         <item name="android:windowBackground">@drawable/rounded_dialog</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowEnterAnimation">@anim/enter_from_right</item>
+        <item name="android:windowExitAnimation">@anim/exit_on_left</item>
     </style>
 
 </resources>

@@ -5,21 +5,26 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
-import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
 import com.bigbug.rocketrush.R;
-import com.bigbug.rocketrush.media.BackgroundMusic;
 
 public class SettingActivity extends FragmentActivity implements SeekBar.OnSeekBarChangeListener {
 
-    public final static String SND_KEY = "sound volume";
-    public final static String SFX_KEY = "sfx volume";
+    public final static String KEY_SND = "KEY_SND";
+    public final static String KEY_SFX = "KEY_SFX";
 
-    protected SeekBar mSndSeek;
-    protected SeekBar mSfxSeek;
+    private SeekBar mSndSeek;
+    private SeekBar mSfxSeek;
+
+    private static Runnable sCallback;
+
+    static public void setCallback(final Runnable callback) {
+        sCallback = callback;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +33,7 @@ public class SettingActivity extends FragmentActivity implements SeekBar.OnSeekB
 
         setupViews();
         adjustLayout();
+
     }
 
     private void setupViews() {
@@ -35,39 +41,48 @@ public class SettingActivity extends FragmentActivity implements SeekBar.OnSeekB
 
         mSndSeek = (SeekBar) findViewById(R.id.volume_seek);
         mSndSeek.setOnSeekBarChangeListener(this);
-        mSndSeek.setProgress(PreferenceManager.getDefaultSharedPreferences(context).getInt(SND_KEY, 40));
+        mSndSeek.setProgress(PreferenceManager.getDefaultSharedPreferences(context).getInt(KEY_SND, 40));
 
         mSfxSeek = (SeekBar) findViewById(R.id.sfx_seek);
         mSfxSeek.setOnSeekBarChangeListener(this);
-        mSfxSeek.setProgress(PreferenceManager.getDefaultSharedPreferences(context).getInt(SFX_KEY, 40));
+        mSfxSeek.setProgress(PreferenceManager.getDefaultSharedPreferences(context).getInt(KEY_SFX, 40));
     }
 
     private void adjustLayout() {
-        DisplayMetrics dm = new DisplayMetrics();
         Display display = getWindowManager().getDefaultDisplay();
-        display.getMetrics(dm);
 
         ViewGroup.LayoutParams laParams = null;
         laParams = mSndSeek.getLayoutParams();
-        laParams.width = (int) (dm.widthPixels * 0.5f);
+        laParams.width = (int) (display.getWidth() * 0.5f);
         mSndSeek.setLayoutParams(laParams);
         laParams = mSfxSeek.getLayoutParams();
-        laParams.width = (int) (dm.widthPixels * 0.5f);
+        laParams.width = (int) (display.getWidth() * 0.5f);
         mSfxSeek.setLayoutParams(laParams);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+              View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
     }
 
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
 
         if (seekBar == mSndSeek) {
-            editor.putInt(SND_KEY, progress);
-            float volume = progress / 100f;
-            BackgroundMusic.getInstance().setVolume(volume, volume);
+            editor.putInt(KEY_SND, progress);
         } else if (seekBar == mSfxSeek) {
-            editor.putInt(SFX_KEY, progress);
+            editor.putInt(KEY_SFX, progress);
         }
 
         editor.commit();
+
+        if (sCallback != null) {
+            sCallback.run();
+        }
     }
 
     public void onStartTrackingTouch(SeekBar seekBar) {}

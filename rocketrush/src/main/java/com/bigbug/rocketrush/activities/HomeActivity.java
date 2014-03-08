@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
@@ -67,7 +68,18 @@ public class HomeActivity extends FragmentActivity {
         mUpdater = Application.getUpdateHandler();
 
         mHomePage = new HomePage(this);
+        mHomePage.create();
+
         mGraphView.setPage(mHomePage);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+              View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
     }
 
     @Override
@@ -78,6 +90,8 @@ public class HomeActivity extends FragmentActivity {
             bitmap.recycle();
         }
         mBitmaps = null;
+
+        mHomePage.destroy();
     }
 
     @Override
@@ -188,7 +202,7 @@ public class HomeActivity extends FragmentActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        startActivity(new Intent(this, AmpSetupActivity.class));
+        //startActivity(new Intent(this, AmpSetupActivity.class));
         return super.onTouchEvent(event);
     }
 
@@ -206,6 +220,7 @@ public class HomeActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(HomeActivity.this, GameActivity.class));
+                overridePendingTransition(R.anim.enter_from_right, R.anim.exit_on_left);
             }
         });
 
@@ -218,6 +233,14 @@ public class HomeActivity extends FragmentActivity {
         btnSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SettingActivity.setCallback(new Runnable() {
+                    @Override
+                    public void run() {
+                        Context context = HomeActivity.this.getApplicationContext();
+                        float volume = PreferenceManager.getDefaultSharedPreferences(context).getInt(SettingActivity.KEY_SND, 40) / 100f;
+                        mHomePage.getMusicPlayer().setVolume(volume, volume);
+                    }
+                });
                 startActivity(new Intent(HomeActivity.this, SettingActivity.class));
             }
         });
@@ -232,6 +255,7 @@ public class HomeActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(HomeActivity.this, TutorialActivity.class));
+                overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
             }
         });
 
@@ -262,17 +286,13 @@ public class HomeActivity extends FragmentActivity {
                 startActivity(new Intent(HomeActivity.this, AboutActivity.class));
             }
         });
+
+        // Set the version text
+        ((TextView) findViewById(R.id.text_version)).setText(R.string.app_ver_name);
     }
 
     private void adjustLayout() {
-        getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-        );
-        getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
-        );
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     protected GameResults getGameResults() {

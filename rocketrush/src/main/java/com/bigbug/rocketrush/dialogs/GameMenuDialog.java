@@ -1,42 +1,86 @@
 package com.bigbug.rocketrush.dialogs;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 
-public class GameMenuDialog extends DialogFragment {
+public class GameMenuDialog extends FragmentActivity {
 
-    private Runnable mCallback;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.dialog_gamemenu);
 
-    public GameMenuDialog(final Runnable callback) {
-        mCallback = callback;
+        StateListDrawable states = new StateListDrawable();
+        states.addState(new int[] { android.R.attr.state_pressed },  new ColorDrawable(Color.argb(255, 175, 215, 255)));
+        states.addState(new int[] {}, new ColorDrawable(Color.TRANSPARENT));
+
+        final ListView listView = (ListView) findViewById(android.R.id.list);
+        listView.setAdapter(new MenuOptionAdapter(this, new String[] { "Resume", "Restart", "Exit" }));
+        listView.setDivider(new ColorDrawable(Color.WHITE));
+        listView.setDividerHeight(1);
+        listView.setSelector(states);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 0) {
+                    finish();
+                } else if (position == 1) {
+                    setResult(Globals.RESTART_GAME);
+                    finish();
+                } else if (position == 2) {
+                    setResult(Globals.STOP_GAME);
+                    finish();
+                }
+            }
+
+        });
+
+        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
     }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
 
-        builder.setItems(R.array.game_dialog_items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
-                switch (which) {
-                case 0: // restart
-                    mCallback.run();
-                    getActivity().finish();
-                    break;
-                case 1: // back
-                    getActivity().finish();
-                    break;
-                }
-            }
-        });
+    class MenuOptionAdapter extends ArrayAdapter<String> {
 
-        return builder.create();
+        public MenuOptionAdapter(Context context, String[] values) {
+            super(context, R.layout.menu_item, values);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View item = inflater.inflate(R.layout.menu_item, parent, false);
+            TextView option = (TextView) item.findViewById(R.id.text_option);
+            option.setText(getItem(position));
+            return item;
+        }
     }
 }
