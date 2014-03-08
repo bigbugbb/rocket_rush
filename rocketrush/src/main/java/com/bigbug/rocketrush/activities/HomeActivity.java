@@ -1,5 +1,6 @@
 package com.bigbug.rocketrush.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,9 +11,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 
 import com.bigbug.rocketrush.Application;
@@ -22,6 +26,7 @@ import com.bigbug.rocketrush.game.GameResult;
 import com.bigbug.rocketrush.game.GameResults;
 import com.bigbug.rocketrush.pages.HomePage;
 import com.bigbug.rocketrush.utils.BitmapHelper;
+import com.bigbug.rocketrush.utils.PasswordChecker;
 import com.bigbug.rocketrush.views.GraphView;
 
 import java.util.Collections;
@@ -38,6 +43,8 @@ public class HomeActivity extends FragmentActivity {
     private Handler mUpdater;
 
     private Handler mDrawer;
+
+    private PasswordChecker mPwdSetup = new PasswordChecker("setup");
 
     /**
      * The bitmaps for the image button.
@@ -160,6 +167,29 @@ public class HomeActivity extends FragmentActivity {
         mDrawer.sendMessage(mDrawer.obtainMessage(Application.MESSAGE_STOP_DRAWING));
         // Stop updating data
         mUpdater.sendMessage(mUpdater.obtainMessage(Application.MESSAGE_STOP_UPDATING));
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            imm.toggleSoftInput(0, 0);
+        }
+
+        if (mPwdSetup.isMatch(keyCode)) {
+            imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+            startActivity(new Intent(this, AmpSetupActivity.class));
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        startActivity(new Intent(this, AmpSetupActivity.class));
+        return super.onTouchEvent(event);
     }
 
     private void setupViews() {
