@@ -4,16 +4,19 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.utils.BitmapHelper;
+import com.bigbug.rocketrush.utils.MusicPlayer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +28,8 @@ public class GameOverDialog extends FragmentActivity {
     private TextView mTextView = null;
 
     private List<Bitmap> mBitmaps;
+
+    private MusicPlayer mMusicPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +73,30 @@ public class GameOverDialog extends FragmentActivity {
         mTextView.setText(String.valueOf(mResults.get(Globals.KEY_DISTANCE)));
 
         getWindow().setBackgroundDrawable(new BitmapDrawable(getResources(), mBitmaps.get(4)));
-//        getWindow().setBackgroundDrawable(new ColorDrawable(0)); // Set transparent background
+        if (Build.VERSION.SDK_INT >= 11) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        } else {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
+        mMusicPlayer = new MusicPlayer(this);
+        mMusicPlayer.create(R.raw.game_over);
+        mMusicPlayer.setLooping(false);
+        mMusicPlayer.play();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        mMusicPlayer.destroy();
 
         for (Bitmap bitmap : mBitmaps) {
             bitmap.recycle();

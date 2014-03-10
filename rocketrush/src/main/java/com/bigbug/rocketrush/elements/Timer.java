@@ -11,13 +11,13 @@ import com.bigbug.rocketrush.basic.AppScale;
 
 public class Timer extends Utility {
 
-	protected Paint mPaint = null;
+	protected Paint mPaint;
 	protected int mTime = Globals.GAME_TIME;
 	protected int mOneSecond = 1000;
 	protected String mTextTime = "Time " + mTime;
-	protected int mCanvasWidth  = 0;
-	protected int mCanvasHeight = 0;
-	protected OnTimeUpdateListener mTimeUpdateListener = null;
+	protected int mCanvasWidth;
+	protected int mCanvasHeight;
+	protected OnTimeUpdateListener mTimeUpdateListener;
 	
 	public Timer(Context context) {
 		super(context);

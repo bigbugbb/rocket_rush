@@ -17,6 +17,7 @@ import com.bigbug.rocketrush.elements.Field;
 import com.bigbug.rocketrush.elements.Level;
 import com.bigbug.rocketrush.elements.LifeBar;
 import com.bigbug.rocketrush.elements.Odometer;
+import com.bigbug.rocketrush.elements.Reward;
 import com.bigbug.rocketrush.elements.Rocket;
 import com.bigbug.rocketrush.elements.SpeedBar;
 import com.bigbug.rocketrush.elements.Thunder;
@@ -393,6 +394,16 @@ public class GameScene extends BaseScene {
 
     public void updateReward() {
 
+        for (AppObject obj : mObjects) {
+            if (obj instanceof Reward) {
+                if (((Reward) obj).isTimeout()) {
+                    mRemovables.add(obj);
+                }
+            }
+        }
+        mObjects.removeAll(mRemovables);
+        mRemovables.clear();
+
         if (mRandom.nextInt(mProbReward) == 0) {
             /**
              * If there is no field, generate a field.
@@ -517,7 +528,7 @@ public class GameScene extends BaseScene {
 
         @Override
         public void onLifeChanged(float life) {
-            if (life <= 0.001f) {
+            if (life <= 0f) {
                 GameEvent event = new StateEvent(StateEvent.STATE_OVER, StateEvent.NO_LIFE);
                 event.mExtra = Integer.valueOf(mOdometer.getDistance());
                 mListener.onGameEvent(event);

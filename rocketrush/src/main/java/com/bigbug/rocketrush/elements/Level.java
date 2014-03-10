@@ -18,7 +18,7 @@ public class Level extends Utility {
 	public float mComplexityScale = 1.1f;
 
 	protected final static int DEFAULT_MOVE_DURATION = 200;
-	protected final static int DEFAULT_STAY_DURATION = 2000;
+	protected final static int DEFAULT_STAY_DURATION = 1200;
 	protected int mDisplayDuration = DEFAULT_MOVE_DURATION * 2 + DEFAULT_STAY_DURATION;
 	
 	protected float mTextWidth = 0;

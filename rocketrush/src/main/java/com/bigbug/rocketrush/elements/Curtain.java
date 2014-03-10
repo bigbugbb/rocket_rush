@@ -8,6 +8,7 @@ import android.graphics.Paint.Style;
 import android.graphics.Typeface;
 
 import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.basic.AppScale;
 
 public class Curtain extends Utility {
 
@@ -37,7 +38,7 @@ public class Curtain extends Utility {
 		mPaintText.setStyle(Style.FILL);
 		mPaintText.setTypeface(Typeface.SERIF);
 		mPaintText.setFakeBoldText(true);
-		mPaintText.setTextSize(40);
+		mPaintText.setTextSize(AppScale.doScaleT(40));
 		mPaintText.setShadowLayer(4, 1, 1, Color.DKGRAY);
 		mPaintText.setTextAlign(Paint.Align.CENTER);
 	}

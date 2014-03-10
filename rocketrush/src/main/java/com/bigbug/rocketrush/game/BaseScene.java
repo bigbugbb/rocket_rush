@@ -22,7 +22,7 @@ public class BaseScene extends AppObject implements AppObject.OnCollideListener 
 
     public BaseScene(Context context) {
         super(context);
-        mObjects  = new ArrayList<AppObject>();
+        mObjects = new ArrayList<AppObject>();
     }
 
     public void setOnGameEventListener(GameEvent.OnGameEventListener listener) {

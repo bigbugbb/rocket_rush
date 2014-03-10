@@ -55,7 +55,7 @@ public class GamePage extends AppPage implements SensorEventListener {
     /**
      * Background music
      */
-    private int mMusicIDs[] = { R.raw.game_over, R.raw.bkg_music_2, R.raw.bkg_music_3, R.raw.bkg_music_4 };
+    private int mMusicIDs[] = { R.raw.bkg_music_2, R.raw.bkg_music_3, R.raw.bkg_music_4 };
 
     private int mMusicIndex;
 
@@ -75,7 +75,7 @@ public class GamePage extends AppPage implements SensorEventListener {
         super(context);
 
         mListener = (OnGameStatusChangedListener) context;
-        mMusicIndex = 1;
+        mMusicIndex = 0;
         mMusicPlayer = new MusicPlayer(context);
 
         mScene = new GameScene(context);
@@ -91,20 +91,16 @@ public class GamePage extends AppPage implements SensorEventListener {
 
                     if (stateEvent.mWhat == StateEvent.STATE_OVER) {
                         mScene.setInteractive(false);
-                        // Trigger callback method
-                        if (mListener != null) {
-                            final HashMap<String, Object> results = new HashMap<String, Object>();
-                            results.put(Globals.KEY_DISTANCE, stateEvent.mExtra);
-                            mListener.onGameOver(results);
-                        }
 
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                // Play game over music
-                                mMusicPlayer.create(mMusicIDs[0]);
-                                mMusicPlayer.setLooping(false);
-                                mMusicPlayer.play();
+                                // Trigger callback method
+                                if (mListener != null) {
+                                    final HashMap<String, Object> results = new HashMap<String, Object>();
+                                    results.put(Globals.KEY_DISTANCE, stateEvent.mExtra);
+                                    mListener.onGameOver(results);
+                                }
                             }
                         });
                     }
@@ -120,7 +116,7 @@ public class GamePage extends AppPage implements SensorEventListener {
                             public void run() {
                                 // Switch to next background music
                                 if (level == 1) {
-                                    mMusicIndex = 1;
+                                    mMusicIndex = 0;
                                 } else if (level == 3 || level == 5) {
                                     ++mMusicIndex;
                                 } else {
@@ -218,7 +214,7 @@ public class GamePage extends AppPage implements SensorEventListener {
     @Override
     public void reset() {
         mScene.reset();
-        mMusicIndex = 1;
+        mMusicIndex = 0;
         mMusicPlayer.create(mMusicIDs[mMusicIndex]);
     }
 

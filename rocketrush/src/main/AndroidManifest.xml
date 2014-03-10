@@ -81,8 +81,8 @@
             android:theme="@style/GameDialogTheme" >
         </activity>
         <activity
-            android:name=".activities.AmpSetupActivity"
-            android:label="@string/title_activity_amp_setup" >
+            android:name=".sdktest.EventSetupActivity"
+            android:label="@string/title_activity_event_setup" >
         </activity>
     </application>
 

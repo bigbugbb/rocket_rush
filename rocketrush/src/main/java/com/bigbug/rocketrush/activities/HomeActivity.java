@@ -7,18 +7,17 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
@@ -26,6 +25,7 @@ import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.game.GameResult;
 import com.bigbug.rocketrush.game.GameResults;
 import com.bigbug.rocketrush.pages.HomePage;
+import com.bigbug.rocketrush.sdktest.EventSetupActivity;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 import com.bigbug.rocketrush.utils.PasswordChecker;
 import com.bigbug.rocketrush.views.GraphView;
@@ -72,14 +72,18 @@ public class HomeActivity extends FragmentActivity {
 
         mGraphView.setPage(mHomePage);
 
-        getWindow().getDecorView().setSystemUiVisibility(
-              View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        );
+        if (Build.VERSION.SDK_INT >= 11) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        } else {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
     }
 
     @Override
@@ -171,6 +175,14 @@ public class HomeActivity extends FragmentActivity {
                 return Application.RESULT_SUCCESS;
             }
         }));
+
+        findViewById(R.id.text_version).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                startActivity(new Intent(HomeActivity.this, EventSetupActivity.class));
+                return false;
+            }
+        });
     }
 
     @Override
@@ -194,16 +206,10 @@ public class HomeActivity extends FragmentActivity {
 
         if (mPwdSetup.isMatch(keyCode)) {
             imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
-            startActivity(new Intent(this, AmpSetupActivity.class));
+            startActivity(new Intent(this, EventSetupActivity.class));
         }
 
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        //startActivity(new Intent(this, AmpSetupActivity.class));
-        return super.onTouchEvent(event);
     }
 
     private void setupViews() {
@@ -286,9 +292,6 @@ public class HomeActivity extends FragmentActivity {
                 startActivity(new Intent(HomeActivity.this, AboutActivity.class));
             }
         });
-
-        // Set the version text
-        ((TextView) findViewById(R.id.text_version)).setText(R.string.app_ver_name);
     }
 
     private void adjustLayout() {
