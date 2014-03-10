@@ -5,9 +5,10 @@
     <color name="dark_blue">#6D7B92</color>
     <color name="gray">#CCCCCC</color>
     <color name="dark_gray">#666</color>
+    <color name="deep_gray">#888</color>
     <color name="black">#000</color>
     <color name="blue">#b5ddff</color>
     <color name="red">#ff0000</color>
     <color name="dark">#666</color>
-    <color name="grey">#333</color>
+    <color name="title_color">#222222</color>
 </resources>

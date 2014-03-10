@@ -57,6 +57,10 @@ public class RankActivity extends FragmentActivity {
         laParams.height = (int) (dm.heightPixels * 0.7f);
         scrollView.setLayoutParams(laParams);
         getWindow().setLayout((int)(dm.widthPixels * 0.9f), (int)(dm.heightPixels * 0.9f));
+    }
+
+    @Override
+    protected void onResume() {
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -70,10 +74,7 @@ public class RankActivity extends FragmentActivity {
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-    }
 
-    @Override
-    protected void onResume() {
         if (mResults == null || mResults.size() == 0) {
             mTextRecord.setVisibility(View.VISIBLE);
         } else {
@@ -84,7 +85,7 @@ public class RankActivity extends FragmentActivity {
 
                 TextView textViewRank = new TextView(getApplicationContext());
                 textViewRank.setTextSize(16);
-                textViewRank.setTextColor(getApplicationContext().getResources().getColor(R.color.grey));
+                textViewRank.setTextColor(getApplicationContext().getResources().getColor(R.color.gray));
                 textViewRank.setPadding(10, 10, 10, 10);
                 textViewRank.setWidth(10);
                 textViewRank.setText(String.valueOf(i + 1));
@@ -93,7 +94,7 @@ public class RankActivity extends FragmentActivity {
 
                 TextView textViewScore = new TextView(getApplicationContext());
                 textViewScore.setTextSize(16);
-                textViewScore.setTextColor(getApplicationContext().getResources().getColor(R.color.grey));
+                textViewScore.setTextColor(getApplicationContext().getResources().getColor(R.color.gray));
                 textViewScore.setPadding(10, 10, 10, 10);
                 textViewScore.setWidth(50);
                 textViewScore.getPaint().setFakeBoldText(true);
@@ -102,7 +103,7 @@ public class RankActivity extends FragmentActivity {
 
                 TextView textViewTime = new TextView(getApplicationContext());
                 textViewTime.setTextSize(16);
-                textViewTime.setTextColor(getApplicationContext().getResources().getColor(R.color.grey));
+                textViewTime.setTextColor(getApplicationContext().getResources().getColor(R.color.gray));
                 textViewTime.setPadding(10, 10, 10, 10);
                 textViewTime.setWidth(70);
                 textViewTime.getPaint().setFakeBoldText(true);

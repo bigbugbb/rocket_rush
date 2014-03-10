@@ -1,11 +1,11 @@
 package com.bigbug.rocketrush.sdktest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -101,7 +101,7 @@ public class EventSetupActivity extends FragmentActivity {
         setContentView(R.layout.activity_ampsetup);
 
         final ArrayList<Event> events = createEventList();
-        final MyAdapter adapter = new MyAdapter(this, events);
+        final EventListAdapter adapter = new EventListAdapter(this, events);
 
         mListView = (MyListView)findViewById(R.id.list_events);
         mListView.setAdapter(adapter);
@@ -112,25 +112,28 @@ public class EventSetupActivity extends FragmentActivity {
             public void onItemClick(final AdapterView<?> parent, final View view,
                                     final int position, final long id) {
                 final String message = "OnClick: " + events.get(position).mName;
-//                Toast.makeText(EventSetupActivity.this, message, Toast.LENGTH_SHORT).show();
-                showEditDialog();
+                Intent intent = new Intent(EventSetupActivity.this, EventSetupDialog.class);
+                intent.putExtra(EventSetupDialog.KEY_EVENT_NAME, mNames[position]);
+                startActivity(intent);
             }
         });
 
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             public boolean onItemLongClick(final AdapterView<?> parent, final View view,
                                            final int position, final long id) {
-//                final String message = "OnLongClick: " + contacts.get(position).mName;
-//                Toast.makeText(TestActivity.this, message, Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
     }
 
-    private void showEditDialog() {
-        FragmentManager fm = getSupportFragmentManager();
-        EventSetupFragment fragment = new EventSetupFragment();
-        fragment.show(fm, "fragment_edit_name");
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -173,7 +176,7 @@ public class EventSetupActivity extends FragmentActivity {
     /**
      * Adapter class to use for the list
      */
-    private static class MyAdapter extends ArrayAdapter<Event> {
+    private static class EventListAdapter extends ArrayAdapter<Event> {
 
         /**
          * Constructor
@@ -181,7 +184,7 @@ public class EventSetupActivity extends FragmentActivity {
          * @param context The context
          * @param contacts The list of contacts
          */
-        public MyAdapter(final Context context, final ArrayList<Event> contacts) {
+        public EventListAdapter(final Context context, final ArrayList<Event> contacts) {
             super(context, 0, contacts);
         }
 

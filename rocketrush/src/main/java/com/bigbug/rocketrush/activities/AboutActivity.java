@@ -14,7 +14,11 @@ public class AboutActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -29,5 +33,4 @@ public class AboutActivity extends FragmentActivity {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
     }
-
 }

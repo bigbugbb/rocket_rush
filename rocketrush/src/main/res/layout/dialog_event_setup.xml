@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/layout_event_setup_dialog"
+              android:layout_width="320dp"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center"
+              android:orientation="vertical"  >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/deep_gray" >
+
+        <!-- Include Dialog Header -->
+        <include layout="@layout/dialog_header"/>
+        <include layout="@layout/divider"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:text="@string/setup_attributes" />
+
+            <include layout="@layout/divider"/>
+
+            <ListView
+                android:id="@+id/list_attributes"
+                android:layout_width="match_parent"
+                android:layout_height="145dp"
+                android:dividerHeight="1dp"
+                android:divider="@color/gray" />
+
+            <include layout="@layout/divider"/>
+
+            <Button
+                android:id="@+id/btn_add_attribute"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:background="@color/title_color"
+                android:gravity="center"
+                android:text="Add More..." />
+
+        </LinearLayout>
+
+        <include layout="@layout/divider"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:text="@string/setup_custom_dimensions" />
+
+            <include layout="@layout/divider"/>
+
+            <ListView
+                android:id="@+id/list_custom_dimensions"
+                android:layout_width="match_parent"
+                android:layout_height="145dp"
+                android:dividerHeight="1dp"
+                android:divider="@color/gray" />
+
+            <include layout="@layout/divider"/>
+
+            <Button
+                android:id="@+id/btn_add_custom_dimension"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:background="@color/title_color"
+                android:gravity="center"
+                android:text="Add More..." />
+        </LinearLayout>
+
+        <include layout="@layout/divider"/>
+        <!-- Include Dialog Footer -->
+        <include layout="@layout/dialog_footer" />
+
+    </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

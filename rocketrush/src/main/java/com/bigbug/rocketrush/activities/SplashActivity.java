@@ -66,6 +66,18 @@ public class SplashActivity extends FragmentActivity {
 
         // Get the handler to perform data updating
         mHandler = Application.getUpdateHandler();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean(Globals.KEY_FIRST_GAME, false).commit();
+        mSplashView.release();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -79,18 +91,6 @@ public class SplashActivity extends FragmentActivity {
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean(Globals.KEY_FIRST_GAME, false).commit();
-        mSplashView.release();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
 
         // Start data updating
         mHandler.sendMessage(mHandler.obtainMessage(Application.MESSAGE_START_UPDATING));

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/layout_buttons"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content" >
+    <Button
+        android:id="@+id/btn_negative"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dip"
+        android:paddingBottom="8dip"
+        android:text="Cancel"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:background="@drawable/round_button_left"
+        android:layout_weight="1" />
+    <View
+        android:layout_width="1dip"
+        android:layout_height="fill_parent"
+        android:background="@color/gray" />
+    <Button
+        android:id="@+id/btn_positive"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dip"
+        android:paddingBottom="8dip"
+        android:text="Save"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:background="@drawable/round_button_right"
+        android:layout_weight="1" />
+</LinearLayout>
