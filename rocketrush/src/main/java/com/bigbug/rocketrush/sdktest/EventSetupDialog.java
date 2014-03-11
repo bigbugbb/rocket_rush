@@ -7,21 +7,26 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class EventSetupDialog extends FragmentActivity {
 
@@ -41,8 +46,9 @@ public class EventSetupDialog extends FragmentActivity {
 
     private String mEventName;
 
-    private final static String _ATTR_KEY   = "_ATTR_KEY";
-    private final static String _CUSTOM_DIMENSION_KEY = "_CUSTOM_KEY";
+    private LinkedList<Pair<String, String>> mAttributesData;
+
+    private LinkedList<String> mCustomDimensionsData;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -63,25 +69,25 @@ public class EventSetupDialog extends FragmentActivity {
          * Construct the list view with the attributes and custom dimensions
          */
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        final String jsonAttributes = mSharedPref.getString(mEventName + _ATTR_KEY, "");
-        final String jsonCustomDimensions = mSharedPref.getString(mEventName + _CUSTOM_DIMENSION_KEY, "");
+        final String jsonAttributes = mSharedPref.getString(mEventName + Globals._ATTR_KEY, "");
+        final String jsonCustomDimensions = mSharedPref.getString(mEventName + Globals._CUSTOM_DIMENSION_KEY, "");
 
-        LinkedList<Attribute> attributes = new LinkedList<Attribute>();
         if (!TextUtils.isEmpty(jsonAttributes)) {
-            attributes = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Attribute>>(){}.getType());
+            mAttributesData = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Pair<String, String>>>(){}.getType());
         } else {
-            attributes.add(new Attribute());
+            mAttributesData = new LinkedList<Pair<String, String>>();
+            mAttributesData.add(new Pair<String, String>("", ""));
         }
 
-        LinkedList<String> customDimensions = new LinkedList<String>();
         if (!TextUtils.isEmpty(jsonCustomDimensions)) {
-            customDimensions = new Gson().fromJson(jsonCustomDimensions, new TypeToken<LinkedList<String>>(){}.getType());
+            mCustomDimensionsData = new Gson().fromJson(jsonCustomDimensions, new TypeToken<LinkedList<String>>(){}.getType());
         } else {
-            customDimensions.add("");
+            mCustomDimensionsData = new LinkedList<String>();
+            mCustomDimensionsData.add("");
         }
 
-        mAttributesAdapter       = new AttributesAdapter(this, attributes);
-        mCustomDimensionsAdapter = new CustomDimensionsAdapter(this, customDimensions);
+        mAttributesAdapter       = new AttributesAdapter(this, mAttributesData);
+        mCustomDimensionsAdapter = new CustomDimensionsAdapter(this, mCustomDimensionsData);
 
         mListAttr = (ListView) findViewById(R.id.list_attributes);
         mListAttr.setAdapter(mAttributesAdapter);
@@ -94,18 +100,16 @@ public class EventSetupDialog extends FragmentActivity {
         findViewById(R.id.btn_add_attribute).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mAttributesAdapter.add(new Attribute());
+                mAttributesData.add(new Pair<String, String>("", ""));
                 mAttributesAdapter.notifyDataSetChanged();
-                mLayoutDialog.requestLayout();
             }
         });
 
         findViewById(R.id.btn_add_custom_dimension).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCustomDimensionsAdapter.add("");
+                mCustomDimensionsData.add("");
                 mCustomDimensionsAdapter.notifyDataSetChanged();
-                mLayoutDialog.requestLayout();
             }
         });
 
@@ -122,7 +126,7 @@ public class EventSetupDialog extends FragmentActivity {
         findViewById(R.id.btn_positive).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinkedList<Attribute> attributes = new LinkedList<Attribute>();
+                LinkedList<Pair<String, String>> attributes = new LinkedList<Pair<String, String>>();
                 for (int i = 0; i < mAttributesAdapter.getCount(); ++i) {
                     attributes.add(mAttributesAdapter.getItem(i));
                 }
@@ -132,8 +136,8 @@ public class EventSetupDialog extends FragmentActivity {
                 }
 
                 SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(mEventName + _ATTR_KEY, new Gson().toJson(attributes));
-                editor.putString(mEventName + _CUSTOM_DIMENSION_KEY, new Gson().toJson(customDimensions));
+                editor.putString(mEventName + Globals._ATTR_KEY, new Gson().toJson(attributes));
+                editor.putString(mEventName + Globals._CUSTOM_DIMENSION_KEY, new Gson().toJson(customDimensions));
                 editor.commit();
 
                 finish();
@@ -141,32 +145,69 @@ public class EventSetupDialog extends FragmentActivity {
         });
     }
 
-    private static class Attribute {
-        /* Attribute key */
-        String mKey;
-
-        /* Attribute value */
-        String mValue;
-
-        public Attribute() {
-            this("", "");
-        }
-
-        public Attribute(String key, String value) {
-            mKey   = key;
-            mValue = value;
+    private void updateAttributeData() {
+        for (int i = 0; i < mListAttr.getCount(); ++i) {
+            View view = mListAttr.getChildAt(i);
+            if (view != null) {
+                int firstVisiblePosition = mListAttr.getFirstVisiblePosition();
+                EditText editKey   = (EditText) view.findViewById(R.id.edit_key);
+                EditText editValue = (EditText) view.findViewById(R.id.edit_value);
+                mAttributesData.set(i + firstVisiblePosition, new Pair<String, String>(editKey.getText().toString(), editValue.getText().toString()));
+            }
         }
     }
 
-    public class AttributesAdapter extends ArrayAdapter<Attribute> {
-
-        private class ViewHolder {
-            EditText mEditKey;
-            EditText mEditValue;
-            Button   mBtnDelete;
+    private void updateCustomDimensionData() {
+        for (int i = 0; i < mListCustom.getCount(); ++i) {
+            View view = mListCustom.getChildAt(i);
+            if (view != null) {
+                int firstVisiblePosition = mListCustom.getFirstVisiblePosition();
+                EditText edit = (EditText) view.findViewById(R.id.edit_value);
+                String s = edit.getText().toString();
+                mCustomDimensionsData.set(i + firstVisiblePosition, s);
+            }
         }
+    }
 
-        public AttributesAdapter(final Context context, final LinkedList<Attribute> attributes) {
+    private void deleteAttributeByView(View v) {
+        int target = 0;
+        for (int i = 0; i < mListCustom.getCount(); ++i) {
+            View item = mListCustom.getChildAt(i);
+            ViewHolder holder = (ViewHolder) item.getTag();
+            if (holder != null) {
+                if (holder.mViews.get(1) == v) {
+                    target = i;
+                    break;
+                }
+            }
+        }
+        mAttributesData.remove(target);
+        mAttributesAdapter.notifyDataSetChanged();
+    }
+
+    private void deleteCustomDimensionByView(View v) {
+        int target = 0;
+        for (int i = 0; i < mListCustom.getCount(); ++i) {
+            View item = mListCustom.getChildAt(i);
+            ViewHolder holder = (ViewHolder) item.getTag();
+            if (holder != null) {
+                if (holder.mViews.get(1) == v) {
+                    target = i;
+                    break;
+                }
+            }
+        }
+        mCustomDimensionsData.remove(target);
+        mCustomDimensionsAdapter.notifyDataSetChanged();
+    }
+
+    class ViewHolder {
+        List<View> mViews = new ArrayList<View>();
+    }
+
+    public class AttributesAdapter extends ArrayAdapter<Pair<String, String>> {
+
+        public AttributesAdapter(final Context context, final LinkedList<Pair<String, String>> attributes) {
             super(context, R.layout.attribute_item, attributes);
         }
 
@@ -177,23 +218,50 @@ public class EventSetupDialog extends FragmentActivity {
                 holder = new ViewHolder();
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = inflater.inflate(R.layout.attribute_item, null);
-                holder.mEditKey   = (EditText) convertView.findViewById(R.id.edit_key);
-                holder.mEditValue = (EditText) convertView.findViewById(R.id.edit_value);
-                holder.mBtnDelete = (Button) convertView.findViewById(R.id.btn_delete);
+                holder.mViews.add(0, convertView.findViewById(R.id.edit_key));
+                holder.mViews.add(1, convertView.findViewById(R.id.edit_value));
+                holder.mViews.add(2, convertView.findViewById(R.id.btn_delete));
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
             // Get attribute for this list item
-            final Attribute attribute = getItem(position);
+            final Pair<String, String> attribute = getItem(position);
 
             // Fill the attribute key and value to the edit box
-            holder.mEditKey.setText(attribute.mKey);
-            holder.mEditKey.setText(attribute.mValue);
-            holder.mBtnDelete.setOnClickListener(new View.OnClickListener() {
+            ((EditText) holder.mViews.get(0)).setText(attribute.first);
+            ((EditText) holder.mViews.get(0)).addTextChangedListener(new TextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    updateAttributeData();
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+            ((EditText) holder.mViews.get(1)).setText(attribute.second);
+            ((EditText) holder.mViews.get(1)).addTextChangedListener(new TextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    updateAttributeData();
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+            holder.mViews.get(2).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    deleteAttributeByView(v);
                 }
             });
 
@@ -202,11 +270,6 @@ public class EventSetupDialog extends FragmentActivity {
     }
 
     public class CustomDimensionsAdapter extends ArrayAdapter<String> {
-
-        private class ViewHolder {
-            EditText mEditText;
-            Button   mBtnDelete;
-        }
 
         public CustomDimensionsAdapter(final Context context, final LinkedList<String> customDimensions) {
             super(context, R.layout.attribute_item, customDimensions);
@@ -219,17 +282,32 @@ public class EventSetupDialog extends FragmentActivity {
                 holder = new ViewHolder();
                 LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 convertView = inflater.inflate(R.layout.custom_dimension_item, null);
-                holder.mEditText  = (EditText) convertView.findViewById(R.id.edit_value);
-                holder.mBtnDelete = (Button) convertView.findViewById(R.id.btn_delete);
+                holder.mViews.add(0, convertView.findViewById(R.id.edit_value));
+                holder.mViews.add(1, convertView.findViewById(R.id.btn_delete));
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.mEditText.setText(getItem(position));
-            holder.mBtnDelete.setOnClickListener(new View.OnClickListener() {
+            String value = getItem(position);
+            ((EditText) holder.mViews.get(0)).setText(value);
+            ((EditText) holder.mViews.get(0)).addTextChangedListener(new TextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    updateCustomDimensionData();
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            });
+
+            holder.mViews.get(1).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    deleteCustomDimensionByView(v);
                 }
             });
 

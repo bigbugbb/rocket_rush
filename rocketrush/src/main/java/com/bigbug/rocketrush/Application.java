@@ -1,13 +1,24 @@
 package com.bigbug.rocketrush;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.localytics.android.LocalyticsAmpSession;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -56,6 +67,11 @@ public class Application extends android.app.Application {
      */
     private Handler mDrawerHandler;
     private Handler mUpdateHandler;
+
+    /**
+     * Localytics amp session
+     */
+    private LocalyticsAmpSession mLocalyticsSession;
 
     @Override
     public void onCreate() {
@@ -174,6 +190,8 @@ public class Application extends android.app.Application {
                 }
             }
         };
+
+        mLocalyticsSession = new LocalyticsAmpSession(getApplicationContext(), Globals.LOCALYTICS_SESSION_KEY);
     }
 
     public static Context getAppContext() {
@@ -194,6 +212,40 @@ public class Application extends android.app.Application {
 
     public static Handler getDrawerHandler() {
         return sApplication.mDrawerHandler;
+    }
+
+    public static LocalyticsAmpSession getLocalyticsSession() {
+        return sApplication.mLocalyticsSession;
+    }
+
+    public static Object[] getLocalyticsEventInfo(final String eventName) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(sApplication.getApplicationContext());
+        final String jsonAttributes = sp.getString(eventName + Globals._ATTR_KEY, "");
+        final String jsonCustomDimensions = sp.getString(eventName + Globals._CUSTOM_DIMENSION_KEY, "");
+
+        List<Pair<String, String>> attributesData;
+        if (!TextUtils.isEmpty(jsonAttributes)) {
+            attributesData = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Pair<String, String>>>(){}.getType());
+        } else {
+            attributesData = new LinkedList<Pair<String, String>>();
+            attributesData.add(new Pair<String, String>("", ""));
+        }
+
+        List<String> customDimensionsData;
+        if (!TextUtils.isEmpty(jsonCustomDimensions)) {
+            customDimensionsData = new Gson().fromJson(jsonCustomDimensions, new TypeToken<LinkedList<String>>(){}.getType());
+        } else {
+            customDimensionsData = new LinkedList<String>();
+            customDimensionsData.add("");
+        }
+
+        // Convert List<Pair<String, String>> into HashMap<String, String>
+        Map<String, String> attributesMap = new HashMap<String, String>();
+        for (Pair<String, String> pair : attributesData) {
+            attributesMap.put(pair.first, pair.second);
+        }
+
+        return new Object[] { eventName, attributesMap, customDimensionsData };
     }
 
     private static HandlerThread getHandlerThread(final String name) {

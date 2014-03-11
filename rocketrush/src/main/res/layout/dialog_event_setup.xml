@@ -8,13 +8,12 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@color/deep_gray" >
+        android:orientation="vertical" >
 
         <!-- Include Dialog Header -->
         <include layout="@layout/dialog_header"/>
@@ -23,7 +22,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:background="@color/deep_gray" >
 
             <TextView
                 android:layout_width="match_parent"
@@ -40,7 +40,7 @@
             <ListView
                 android:id="@+id/list_attributes"
                 android:layout_width="match_parent"
-                android:layout_height="145dp"
+                android:layout_height="97dp"
                 android:dividerHeight="1dp"
                 android:divider="@color/gray" />
 
@@ -65,7 +65,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:background="@color/deep_gray" >
 
             <TextView
                 android:layout_width="match_parent"
@@ -82,7 +83,7 @@
             <ListView
                 android:id="@+id/list_custom_dimensions"
                 android:layout_width="match_parent"
-                android:layout_height="145dp"
+                android:layout_height="97dp"
                 android:dividerHeight="1dp"
                 android:divider="@color/gray" />
 

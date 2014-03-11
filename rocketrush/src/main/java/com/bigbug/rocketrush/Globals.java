@@ -35,4 +35,9 @@ public class Globals {
     public final static int STOP_GAME    = Activity.RESULT_FIRST_USER + 2;
 
     public final static int GAME_TIME = 30;
+
+    public final static String _ATTR_KEY   = "_ATTR_KEY";
+    public final static String _CUSTOM_DIMENSION_KEY = "_CUSTOM_KEY";
+
+    public final static String LOCALYTICS_SESSION_KEY = "be66099dcbd2aa53abad0a7-96252606-a8db-11e3-9803-005cf8cbabd8";
 }

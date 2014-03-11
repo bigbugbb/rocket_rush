@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="android-client-library-amp">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/rocketrush/libs/android-client-library-amp.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
