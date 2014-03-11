@@ -70,6 +70,12 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
         mGraphView.setPage(mGamePage);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // Instantiate the object
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
+        Application.getLocalyticsSession().tagScreen("Game");
+        Application.getLocalyticsSession().upload();
     }
 
     @Override
@@ -94,6 +100,9 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
+
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -181,6 +190,10 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
     public void onPause() {
         Log.d(TAG, "onPause");
         super.onPause();
+
+        Application.getLocalyticsSession().detach();
+        Application.getLocalyticsSession().close();
+        Application.getLocalyticsSession().upload();
 
         mGamePage.pause();
 

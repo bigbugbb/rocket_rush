@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.localytics.android.LocalyticsAmpSession;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -228,6 +229,9 @@ public class Application extends android.app.Application {
             List<Pair<String, String>> attributesData = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Pair<String, String>>>(){}.getType());
             // Convert List<Pair<String, String>> into HashMap<String, String>
             for (Pair<String, String> pair : attributesData) {
+                if (attributesMap == null) {
+                    attributesMap = new HashMap<String, String>();
+                }
                 attributesMap.put(pair.first, pair.second);
             }
         }

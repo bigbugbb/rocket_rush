@@ -24,9 +24,7 @@ public class TimeBonus extends Reward {
 	protected float mOffsetY = 0;	
 	// save for objects collided with this field
 	protected List<AppObject> mCollideWith = new ArrayList<AppObject>();
-	// OnGotTimeBonusListener
-	protected OnGotTimeBonusListener mListener = null;
-	
+
 	public static void loadImages(Context context, int[] resIDs) {
 		if (sImageLoaded) {
 			return;
@@ -44,6 +42,10 @@ public class TimeBonus extends Reward {
 		setWidth(sImages.get(IMAGE_UNBOUND_START).getWidth());
 		setHeight(sImages.get(IMAGE_UNBOUND_START).getHeight());	
 	}
+
+    public int getBonusTime() {
+        return mBonus;
+    }
 
 	private int mUpdateUnbound = 0;
 	@Override
@@ -127,19 +129,11 @@ public class TimeBonus extends Reward {
 	@Override
 	protected void onBound() {
 		if (mListener != null) {
-			mListener.onGotTimeBonus(mBonus);
+			mListener.onGotReward(this);
 		}
 		
 		// make it out of the screen, so it can be recycled
 		mX = 10000;
 		mY = 10000;
-	}
-	
-	public void setOnGotTimeBonusListener(OnGotTimeBonusListener listener) {
-		mListener = listener;
-	}
-	
-	public interface OnGotTimeBonusListener {
-		void onGotTimeBonus(int bonus);
 	}
 }

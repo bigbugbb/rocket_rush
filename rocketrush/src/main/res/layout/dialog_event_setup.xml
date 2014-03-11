@@ -32,6 +32,7 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
                 android:textSize="20sp"
+                android:textStyle="bold"
                 android:textColor="@color/white"
                 android:text="@string/setup_attributes" />
 
@@ -40,23 +41,16 @@
             <ListView
                 android:id="@+id/list_attributes"
                 android:layout_width="match_parent"
-                android:layout_height="97dp"
+                android:layout_height="120dp"
                 android:dividerHeight="1dp"
                 android:divider="@color/gray" />
 
             <include layout="@layout/divider"/>
 
-            <Button
+            <com.bigbug.rocketrush.sdktest.AddButton
                 android:id="@+id/btn_add_attribute"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
-                android:textSize="20sp"
-                android:textColor="@color/white"
-                android:background="@color/title_color"
-                android:gravity="center"
-                android:text="Add More..." />
+                android:layout_height="42dp" />
 
         </LinearLayout>
 
@@ -75,6 +69,7 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
                 android:textSize="20sp"
+                android:textStyle="bold"
                 android:textColor="@color/white"
                 android:text="@string/setup_custom_dimensions" />
 
@@ -83,23 +78,16 @@
             <ListView
                 android:id="@+id/list_custom_dimensions"
                 android:layout_width="match_parent"
-                android:layout_height="97dp"
+                android:layout_height="120dp"
                 android:dividerHeight="1dp"
                 android:divider="@color/gray" />
 
             <include layout="@layout/divider"/>
 
-            <Button
+            <com.bigbug.rocketrush.sdktest.AddButton
                 android:id="@+id/btn_add_custom_dimension"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
-                android:textSize="20sp"
-                android:textColor="@color/white"
-                android:background="@color/title_color"
-                android:gravity="center"
-                android:text="Add More..." />
+                android:layout_height="42dp" />
         </LinearLayout>
 
         <include layout="@layout/divider"/>

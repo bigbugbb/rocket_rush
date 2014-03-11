@@ -16,8 +16,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+
+import java.util.List;
+import java.util.Map;
 
 public class GameMenuDialog extends FragmentActivity {
 
@@ -42,9 +46,13 @@ public class GameMenuDialog extends FragmentActivity {
                 if (position == 0) {
                     finish();
                 } else if (position == 1) {
+                    Object[] info = Application.getLocalyticsEventInfo("Click 'Retry'");
+                    Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
                     setResult(Globals.RESTART_GAME);
                     finish();
                 } else if (position == 2) {
+                    Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
+                    Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
                     setResult(Globals.STOP_GAME);
                     finish();
                 }
@@ -65,6 +73,12 @@ public class GameMenuDialog extends FragmentActivity {
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
+
+        // Instantiate the object
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
+        Application.getLocalyticsSession().tagScreen("Game Menu");
+        Application.getLocalyticsSession().upload();
     }
 
     @Override
@@ -74,11 +88,16 @@ public class GameMenuDialog extends FragmentActivity {
 
     @Override
     protected void onPause() {
+        Application.getLocalyticsSession().detach();
+        Application.getLocalyticsSession().close();
+        Application.getLocalyticsSession().upload();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
         super.onResume();
     }
 

@@ -25,4 +25,11 @@ In this game, all you need to do is to keep squatting down and standing up to ma
     <string name="setup_attributes">Attributes</string>
     <string name="setup_custom_dimensions">Custom Dimensions</string>
 
+    <!-- Google Plus Login -->
+    <string name="action_settings">Settings</string>
+
+    <!-- Button text -->
+    <string name="btn_logout_from_google">Logout from Google</string>
+    <string name="btn_revoke_access">Revoke Access</string>
+
 </resources>

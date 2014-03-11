@@ -20,7 +20,9 @@ public class Reward extends AppObject {
 	protected long mBegTime = System.currentTimeMillis();
 
     protected Rocket mRocket;
-	
+
+    protected OnGotRewardListener mListener;
+
 	public Reward(Context context) {
 		super(context);
 		setMovable(true);				
@@ -95,4 +97,12 @@ public class Reward extends AppObject {
 	protected void updateUnbound() {}
 	protected void drawBound(Canvas c) {}
 	protected void drawUnbound(Canvas c) {}
+
+    public void setOnGotRewardListener(OnGotRewardListener listener) {
+        mListener = listener;
+    }
+
+    public interface OnGotRewardListener {
+        void onGotReward(final Reward reward);
+    }
 }

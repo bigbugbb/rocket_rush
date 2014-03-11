@@ -13,6 +13,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.utils.BitmapHelper;
@@ -20,6 +21,7 @@ import com.bigbug.rocketrush.utils.MusicPlayer;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameOverDialog extends FragmentActivity {
 
@@ -49,6 +51,9 @@ public class GameOverDialog extends FragmentActivity {
         btnRetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Retry'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 setResult(Globals.RESTART_GAME);
                 finish();
             }
@@ -62,6 +67,9 @@ public class GameOverDialog extends FragmentActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 setResult(Globals.STOP_GAME);
                 finish();
             }
@@ -90,6 +98,12 @@ public class GameOverDialog extends FragmentActivity {
         mMusicPlayer.create(R.raw.game_over);
         mMusicPlayer.setLooping(false);
         mMusicPlayer.play();
+
+        // Instantiate the object
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
+        Application.getLocalyticsSession().tagScreen("Game Over");
+        Application.getLocalyticsSession().upload();
     }
 
     @Override
@@ -106,11 +120,16 @@ public class GameOverDialog extends FragmentActivity {
 
     @Override
     protected void onPause() {
+        Application.getLocalyticsSession().detach();
+        Application.getLocalyticsSession().close();
+        Application.getLocalyticsSession().upload();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
         super.onResume();
     }
 

@@ -2,22 +2,28 @@ package com.bigbug.rocketrush.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
@@ -27,14 +33,27 @@ import com.bigbug.rocketrush.game.GameResults;
 import com.bigbug.rocketrush.pages.HomePage;
 import com.bigbug.rocketrush.sdktest.EventSetupActivity;
 import com.bigbug.rocketrush.utils.BitmapHelper;
-import com.bigbug.rocketrush.utils.PasswordChecker;
 import com.bigbug.rocketrush.views.GraphView;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class HomeActivity extends FragmentActivity {
+public class HomeActivity extends FragmentActivity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    // Logcat tag
+    private static final String TAG = "HomeActivity";
 
     // the view for drawing anything
     private GraphView mGraphView;
@@ -45,12 +64,27 @@ public class HomeActivity extends FragmentActivity {
 
     private Handler mDrawer;
 
-    private PasswordChecker mPwdSetup = new PasswordChecker("setup");
+    private TextView mTextWelcome;
 
     /**
      * The bitmaps for the image button.
      */
     private List<Bitmap> mBitmaps;
+
+    /**
+     * Google client to interact with Google API, for emulator we need Android 4.2.2 or greater
+     */
+    private GoogleApiClient mGoogleApiClient;
+
+    private ConnectionResult mConnectionResult;
+
+    private SignInButton mBtnSignIn;
+
+    private boolean mSignInClicked;
+
+    private boolean mIntentInProgress;
+
+    private static final int RC_SIGN_IN = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +105,18 @@ public class HomeActivity extends FragmentActivity {
         mHomePage.create();
 
         mGraphView.setPage(mHomePage);
+
+        // Initializing google plus api client
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this).addApi(Plus.API, null)
+            .addScope(Plus.SCOPE_PLUS_LOGIN).build();
+
+        // Instantiate the object
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
+        Application.getLocalyticsSession().tagScreen("Home");
+        Application.getLocalyticsSession().upload();
     }
 
     @Override
@@ -88,18 +134,29 @@ public class HomeActivity extends FragmentActivity {
     @Override
     public void onStart() {
         super.onStart();
+
+        mGoogleApiClient.connect();
+
         mHomePage.start();
     }
 
     @Override
     public void onStop() {
         super.onStop();
+
         mHomePage.stop();
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -189,6 +246,10 @@ public class HomeActivity extends FragmentActivity {
     public void onPause() {
         super.onPause();
 
+        Application.getLocalyticsSession().detach();
+        Application.getLocalyticsSession().close();
+        Application.getLocalyticsSession().upload();
+
         // Stop drawing background
         mDrawer.sendMessage(mDrawer.obtainMessage(Application.MESSAGE_STOP_DRAWING));
         // Stop updating data
@@ -198,16 +259,16 @@ public class HomeActivity extends FragmentActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
-            imm.toggleSoftInput(0, 0);
-        }
-
-        if (mPwdSetup.isMatch(keyCode)) {
-            imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
-            startActivity(new Intent(this, EventSetupActivity.class));
-        }
+//        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//
+//        if (keyCode == KeyEvent.KEYCODE_MENU) {
+//            imm.toggleSoftInput(0, 0);
+//        }
+//
+//        if (mPwdSetup.isMatch(keyCode)) {
+//            imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+//            startActivity(new Intent(this, EventSetupActivity.class));
+//        }
 
         return super.onKeyDown(keyCode, event);
     }
@@ -225,6 +286,9 @@ public class HomeActivity extends FragmentActivity {
         btnStartGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Play'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 startActivity(new Intent(HomeActivity.this, GameActivity.class));
                 overridePendingTransition(R.anim.enter_from_right, R.anim.exit_on_left);
             }
@@ -239,6 +303,9 @@ public class HomeActivity extends FragmentActivity {
         btnSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Setting'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 SettingActivity.setCallback(new Runnable() {
                     @Override
                     public void run() {
@@ -260,6 +327,9 @@ public class HomeActivity extends FragmentActivity {
         btnHelp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Help'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 startActivity(new Intent(HomeActivity.this, TutorialActivity.class));
                 overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
             }
@@ -274,6 +344,9 @@ public class HomeActivity extends FragmentActivity {
         btnRank.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Rank'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 Intent intent = new Intent(HomeActivity.this, RankActivity.class);
                 intent.putExtra(Globals.KEY_GAME_RESULTS, getGameResults());
                 startActivity(intent);
@@ -289,13 +362,83 @@ public class HomeActivity extends FragmentActivity {
         btnAbout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Object[] info = Application.getLocalyticsEventInfo("Click 'About'");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+
                 startActivity(new Intent(HomeActivity.this, AboutActivity.class));
             }
         });
+
+        // G+ Sign In Button
+        mBtnSignIn = (SignInButton) findViewById(R.id.btn_sign_in);
+        mBtnSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signInWithGplus();
+            }
+        });
+
+        mTextWelcome = (TextView) findViewById(R.id.text_welcome);
     }
 
     private void adjustLayout() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
+    /**
+     * Sign-in into google
+     * */
+    private void signInWithGplus() {
+        if (!mGoogleApiClient.isConnecting()) {
+            mSignInClicked = true;
+            resolveSignInError();
+        }
+    }
+
+    /**
+     * Sign-out from google
+     * */
+    private void signOutFromGplus() {
+        if (mGoogleApiClient.isConnected()) {
+            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+            mGoogleApiClient.disconnect();
+            mGoogleApiClient.connect();
+            updateUI(false);
+        }
+    }
+
+    /**
+     * Revoking access from google
+     * */
+    private void revokeGplusAccess() {
+        if (mGoogleApiClient.isConnected()) {
+            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
+            Plus.AccountApi.revokeAccessAndDisconnect(mGoogleApiClient)
+                    .setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(Status arg0) {
+                            Log.e(TAG, "User access revoked!");
+                            mGoogleApiClient.connect();
+                            updateUI(false);
+                        }
+
+                    });
+        }
+    }
+
+    /**
+     * Method to resolve any signin errors
+     * */
+    private void resolveSignInError() {
+        if (mConnectionResult.hasResolution()) {
+            try {
+                mIntentInProgress = true;
+                mConnectionResult.startResolutionForResult(this, RC_SIGN_IN);
+            } catch (IntentSender.SendIntentException e) {
+                mIntentInProgress = false;
+                mGoogleApiClient.connect();
+            }
+        }
     }
 
     protected GameResults getGameResults() {
@@ -312,5 +455,144 @@ public class HomeActivity extends FragmentActivity {
         Collections.sort(results, Collections.reverseOrder());
 
         return results;
+    }
+
+    /**
+     * Fetching user's information name, email, profile pic
+     * */
+    private void getProfileInformation() {
+        try {
+            if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
+                Person currentPerson = Plus.PeopleApi
+                        .getCurrentPerson(mGoogleApiClient);
+                String personName = currentPerson.getDisplayName();
+                String personPhotoUrl = currentPerson.getImage().getUrl();
+                String personGooglePlusProfile = currentPerson.getUrl();
+                String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                sp.edit().putString(Globals.KEY_USER_NAME, personName);
+
+                mTextWelcome.setText(String.format("Welcome! %s", personName));
+
+//                Log.e(TAG, "Name: " + personName + ", plusProfile: "
+//                        + personGooglePlusProfile + ", email: " + email
+//                        + ", Image: " + personPhotoUrl);
+//
+//                txtName.setText(personName);
+//                txtEmail.setText(email);
+//
+//                // by default the profile url gives 50x50 px image only
+//                // we can replace the value with whatever dimension we want by
+//                // replacing sz=X
+//                personPhotoUrl = personPhotoUrl.substring(0,
+//                        personPhotoUrl.length() - 2)
+//                        + PROFILE_PIC_SIZE;
+//
+//                new LoadProfileImage(imgProfilePic).execute(personPhotoUrl);
+
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "Person information is null", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Updating the UI, showing/hiding buttons and profile layout
+     * */
+    private void updateUI(boolean isSignedIn) {
+        if (isSignedIn) {
+            mBtnSignIn.setVisibility(View.GONE);
+            mTextWelcome.setVisibility(View.VISIBLE);
+        } else {
+            mBtnSignIn.setVisibility(View.VISIBLE);
+            mTextWelcome.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int responseCode,
+                                    Intent intent) {
+        if (requestCode == RC_SIGN_IN) {
+            if (responseCode != RESULT_OK) {
+                mSignInClicked = false;
+            }
+
+            mIntentInProgress = false;
+
+            if (!mGoogleApiClient.isConnecting()) {
+                mGoogleApiClient.connect();
+            }
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        mSignInClicked = false;
+        Toast.makeText(this, "User is connected!", Toast.LENGTH_LONG).show();
+
+        // Get user's information
+        getProfileInformation();
+
+        // Update the UI after signin
+        updateUI(true);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+        updateUI(false);
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (!connectionResult.hasResolution()) {
+            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this,
+                    0).show();
+            return;
+        }
+
+        if (!mIntentInProgress) {
+            // Store the ConnectionResult for later usage
+            mConnectionResult = connectionResult;
+
+            if (mSignInClicked) {
+                // The user has already clicked 'sign-in' so we attempt to
+                // resolve all
+                // errors until the user is signed in, or they cancel.
+                resolveSignInError();
+            }
+        }
+    }
+
+    /**
+     * Background Async task to load user profile picture from url
+     * */
+    private class LoadProfileImage extends AsyncTask<String, Void, Bitmap> {
+        ImageView mImage;
+
+        public LoadProfileImage(ImageView bmImage) {
+            this.mImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urlDisplay = urls[0];
+            Bitmap mIcon = null;
+            try {
+                InputStream in = new java.net.URL(urlDisplay).openStream();
+                mIcon = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            mImage.setImageBitmap(result);
+        }
     }
 }

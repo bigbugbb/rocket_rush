@@ -19,6 +19,8 @@ public class Globals {
 
     public static final int GRAPH_DRAW_INTERVAL = 10;
 
+    public static final String KEY_USER_NAME = "KEY_USER_NAME";
+
     public static final String KEY_GAME_RESULTS = "KEY_GAME_RESULTS";
 
     public static final String KEY_DISTANCE = "KEY_DISTANCE";
@@ -34,7 +36,7 @@ public class Globals {
     public final static int RESTART_GAME = Activity.RESULT_FIRST_USER + 1;
     public final static int STOP_GAME    = Activity.RESULT_FIRST_USER + 2;
 
-    public final static int GAME_TIME = 30;
+    public final static int GAME_TIME = 40;
 
     public final static String _ATTR_KEY   = "_ATTR_KEY";
     public final static String _CUSTOM_DIMENSION_KEY = "_CUSTOM_KEY";

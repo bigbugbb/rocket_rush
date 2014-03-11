@@ -102,6 +102,7 @@ public class EventSetupDialog extends FragmentActivity {
             public void onClick(View v) {
                 mAttributesData.add(new Pair<String, String>("", ""));
                 mAttributesAdapter.notifyDataSetChanged();
+                mListAttr.setSelection(mAttributesData.size() - 1);
             }
         });
 
@@ -110,6 +111,7 @@ public class EventSetupDialog extends FragmentActivity {
             public void onClick(View v) {
                 mCustomDimensionsData.add("");
                 mCustomDimensionsAdapter.notifyDataSetChanged();
+                mListCustom.setSelection(mCustomDimensionsData.size() - 1);
             }
         });
 
@@ -128,16 +130,26 @@ public class EventSetupDialog extends FragmentActivity {
             public void onClick(View v) {
                 LinkedList<Pair<String, String>> attributes = new LinkedList<Pair<String, String>>();
                 for (int i = 0; i < mAttributesAdapter.getCount(); ++i) {
-                    attributes.add(mAttributesAdapter.getItem(i));
+                    final Pair<String, String> attribute = mAttributesAdapter.getItem(i);
+                    if (!TextUtils.isEmpty(attribute.first) && !TextUtils.isEmpty(attribute.second)) {
+                        attributes.add(attribute);
+                    }
                 }
                 LinkedList<String> customDimensions = new LinkedList<String>();
                 for (int i = 0; i < mCustomDimensionsAdapter.getCount(); ++i) {
-                    customDimensions.add(mCustomDimensionsAdapter.getItem(i));
+                    final String customDimension = mCustomDimensionsAdapter.getItem(i);
+                    if (!TextUtils.isEmpty(customDimension)) {
+                        customDimensions.add(customDimension);
+                    }
                 }
 
                 SharedPreferences.Editor editor = mSharedPref.edit();
-                editor.putString(mEventName + Globals._ATTR_KEY, new Gson().toJson(attributes));
-                editor.putString(mEventName + Globals._CUSTOM_DIMENSION_KEY, new Gson().toJson(customDimensions));
+                if (attributes.size() > 0) {
+                    editor.putString(mEventName + Globals._ATTR_KEY, new Gson().toJson(attributes));
+                }
+                if (customDimensions.size() > 0) {
+                    editor.putString(mEventName + Globals._CUSTOM_DIMENSION_KEY, new Gson().toJson(customDimensions));
+                }
                 editor.commit();
 
                 finish();
@@ -169,36 +181,36 @@ public class EventSetupDialog extends FragmentActivity {
         }
     }
 
-    private void deleteAttributeByView(View v) {
-        int target = 0;
-        for (int i = 0; i < mListCustom.getCount(); ++i) {
-            View item = mListCustom.getChildAt(i);
-            ViewHolder holder = (ViewHolder) item.getTag();
-            if (holder != null) {
-                if (holder.mViews.get(1) == v) {
-                    target = i;
-                    break;
-                }
+    /**
+     * Delete the selected attribute item
+     * @param viewToDelete The list item to delete
+     */
+    private void deleteAttribute(View viewToDelete) {
+        for (int i = 0; i < mListAttr.getCount(); ++i) {
+            View view = mListAttr.getChildAt(i);
+            if (view != null && view == viewToDelete) {
+                int firstVisiblePosition = mListAttr.getFirstVisiblePosition();
+                mAttributesData.remove(i + firstVisiblePosition);
+                mAttributesAdapter.notifyDataSetChanged();
+                break;
             }
         }
-        mAttributesData.remove(target);
-        mAttributesAdapter.notifyDataSetChanged();
     }
 
-    private void deleteCustomDimensionByView(View v) {
-        int target = 0;
+    /**
+     * Delete the selected custom dimension item
+     * @param viewToDelete The list item to delete
+     */
+    private void deleteCustomDimension(View viewToDelete) {
         for (int i = 0; i < mListCustom.getCount(); ++i) {
-            View item = mListCustom.getChildAt(i);
-            ViewHolder holder = (ViewHolder) item.getTag();
-            if (holder != null) {
-                if (holder.mViews.get(1) == v) {
-                    target = i;
-                    break;
-                }
+            View view = mListCustom.getChildAt(i);
+            if (view != null && view == viewToDelete) {
+                int firstVisiblePosition = mListCustom.getFirstVisiblePosition();
+                mCustomDimensionsData.remove(i + firstVisiblePosition);
+                mCustomDimensionsAdapter.notifyDataSetChanged();
+                break;
             }
         }
-        mCustomDimensionsData.remove(target);
-        mCustomDimensionsAdapter.notifyDataSetChanged();
     }
 
     class ViewHolder {
@@ -258,10 +270,12 @@ public class EventSetupDialog extends FragmentActivity {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
             });
 
+            // Handle the '-' button event
             holder.mViews.get(2).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    deleteAttributeByView(v);
+                    View parent = (View) v.getParent();
+                    deleteAttribute(parent);
                 }
             });
 
@@ -304,10 +318,12 @@ public class EventSetupDialog extends FragmentActivity {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
             });
 
+            // Handle the '-' button event
             holder.mViews.get(1).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    deleteCustomDimensionByView(v);
+                    View parent = (View) v.getParent();
+                    deleteCustomDimension(parent);
                 }
             });
 

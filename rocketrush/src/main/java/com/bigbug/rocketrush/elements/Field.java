@@ -111,6 +111,10 @@ public class Field extends Reward {
 
 	@Override
 	protected void onBound() {
+        if (mListener != null) {
+            mListener.onGotReward(this);
+        }
+
 		setWidth(sImages.get(IMAGE_BOUND_START).getWidth());
 		setHeight(sImages.get(IMAGE_BOUND_START).getHeight());	
 		mOffsetX = (mWidth - mRocket.getWidth()) * 0.5f;

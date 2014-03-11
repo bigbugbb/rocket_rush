@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.os.Message;
 import android.os.Vibrator;
 
+import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.basic.AppObject;
 import com.bigbug.rocketrush.elements.Alient;
 import com.bigbug.rocketrush.elements.Asteroid;
@@ -27,6 +28,7 @@ import com.bigbug.rocketrush.elements.TrickyAlient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class GameScene extends BaseScene {
@@ -423,6 +425,7 @@ public class GameScene extends BaseScene {
                 field.setY(-field.getHeight());
                 field.onSizeChanged(mWidth, mHeight);
                 field.setOnCollideListener(this);
+                field.setOnGotRewardListener(mRewardListener);
                 mObjects.add(field);
 
                 // Order by Z
@@ -437,7 +440,7 @@ public class GameScene extends BaseScene {
             timeBonus.setY(-timeBonus.getHeight());
             timeBonus.onSizeChanged(mWidth, mHeight);
             timeBonus.setOnCollideListener(this);
-            timeBonus.setOnGotTimeBonusListener(mTimebonusListener);
+            timeBonus.setOnGotRewardListener(mRewardListener);
             mObjects.add(timeBonus);
 
             // Order by Z
@@ -497,6 +500,23 @@ public class GameScene extends BaseScene {
             if (object instanceof Barrier) {
                 Barrier barrier = (Barrier) object;
                 if (obj.getKind() == AppObject.ROCKET) {
+                    if (barrier instanceof Bird) {
+                        Object[] info = Application.getLocalyticsEventInfo("Hit Bird");
+                        Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                    } else if (barrier instanceof Thunder) {
+                        Object[] info = Application.getLocalyticsEventInfo("Hit Thunder");
+                        Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                    } else if (barrier instanceof Thunder) {
+                        Object[] info = Application.getLocalyticsEventInfo("Hit Thunder");
+                        Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                    } else if (barrier instanceof Asteroid) {
+                        Object[] info = Application.getLocalyticsEventInfo("Hit Asteroid");
+                        Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                    } else if (barrier instanceof Alient) {
+                        Object[] info = Application.getLocalyticsEventInfo("Hit Alient");
+                        Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                    }
+
                     ((Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
                     mLifeBar.lifeChange(-0.334f);
                 }
@@ -548,11 +568,17 @@ public class GameScene extends BaseScene {
         }
     };
 
-    private TimeBonus.OnGotTimeBonusListener mTimebonusListener = new TimeBonus.OnGotTimeBonusListener() {
-
+    private Reward.OnGotRewardListener mRewardListener = new Reward.OnGotRewardListener() {
         @Override
-        public void onGotTimeBonus(int bonus) {
-            mTimer.addBonusTime(bonus);
+        public void onGotReward(Reward reward) {
+            if (reward instanceof Field) {
+                Object[] info = Application.getLocalyticsEventInfo("Get Protector");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+            } else if (reward instanceof TimeBonus) {
+                Object[] info = Application.getLocalyticsEventInfo("Get Time Bonus");
+                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                mTimer.addBonusTime(((TimeBonus) reward).getBonusTime());
+            }
         }
     };
 
