@@ -69,6 +69,7 @@ public class TutorialActivity extends FragmentActivity {
 
         // Instantiate the object
         Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
         Application.getLocalyticsSession().tagScreen("Tutorial");
         Application.getLocalyticsSession().upload();
     }
@@ -131,6 +132,7 @@ public class TutorialActivity extends FragmentActivity {
         super.onResume();
 
         Application.getLocalyticsSession().open();
+        Application.getLocalyticsSession().attach(this);
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -150,6 +152,7 @@ public class TutorialActivity extends FragmentActivity {
     public void onPause() {
         super.onPause();
 
+        Application.getLocalyticsSession().detach();
         Application.getLocalyticsSession().close();
         Application.getLocalyticsSession().upload();
     }

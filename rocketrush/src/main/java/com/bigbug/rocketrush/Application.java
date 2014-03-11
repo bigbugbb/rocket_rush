@@ -223,26 +223,18 @@ public class Application extends android.app.Application {
         final String jsonAttributes = sp.getString(eventName + Globals._ATTR_KEY, "");
         final String jsonCustomDimensions = sp.getString(eventName + Globals._CUSTOM_DIMENSION_KEY, "");
 
-        List<Pair<String, String>> attributesData;
+        Map<String, String> attributesMap = null;
         if (!TextUtils.isEmpty(jsonAttributes)) {
-            attributesData = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Pair<String, String>>>(){}.getType());
-        } else {
-            attributesData = new LinkedList<Pair<String, String>>();
-            attributesData.add(new Pair<String, String>("", ""));
+            List<Pair<String, String>> attributesData = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Pair<String, String>>>(){}.getType());
+            // Convert List<Pair<String, String>> into HashMap<String, String>
+            for (Pair<String, String> pair : attributesData) {
+                attributesMap.put(pair.first, pair.second);
+            }
         }
 
-        List<String> customDimensionsData;
+        List<String> customDimensionsData = null;
         if (!TextUtils.isEmpty(jsonCustomDimensions)) {
             customDimensionsData = new Gson().fromJson(jsonCustomDimensions, new TypeToken<LinkedList<String>>(){}.getType());
-        } else {
-            customDimensionsData = new LinkedList<String>();
-            customDimensionsData.add("");
-        }
-
-        // Convert List<Pair<String, String>> into HashMap<String, String>
-        Map<String, String> attributesMap = new HashMap<String, String>();
-        for (Pair<String, String> pair : attributesData) {
-            attributesMap.put(pair.first, pair.second);
         }
 
         return new Object[] { eventName, attributesMap, customDimensionsData };

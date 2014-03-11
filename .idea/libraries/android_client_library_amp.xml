@@ -4,6 +4,8 @@
       <root url="jar://$PROJECT_DIR$/rocketrush/libs/android-client-library-amp.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/Android-Client-Library/android-client-library-amp/src/main/java" />
+    </SOURCES>
   </library>
 </component>
