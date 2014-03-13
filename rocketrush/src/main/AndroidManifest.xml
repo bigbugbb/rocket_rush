@@ -69,7 +69,6 @@
             android:name=".activities.AboutActivity"
             android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
             android:theme="@style/GameDialogTheme" >
         </activity>
         <activity
@@ -88,16 +87,12 @@
         </activity>
         <activity
             android:name=".sdktest.EventSetupActivity"
-            android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
             android:label="@string/title_activity_event_setup" >
         </activity>
         <activity
             android:name=".sdktest.EventSetupDialog"
-            android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
             android:theme="@style/GameDialogTheme" >
         </activity>
     </application>

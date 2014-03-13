@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -28,9 +27,11 @@ import com.bigbug.rocketrush.views.GraphView;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class GameActivity extends FragmentActivity implements GamePage.OnGameStatusChangedListener {
+public class GameActivity extends BaseActivity implements GamePage.OnGameStatusChangedListener {
 
     private final static String TAG = "GameActivity";
 
@@ -71,11 +72,10 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // Instantiate the object
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
-        Application.getLocalyticsSession().tagScreen("Game");
-        Application.getLocalyticsSession().upload();
+        Object[] info = Application.getLocalyticsEventInfo("Click 'Play'");
+        mAmpSession.tagScreen("Game");
+        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mAmpSession.upload();
     }
 
     @Override
@@ -100,9 +100,6 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -191,10 +188,6 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
         Log.d(TAG, "onPause");
         super.onPause();
 
-        Application.getLocalyticsSession().detach();
-        Application.getLocalyticsSession().close();
-        Application.getLocalyticsSession().upload();
-
         mGamePage.pause();
 
         // Stop drawing background
@@ -243,20 +236,19 @@ public class GameActivity extends FragmentActivity implements GamePage.OnGameSta
 
         switch (requestCode) {
         case GAMEMENU_DIALOG_REQUEST:
-            if (resultCode == Globals.RESTART_GAME) {
-                Log.d(TAG, "mGamePage.restart()");
-                mGamePage.restart();
-            } else if (resultCode == Globals.STOP_GAME) {
-                finish();
-                overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
-            }
-            break;
         case GAMEOVER_DIALOG_REQUEST:
             if (resultCode == Globals.RESTART_GAME) {
                 Log.d(TAG, "mGamePage.restart()");
                 mGamePage.restart();
+                // Update event
+                Object[] info = Application.getLocalyticsEventInfo("Click 'Retry/Restart'");
+                mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                mAmpSession.upload();
             } else if (resultCode == Globals.STOP_GAME) {
                 finish();
+                Intent intent = new Intent(GameActivity.this, HomeActivity.class);
+                intent.putExtra(HomeActivity.KEY_BACK_FROM_GAME, true);
+                startActivity(intent);
                 overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
             }
             break;

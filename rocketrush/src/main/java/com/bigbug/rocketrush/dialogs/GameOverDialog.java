@@ -6,7 +6,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.activities.BaseActivity;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 import com.bigbug.rocketrush.utils.MusicPlayer;
 
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GameOverDialog extends FragmentActivity {
+public class GameOverDialog extends BaseActivity {
 
     private HashMap<String, Object> mResults;
 
@@ -100,8 +100,6 @@ public class GameOverDialog extends FragmentActivity {
         mMusicPlayer.play();
 
         // Instantiate the object
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
         Application.getLocalyticsSession().tagScreen("Game Over");
         Application.getLocalyticsSession().upload();
     }
@@ -116,21 +114,6 @@ public class GameOverDialog extends FragmentActivity {
             bitmap.recycle();
         }
         mBitmaps = null;
-    }
-
-    @Override
-    protected void onPause() {
-        Application.getLocalyticsSession().detach();
-        Application.getLocalyticsSession().close();
-        Application.getLocalyticsSession().upload();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
-        super.onResume();
     }
 
     @Override

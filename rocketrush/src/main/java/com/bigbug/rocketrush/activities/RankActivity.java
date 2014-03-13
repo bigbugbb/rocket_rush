@@ -3,7 +3,6 @@ package com.bigbug.rocketrush.activities;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
@@ -14,13 +13,15 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.game.GameResult;
 
 import java.util.List;
+import java.util.Map;
 
-public class RankActivity extends FragmentActivity {
+public class RankActivity extends BaseActivity {
 
     protected TableLayout mTable;
     protected TextView mTextRecord;
@@ -37,6 +38,11 @@ public class RankActivity extends FragmentActivity {
         setupViews();
         // adjust layouts according to the screen resolution
         adjustLayout();
+
+        Object[] info = Application.getLocalyticsEventInfo("Click 'Rank'");
+        mAmpSession.tagScreen("Rank");
+        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mAmpSession.upload();
     }
 
     private void setupViews() {

@@ -10,7 +10,6 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -27,11 +26,14 @@ import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 import com.bigbug.rocketrush.views.TutorialProgress;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 
-public class TutorialActivity extends FragmentActivity {
+public class TutorialActivity extends BaseActivity {
+
+    public static final String KEY_OPEN_MANUALLY = "KEY_OPEN_MANUALLY";
 
     /**
      * The view pager controller for holding and controlling the tutorial fragments.
@@ -59,19 +61,20 @@ public class TutorialActivity extends FragmentActivity {
         setContentView(R.layout.activity_tutorial);
 
         getWindow().setFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
         mBitmaps = BitmapHelper.loadBitmaps(this, new int[] { R.drawable.btn_end_tutorial, R.drawable.btn_end_tutorial_press });
 
         setupView();
 
-        // Instantiate the object
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
-        Application.getLocalyticsSession().tagScreen("Tutorial");
-        Application.getLocalyticsSession().upload();
+        mAmpSession.tagScreen("Tutorial");
+        if (getIntent().getBooleanExtra(KEY_OPEN_MANUALLY, false)) {
+            Object[] info = Application.getLocalyticsEventInfo("Click 'Help'");
+            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        }
+        mAmpSession.upload();
     }
 
     private void setupView() {
@@ -105,10 +108,9 @@ public class TutorialActivity extends FragmentActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] info = Application.getLocalyticsEventInfo("Click 'Start Journey'");
-                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-
-                startActivity(new Intent(TutorialActivity.this, HomeActivity.class));
+                Intent intent = new Intent(TutorialActivity.this, HomeActivity.class);
+                intent.putExtra(HomeActivity.KEY_OPEN_FROM_TUTORIAL, true);
+                startActivity(intent);
                 overridePendingTransition(R.anim.enter_from_right, R.anim.exit_on_left);
                 finish();
             }
@@ -131,9 +133,6 @@ public class TutorialActivity extends FragmentActivity {
     public void onResume() {
         super.onResume();
 
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
-
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -146,15 +145,6 @@ public class TutorialActivity extends FragmentActivity {
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        Application.getLocalyticsSession().detach();
-        Application.getLocalyticsSession().close();
-        Application.getLocalyticsSession().upload();
     }
 
     @Override
@@ -174,18 +164,27 @@ public class TutorialActivity extends FragmentActivity {
      */
     class ViewPagerAdapter extends FragmentPagerAdapter {
 
+        private List<TutorialPage> mTutorialPages;
+
+        private final static int PAGE_COUNT = 4;
+
         public ViewPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
+
+            mTutorialPages = new ArrayList<TutorialPage>(4);
+            for (int i = 0; i < PAGE_COUNT; ++i) {
+                mTutorialPages.add(new TutorialPage(i));
+            }
         }
 
         @Override
         public Fragment getItem(int position) {
-            return new TutorialPage(position);
+            return mTutorialPages.get(position);
         }
 
         @Override
         public int getCount() {
-            return 4;
+            return mTutorialPages.size();
         }
     }
 

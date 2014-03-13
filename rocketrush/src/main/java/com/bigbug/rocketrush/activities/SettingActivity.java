@@ -5,16 +5,19 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
+import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.R;
 
-public class SettingActivity extends FragmentActivity implements SeekBar.OnSeekBarChangeListener {
+import java.util.List;
+import java.util.Map;
+
+public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener {
 
     public final static String KEY_SND = "KEY_SND";
     public final static String KEY_SFX = "KEY_SFX";
@@ -36,6 +39,10 @@ public class SettingActivity extends FragmentActivity implements SeekBar.OnSeekB
         setupViews();
         adjustLayout();
 
+        Object[] info = Application.getLocalyticsEventInfo("Click 'Setting'");
+        mAmpSession.tagScreen("Setting");
+        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mAmpSession.upload();
     }
 
     @Override

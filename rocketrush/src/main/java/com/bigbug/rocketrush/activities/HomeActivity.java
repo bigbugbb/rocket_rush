@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -49,11 +48,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class HomeActivity extends FragmentActivity implements
+public class HomeActivity extends BaseActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     // Logcat tag
     private static final String TAG = "HomeActivity";
+
+    public static final String KEY_OPEN_FROM_TUTORIAL = "KEY_OPEN_FROM_TUTORIAL";
+    public static final String KEY_BACK_FROM_GAME = "KEY_BACK_FROM_GAME";
 
     // the view for drawing anything
     private GraphView mGraphView;
@@ -112,11 +114,16 @@ public class HomeActivity extends FragmentActivity implements
             .addOnConnectionFailedListener(this).addApi(Plus.API, null)
             .addScope(Plus.SCOPE_PLUS_LOGIN).build();
 
-        // Instantiate the object
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
-        Application.getLocalyticsSession().tagScreen("Home");
-        Application.getLocalyticsSession().upload();
+        // Localytics Amp events
+        mAmpSession.tagScreen("Home");
+        if (getIntent().getBooleanExtra(KEY_OPEN_FROM_TUTORIAL, false)) {
+            Object[] info = Application.getLocalyticsEventInfo("Click 'Start Journey'");
+            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        } else if (getIntent().getBooleanExtra(KEY_BACK_FROM_GAME, false)) {
+            Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
+            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        }
+        mAmpSession.upload();
     }
 
     @Override
@@ -154,9 +161,6 @@ public class HomeActivity extends FragmentActivity implements
     @Override
     public void onResume() {
         super.onResume();
-
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
 
         if (Build.VERSION.SDK_INT >= 11) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -246,14 +250,23 @@ public class HomeActivity extends FragmentActivity implements
     public void onPause() {
         super.onPause();
 
-        Application.getLocalyticsSession().detach();
-        Application.getLocalyticsSession().close();
-        Application.getLocalyticsSession().upload();
-
         // Stop drawing background
         mDrawer.sendMessage(mDrawer.obtainMessage(Application.MESSAGE_STOP_DRAWING));
         // Stop updating data
         mUpdater.sendMessage(mUpdater.obtainMessage(Application.MESSAGE_STOP_UPDATING));
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        Log.d(TAG, "onNewIntent");
+        super.onNewIntent(intent);
+        if (intent.getBooleanExtra(KEY_BACK_FROM_GAME, false)) {
+            Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
+            mAmpSession.tagScreen("Home");
+            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+            mAmpSession.upload();
+        }
+        setIntent(intent);
     }
 
     @Override
@@ -286,9 +299,6 @@ public class HomeActivity extends FragmentActivity implements
         btnStartGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] info = Application.getLocalyticsEventInfo("Click 'Play'");
-                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-
                 startActivity(new Intent(HomeActivity.this, GameActivity.class));
                 overridePendingTransition(R.anim.enter_from_right, R.anim.exit_on_left);
             }
@@ -303,9 +313,6 @@ public class HomeActivity extends FragmentActivity implements
         btnSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] info = Application.getLocalyticsEventInfo("Click 'Setting'");
-                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-
                 SettingActivity.setCallback(new Runnable() {
                     @Override
                     public void run() {
@@ -327,10 +334,9 @@ public class HomeActivity extends FragmentActivity implements
         btnHelp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] info = Application.getLocalyticsEventInfo("Click 'Help'");
-                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-
-                startActivity(new Intent(HomeActivity.this, TutorialActivity.class));
+                Intent intent = new Intent(HomeActivity.this, TutorialActivity.class);
+                intent.putExtra(TutorialActivity.KEY_OPEN_MANUALLY, true);
+                startActivity(intent);
                 overridePendingTransition(R.anim.enter_from_left, R.anim.exit_on_right);
             }
         });
@@ -344,9 +350,6 @@ public class HomeActivity extends FragmentActivity implements
         btnRank.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] info = Application.getLocalyticsEventInfo("Click 'Rank'");
-                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-
                 Intent intent = new Intent(HomeActivity.this, RankActivity.class);
                 intent.putExtra(Globals.KEY_GAME_RESULTS, getGameResults());
                 startActivity(intent);
@@ -362,9 +365,6 @@ public class HomeActivity extends FragmentActivity implements
         btnAbout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Object[] info = Application.getLocalyticsEventInfo("Click 'About'");
-                Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-
                 startActivity(new Intent(HomeActivity.this, AboutActivity.class));
             }
         });
@@ -532,7 +532,7 @@ public class HomeActivity extends FragmentActivity implements
     @Override
     public void onConnected(Bundle bundle) {
         mSignInClicked = false;
-        Toast.makeText(this, "User is connected!", Toast.LENGTH_LONG).show();
+        Log.d(TAG, "User is connected!");
 
         // Get user's information
         getProfileInformation();

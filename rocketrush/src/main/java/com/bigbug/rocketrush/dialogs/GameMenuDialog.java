@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +18,12 @@ import android.widget.TextView;
 import com.bigbug.rocketrush.Application;
 import com.bigbug.rocketrush.Globals;
 import com.bigbug.rocketrush.R;
+import com.bigbug.rocketrush.activities.BaseActivity;
 
 import java.util.List;
 import java.util.Map;
 
-public class GameMenuDialog extends FragmentActivity {
+public class GameMenuDialog extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,31 +74,8 @@ public class GameMenuDialog extends FragmentActivity {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
-        // Instantiate the object
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
         Application.getLocalyticsSession().tagScreen("Game Menu");
         Application.getLocalyticsSession().upload();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-        Application.getLocalyticsSession().detach();
-        Application.getLocalyticsSession().close();
-        Application.getLocalyticsSession().upload();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        Application.getLocalyticsSession().open();
-        Application.getLocalyticsSession().attach(this);
-        super.onResume();
     }
 
     class MenuOptionAdapter extends ArrayAdapter<String> {

@@ -63,7 +63,7 @@ public class EventSetupActivity extends FragmentActivity {
         "Get Time Bonus",
         "Click 'Start Journey'",
         "Click 'Play'",
-        "Click 'Retry'",
+        "Click 'Retry/Restart'",
         "Click 'Back'",
         "Click 'Setting'",
         "Click 'Help'",

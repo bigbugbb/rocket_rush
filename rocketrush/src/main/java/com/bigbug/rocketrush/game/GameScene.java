@@ -500,6 +500,7 @@ public class GameScene extends BaseScene {
             if (object instanceof Barrier) {
                 Barrier barrier = (Barrier) object;
                 if (obj.getKind() == AppObject.ROCKET) {
+                    // Tag events with Localytics amp session
                     if (barrier instanceof Bird) {
                         Object[] info = Application.getLocalyticsEventInfo("Hit Bird");
                         Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
@@ -516,6 +517,7 @@ public class GameScene extends BaseScene {
                         Object[] info = Application.getLocalyticsEventInfo("Hit Alient");
                         Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
                     }
+                    Application.getLocalyticsSession().upload();
 
                     ((Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
                     mLifeBar.lifeChange(-0.334f);
@@ -574,9 +576,11 @@ public class GameScene extends BaseScene {
             if (reward instanceof Field) {
                 Object[] info = Application.getLocalyticsEventInfo("Get Protector");
                 Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                Application.getLocalyticsSession().upload();
             } else if (reward instanceof TimeBonus) {
                 Object[] info = Application.getLocalyticsEventInfo("Get Time Bonus");
                 Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                Application.getLocalyticsSession().upload();
                 mTimer.addBonusTime(((TimeBonus) reward).getBonusTime());
             }
         }
