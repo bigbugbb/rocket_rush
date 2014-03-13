@@ -1,5 +1,20 @@
 package com.localytics.android;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,21 +29,6 @@ import com.localytics.android.LocalyticsProvider.AmpConditionsDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpDisplayedDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRuleEventDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Helper object to the {@link AmpSessionHandler} which helps process upload requests and responses.

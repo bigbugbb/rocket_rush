@@ -8,16 +8,6 @@
 
 package com.localytics.android;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.provider.BaseColumns;
-import android.util.Log;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,6 +17,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.provider.BaseColumns;
+import android.util.Log;
 
 /**
  * Implements the storage mechanism for the Localytics library. The interface and implementation are similar to a ContentProvider
@@ -633,85 +633,73 @@ class LocalyticsProvider
             
             // identifiers table
             db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT UNIQUE NOT NULL, %s TEXT NOT NULL);", IdentifiersDbColumns.TABLE_NAME, IdentifiersDbColumns._ID, IdentifiersDbColumns.KEY, IdentifiersDbColumns.VALUE));
+              
+			// amp rules table
+            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s INTEGER, "
+            		+ "%s INTEGER, "
+            		+ "%s TEXT NOT NULL, " 	            		
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s INTEGER, " // time to display
+            		+ "%s INTEGER NOT NULL, "
+            		+ "%s TEXT, " // ab test            		
+            		+ "%s TEXT UNIQUE NOT NULL, "
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s TEXT NOT NULL)", AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID,             		
+            		AmpRulesDbColumns.CAMPAIGN_ID,
+            		AmpRulesDbColumns.EXPIRATION,
+            		AmpRulesDbColumns.DISPLAY_SECONDS,
+            		AmpRulesDbColumns.DISPLAY_SESSION,
+            		AmpRulesDbColumns.VERSION,
+            		AmpRulesDbColumns.PHONE_LOCATION,
+            		AmpRulesDbColumns.PHONE_SIZE_WIDTH, 
+            		AmpRulesDbColumns.PHONE_SIZE_HEIGHT, 
+            		AmpRulesDbColumns.TABLET_LOCATION,
+            		AmpRulesDbColumns.TABLET_SIZE_WIDTH, 
+            		AmpRulesDbColumns.TABLET_SIZE_HEIGHT, 
+            		AmpRulesDbColumns.TIME_TO_DISPLAY,
+            		AmpRulesDbColumns.INTERNET_REQUIRED,
+            		AmpRulesDbColumns.AB_TEST,
+            		AmpRulesDbColumns.RULE_NAME,
+            		AmpRulesDbColumns.LOCATION,
+            		AmpRulesDbColumns.DEVICES));
             
-            try 
-    		{
-    			@SuppressWarnings({ "rawtypes", "unused" })
-    			Class clazz = Class.forName("com.localytics.android.LocalyticsAmpSession");
-    			// amp rules table
-	            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s INTEGER, "
-	            		+ "%s INTEGER, "
-	            		+ "%s TEXT NOT NULL, " 	            		
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s INTEGER, " // time to display
-	            		+ "%s INTEGER NOT NULL, "
-	            		+ "%s TEXT, " // ab test            		
-	            		+ "%s TEXT UNIQUE NOT NULL, "
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s TEXT NOT NULL)", AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID,             		
-	            		AmpRulesDbColumns.CAMPAIGN_ID,
-	            		AmpRulesDbColumns.EXPIRATION,
-	            		AmpRulesDbColumns.DISPLAY_SECONDS,
-	            		AmpRulesDbColumns.DISPLAY_SESSION,
-	            		AmpRulesDbColumns.VERSION,
-	            		AmpRulesDbColumns.PHONE_LOCATION,
-	            		AmpRulesDbColumns.PHONE_SIZE_WIDTH, 
-	            		AmpRulesDbColumns.PHONE_SIZE_HEIGHT, 
-	            		AmpRulesDbColumns.TABLET_LOCATION,
-	            		AmpRulesDbColumns.TABLET_SIZE_WIDTH, 
-	            		AmpRulesDbColumns.TABLET_SIZE_HEIGHT, 
-	            		AmpRulesDbColumns.TIME_TO_DISPLAY,
-	            		AmpRulesDbColumns.INTERNET_REQUIRED,
-	            		AmpRulesDbColumns.AB_TEST,
-	            		AmpRulesDbColumns.RULE_NAME,
-	            		AmpRulesDbColumns.LOCATION,
-	            		AmpRulesDbColumns.DEVICES));
-	            
-	            // amp rule event table
-	            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpRuleEventDbColumns.TABLE_NAME, AmpRuleEventDbColumns._ID,            		
-	            		AmpRuleEventDbColumns.EVENT_NAME,
-	            		AmpRuleEventDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
-	            
-	            // amp displayed states table
-                db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "
-                		+ "%s INTEGER NOT NULL DEFAULT 0, "
-                		+ "%s INTEGER NOT NULL);", AmpDisplayedDbColumns.TABLE_NAME, AmpDisplayedDbColumns._ID,
-                		AmpDisplayedDbColumns.DISPLAYED,
-                		AmpDisplayedDbColumns.CAMPAIGN_ID));
-	            
-	            // amp conditions table
-	            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID,            		
-	            		AmpConditionsDbColumns.ATTRIBUTE_NAME,
-	            		AmpConditionsDbColumns.OPERATOR, 
-	            		AmpConditionsDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
-	            
-	            // amp condition values table
-	            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-	            		+ "%s TEXT NOT NULL, "
-	            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionValuesDbColumns.TABLE_NAME, AmpConditionValuesDbColumns._ID,            		
-	            		AmpConditionValuesDbColumns.VALUE,
-	            		AmpConditionValuesDbColumns.CONDITION_ID_REF, AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID));  
-    		}
-    		catch (ClassNotFoundException e) 
-    		{
-    			if (Constants.IS_LOGGABLE)
-                {
-                    Log.d(Constants.LOG_TAG, "There is no support for marketing platform in this library."); //$NON-NLS-1$
-                }
-    		}           
+            // amp rule event table
+            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpRuleEventDbColumns.TABLE_NAME, AmpRuleEventDbColumns._ID,            		
+            		AmpRuleEventDbColumns.EVENT_NAME,
+            		AmpRuleEventDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
+            
+            // amp displayed states table
+            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "
+            		+ "%s INTEGER NOT NULL DEFAULT 0, "
+            		+ "%s INTEGER NOT NULL);", AmpDisplayedDbColumns.TABLE_NAME, AmpDisplayedDbColumns._ID,
+            		AmpDisplayedDbColumns.DISPLAYED,
+            		AmpDisplayedDbColumns.CAMPAIGN_ID));
+            
+            // amp conditions table
+            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID,            		
+            		AmpConditionsDbColumns.ATTRIBUTE_NAME,
+            		AmpConditionsDbColumns.OPERATOR, 
+            		AmpConditionsDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
+            
+            // amp condition values table
+            db.execSQL(String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+            		+ "%s TEXT NOT NULL, "
+            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionValuesDbColumns.TABLE_NAME, AmpConditionValuesDbColumns._ID,            		
+            		AmpConditionValuesDbColumns.VALUE,
+            		AmpConditionValuesDbColumns.CONDITION_ID_REF, AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID));         
         }
         
         @Override
@@ -870,89 +858,77 @@ class LocalyticsProvider
             	db.execSQL(String.format("ALTER TABLE %s ADD COLUMN %s REAL;", EventsDbColumns.TABLE_NAME, EventsDbColumns.LAT_NAME)); //$NON-NLS-1$
             	db.execSQL(String.format("ALTER TABLE %s ADD COLUMN %s REAL;", EventsDbColumns.TABLE_NAME, EventsDbColumns.LNG_NAME)); //$NON-NLS-1$
             }
-            
-            try 
-    		{
-    			@SuppressWarnings({ "rawtypes", "unused" })
-    			Class clazz = Class.forName("com.localytics.android.LocalyticsAmpSession");
-    			// amp rules table
-    			if (oldVersion < 14) 
-	            {            	
-	                // amp rules table
-	                db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s INTEGER, "
-	                		+ "%s INTEGER, "
-	                		+ "%s TEXT NOT NULL, " 
-	                		+ "%s TEXT NOT NULL, "
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s TEXT NOT NULL, "
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s INTEGER, " // time to display
-	                		+ "%s INTEGER NOT NULL, "
-	                		+ "%s TEXT, " // ab test            		
-	                		+ "%s TEXT UNIQUE NOT NULL, "
-	                		+ "%s TEXT NOT NULL, "
-	                		+ "%s TEXT NOT NULL)", AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID,             		
-	                		AmpRulesDbColumns.CAMPAIGN_ID,
-	                		AmpRulesDbColumns.EXPIRATION,
-	                		AmpRulesDbColumns.DISPLAY_SECONDS,
-	                		AmpRulesDbColumns.DISPLAY_SESSION,
-	                		AmpRulesDbColumns.VERSION,
-	                		AmpRulesDbColumns.PHONE_LOCATION,
-	                		AmpRulesDbColumns.PHONE_SIZE_WIDTH, 
-	                		AmpRulesDbColumns.PHONE_SIZE_HEIGHT, 
-	                		AmpRulesDbColumns.TABLET_LOCATION,
-	                		AmpRulesDbColumns.TABLET_SIZE_WIDTH, 
-	                		AmpRulesDbColumns.TABLET_SIZE_HEIGHT, 
-	                		AmpRulesDbColumns.TIME_TO_DISPLAY,
-	                		AmpRulesDbColumns.INTERNET_REQUIRED,
-	                		AmpRulesDbColumns.AB_TEST,
-	                		AmpRulesDbColumns.RULE_NAME,
-	                		AmpRulesDbColumns.LOCATION,
-	                		AmpRulesDbColumns.DEVICES));
-	                
-	                // amp rule event table
-	                db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-	                		+ "%s TEXT NOT NULL, "
-	                		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpRuleEventDbColumns.TABLE_NAME, AmpRuleEventDbColumns._ID,            		
-	                		AmpRuleEventDbColumns.EVENT_NAME,
-	                		AmpRuleEventDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
-	                
-	                // amp displayed states table
-	                db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "
-	                		+ "%s INTEGER NOT NULL DEFAULT 0, "
-	                		+ "%s INTEGER NOT NULL);", AmpDisplayedDbColumns.TABLE_NAME, AmpDisplayedDbColumns._ID,
-	                		AmpDisplayedDbColumns.DISPLAYED,
-	                		AmpDisplayedDbColumns.CAMPAIGN_ID));
-	                
-	                // amp conditions table
-		            db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-		            		+ "%s TEXT NOT NULL, "
-		            		+ "%s TEXT NOT NULL, "
-		            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID,            		
-		            		AmpConditionsDbColumns.ATTRIBUTE_NAME,
-		            		AmpConditionsDbColumns.OPERATOR, 
-		            		AmpConditionsDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
-		            
-		            // amp condition values table
-		            db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
-		            		+ "%s TEXT NOT NULL, "
-		            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionValuesDbColumns.TABLE_NAME, AmpConditionValuesDbColumns._ID,            		
-		            		AmpConditionValuesDbColumns.VALUE,
-		            		AmpConditionValuesDbColumns.CONDITION_ID_REF, AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID));
-	            }
-    		}
-    		catch (ClassNotFoundException e) 
-    		{
-    			if (Constants.IS_LOGGABLE)
-                {
-                    Log.d(Constants.LOG_TAG, "There is no support for marketing platform in this library."); //$NON-NLS-1$
-                }
-    		}            
+       
+			// amp rules table
+			if (oldVersion < 14) 
+            {            	
+                // amp rules table
+                db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s INTEGER, "
+                		+ "%s INTEGER, "
+                		+ "%s TEXT NOT NULL, " 
+                		+ "%s TEXT NOT NULL, "
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s TEXT NOT NULL, "
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s INTEGER, " // time to display
+                		+ "%s INTEGER NOT NULL, "
+                		+ "%s TEXT, " // ab test            		
+                		+ "%s TEXT UNIQUE NOT NULL, "
+                		+ "%s TEXT NOT NULL, "
+                		+ "%s TEXT NOT NULL)", AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID,             		
+                		AmpRulesDbColumns.CAMPAIGN_ID,
+                		AmpRulesDbColumns.EXPIRATION,
+                		AmpRulesDbColumns.DISPLAY_SECONDS,
+                		AmpRulesDbColumns.DISPLAY_SESSION,
+                		AmpRulesDbColumns.VERSION,
+                		AmpRulesDbColumns.PHONE_LOCATION,
+                		AmpRulesDbColumns.PHONE_SIZE_WIDTH, 
+                		AmpRulesDbColumns.PHONE_SIZE_HEIGHT, 
+                		AmpRulesDbColumns.TABLET_LOCATION,
+                		AmpRulesDbColumns.TABLET_SIZE_WIDTH, 
+                		AmpRulesDbColumns.TABLET_SIZE_HEIGHT, 
+                		AmpRulesDbColumns.TIME_TO_DISPLAY,
+                		AmpRulesDbColumns.INTERNET_REQUIRED,
+                		AmpRulesDbColumns.AB_TEST,
+                		AmpRulesDbColumns.RULE_NAME,
+                		AmpRulesDbColumns.LOCATION,
+                		AmpRulesDbColumns.DEVICES));
+                
+                // amp rule event table
+                db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+                		+ "%s TEXT NOT NULL, "
+                		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpRuleEventDbColumns.TABLE_NAME, AmpRuleEventDbColumns._ID,            		
+                		AmpRuleEventDbColumns.EVENT_NAME,
+                		AmpRuleEventDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
+                
+                // amp displayed states table
+                db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "
+                		+ "%s INTEGER NOT NULL DEFAULT 0, "
+                		+ "%s INTEGER NOT NULL);", AmpDisplayedDbColumns.TABLE_NAME, AmpDisplayedDbColumns._ID,
+                		AmpDisplayedDbColumns.DISPLAYED,
+                		AmpDisplayedDbColumns.CAMPAIGN_ID));
+                
+                // amp conditions table
+	            db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+	            		+ "%s TEXT NOT NULL, "
+	            		+ "%s TEXT NOT NULL, "
+	            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID,            		
+	            		AmpConditionsDbColumns.ATTRIBUTE_NAME,
+	            		AmpConditionsDbColumns.OPERATOR, 
+	            		AmpConditionsDbColumns.RULE_ID_REF, AmpRulesDbColumns.TABLE_NAME, AmpRulesDbColumns._ID));
+	            
+	            // amp condition values table
+	            db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, "            		
+	            		+ "%s TEXT NOT NULL, "
+	            		+ "%s INTEGER REFERENCES %s(%s) NOT NULL);", AmpConditionValuesDbColumns.TABLE_NAME, AmpConditionValuesDbColumns._ID,            		
+	            		AmpConditionValuesDbColumns.VALUE,
+	            		AmpConditionValuesDbColumns.CONDITION_ID_REF, AmpConditionsDbColumns.TABLE_NAME, AmpConditionsDbColumns._ID));
+            }    		       
         }
         
         // @Override

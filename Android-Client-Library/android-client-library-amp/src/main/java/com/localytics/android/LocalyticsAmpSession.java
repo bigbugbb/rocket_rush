@@ -1,16 +1,16 @@
 package com.localytics.android;
 
-import android.app.Activity;
-import android.content.Context;
-import android.os.Environment;
-import android.os.Looper;
-import android.support.v4.app.FragmentActivity;
-
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import android.app.Activity;
+import android.content.Context;
+import android.os.Environment;
+import android.os.Looper;
+import android.support.v4.app.FragmentActivity;
 
 public class LocalyticsAmpSession extends LocalyticsSession 
 {    
@@ -77,14 +77,7 @@ public class LocalyticsAmpSession extends LocalyticsSession
 	 */
 	public void triggerAmp(final String eventName)
     {
-		final AmpSessionHandler handler = (AmpSessionHandler) getSessionHandler();
-		handler.sendMessage(handler.obtainMessage(SessionHandler.MESSAGE_UPLOAD, new Runnable() 
-		{
-			public void run()
-			{
-				handler.sendMessage(handler.obtainMessage(AmpSessionHandler.MESSAGE_TRIGGER_AMP, new Object[] { eventName, null }));
-			}
-		}));
+		triggerAmp(eventName, null);
     }
 	
 	/**
@@ -93,13 +86,13 @@ public class LocalyticsAmpSession extends LocalyticsSession
 	 * @param attributes
 	 */
 	public void triggerAmp(final String eventName, final Map<String, String> attributes)
-    {
+    {	
 		final AmpSessionHandler handler = (AmpSessionHandler) getSessionHandler();
 		handler.sendMessage(handler.obtainMessage(SessionHandler.MESSAGE_UPLOAD, new Runnable() 
 		{
 			public void run()
 			{
-				handler.sendMessage(handler.obtainMessage(AmpSessionHandler.MESSAGE_TRIGGER_AMP, new Object[] { eventName, new TreeMap<String, String>(attributes) }));
+				handler.sendMessage(handler.obtainMessage(AmpSessionHandler.MESSAGE_TRIGGER_AMP, new Object[] { eventName, (attributes == null) ? null : new TreeMap<String, String>(attributes) }));
 			}
 		}));
     }

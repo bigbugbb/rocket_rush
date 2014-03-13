@@ -1,5 +1,14 @@
 package com.localytics.android;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Handler;
@@ -10,15 +19,6 @@ import android.webkit.JavascriptInterface;
 
 import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 import com.localytics.android.LocalyticsProvider.IdentifiersDbColumns;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 /**
  * This class implements the JavaScriptAPI interface.
@@ -35,32 +35,11 @@ import java.util.TreeMap;
 	
 	private DialogFragment mFragment;
 	
-	private static JavaScriptClient sClient;
-	
-	public static JavaScriptClient getInstance(Context context, SessionHandler handler, LocalyticsProvider provider, DialogFragment fragment)
-	{
-		if (null == sClient)
-		{
-			sClient = new JavaScriptClient(context, handler, provider, fragment);
-		}
-		else
-		{
-			sClient.updateDialogFragment(fragment);
-		}
-		
-		return sClient;
-	}
-	
-	JavaScriptClient(Context context, SessionHandler handler, LocalyticsProvider provider, DialogFragment fragment)
+	public JavaScriptClient(Context context, SessionHandler handler, LocalyticsProvider provider, DialogFragment fragment)
 	{
 		mContext  = context;
 		mHandler  = handler;
 		mProvider = provider;
-		mFragment = fragment;
-	}
-	
-	private void updateDialogFragment(DialogFragment fragment)
-	{
 		mFragment = fragment;
 	}
 	
@@ -302,46 +281,7 @@ import java.util.TreeMap;
     
     private String getAttributes()
     {
-    	Cursor cursor = null;
-        try
-        {
-        	cursor = mProvider.query(IdentifiersDbColumns.TABLE_NAME, null, null, null, null);
-        	
-            if (cursor.getCount() == 0)
-            {
-                return null;
-            }
-
-            final JSONObject attributes = new JSONObject();
-
-            final int keyColumn = cursor.getColumnIndexOrThrow(IdentifiersDbColumns.KEY);
-            final int valueColumn = cursor.getColumnIndexOrThrow(IdentifiersDbColumns.VALUE);
-            while (cursor.moveToNext())
-            {
-                final String key = cursor.getString(keyColumn);
-                final String value = cursor.getString(valueColumn);
-
-                attributes.put(key.substring(mContext.getPackageName().length() + 1, key.length()), value);
-            }
-
-            return attributes.toString();
-        } 
-        catch (JSONException e) 
-        {
-        	if (Constants.IS_LOGGABLE)
-            {
-                Log.w(Constants.LOG_TAG, "[JavaScriptClient]: Failed to get attributes"); //$NON-NLS-1$				                    
-            }
-        	return null;
-		}
-        finally
-        {
-            if (null != cursor)
-            {
-                cursor.close();
-                cursor = null;
-            }
-        }
+    	return null;
     }
     
     /**

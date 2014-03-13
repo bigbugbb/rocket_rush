@@ -1,5 +1,17 @@
 package com.localytics.android;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -19,18 +31,6 @@ import com.localytics.android.LocalyticsProvider.AmpDisplayedDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRuleEventDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * Helper class to handle amp session-related work on the {@link LocalyticsAmpSession#sSessionHandlerThread}.
@@ -152,6 +152,27 @@ import java.util.zip.ZipInputStream;
 
                     break;
                 }
+                case MESSAGE_TAG_EVENT:
+                {
+                    if (Constants.IS_LOGGABLE)
+                    {
+                        Log.d(Constants.LOG_TAG, "Amp Session Handler received MESSAGE_TAG_EVENT"); //$NON-NLS-1$
+                    }
+
+                    final Object[] params = (Object[]) msg.obj;
+
+                    final String event = (String) params[0];
+                    @SuppressWarnings("unchecked")
+                    final Map<String, String> attributes = (Map<String, String>) params[1];                  
+
+                    /**
+                     * This message should be already handled by SessionHandler, extra work here is
+                     * to trigger the amp.
+                     */
+                    AmpSessionHandler.this.triggerAmp(event, attributes);
+
+                    break;
+                }
                 default:
                 {
                     /*
@@ -203,7 +224,14 @@ import java.util.zip.ZipInputStream;
     /* package */void triggerAmp(final String eventName, final Map<String, String> attributes)
     {
     	// Get all amp messages associated with the input event
-		final Vector<Map<String, Object>> ampMessages = getAmpMessageMaps(eventName);
+		Vector<Map<String, Object>> ampMessages = getAmpMessageMaps(eventName);
+		if (ampMessages.size() == 0) {
+			if (eventName.startsWith(mContext.getPackageName())) 
+			{			
+				final String eventString = eventName.substring(mContext.getPackageName().length() + 1, eventName.length());
+				ampMessages = getAmpMessageMaps(eventString);
+			}
+		}
 		
 		// Retrieve the suitable amp message for displaying the amp dialog
 		final Map<String, Object> ampMessage = retrieveDisplayingCandidate(ampMessages, attributes);
@@ -232,7 +260,7 @@ import java.util.zip.ZipInputStream;
 					final AmpDialogFragment fragment = AmpDialogFragment.newInstance();
 					fragment.setData(ampMessage)
 							.setOnAmpDestroyListener(AmpSessionHandler.this)
-							.setJavaScriptAPI(JavaScriptClient.getInstance(mContext, AmpSessionHandler.this, mProvider, fragment))
+							.setJavaScriptAPI(new JavaScriptClient(mContext, AmpSessionHandler.this, mProvider, fragment))
 							.show(mFragmentManager, AmpDialogFragment.DIALOG_TAG);
 					
 					/* 

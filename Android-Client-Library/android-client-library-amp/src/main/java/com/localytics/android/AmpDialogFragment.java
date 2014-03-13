@@ -1,5 +1,15 @@
 package com.localytics.android;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -40,16 +50,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
-
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Helper class to handle amp dialog work for the in-app message.
@@ -548,8 +548,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 			setContentView(mRootLayout);
 		}
 		
+		@SuppressLint("NewApi")
 		private void adjustLayout()
-		{
+		{			
 			// Get screen size
 			mMetrics = new DisplayMetrics();
 	        WindowManager windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
