@@ -34,7 +34,8 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/setup_attributes" />
+                android:text="@string/setup_attributes"
+                android:background="@color/dark_gray" />
 
             <include layout="@layout/divider"/>
 
@@ -71,7 +72,8 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
-                android:text="@string/setup_custom_dimensions" />
+                android:text="@string/setup_custom_dimensions"
+                android:background="@color/dark_gray" />
 
             <include layout="@layout/divider"/>
 

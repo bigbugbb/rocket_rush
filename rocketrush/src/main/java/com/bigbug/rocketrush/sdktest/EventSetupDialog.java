@@ -164,7 +164,9 @@ public class EventSetupDialog extends FragmentActivity {
                 int firstVisiblePosition = mListAttr.getFirstVisiblePosition();
                 EditText editKey   = (EditText) view.findViewById(R.id.edit_key);
                 EditText editValue = (EditText) view.findViewById(R.id.edit_value);
-                mAttributesData.set(i + firstVisiblePosition, new Pair<String, String>(editKey.getText().toString(), editValue.getText().toString()));
+                if (i + firstVisiblePosition < mAttributesData.size()) {
+                    mAttributesData.set(i + firstVisiblePosition, new Pair<String, String>(editKey.getText().toString(), editValue.getText().toString()));
+                }
             }
         }
     }
@@ -176,7 +178,9 @@ public class EventSetupDialog extends FragmentActivity {
                 int firstVisiblePosition = mListCustom.getFirstVisiblePosition();
                 EditText edit = (EditText) view.findViewById(R.id.edit_value);
                 String s = edit.getText().toString();
-                mCustomDimensionsData.set(i + firstVisiblePosition, s);
+                if (i + firstVisiblePosition < mCustomDimensionsData.size()) {
+                    mCustomDimensionsData.set(i + firstVisiblePosition, s);
+                }
             }
         }
     }
