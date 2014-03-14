@@ -52,5 +52,7 @@ echo "Moves jar to targeting directory: "$DIR/build/
 mv $AMP_LIB $DIR/build/android-client-library-amp.jar
 mv $ANALYTICS_LIB $DIR/build/android-client-library.jar
 
+cp $DIR/build/android-client-library-amp.jar ../rocketrush/libs
+
 
 

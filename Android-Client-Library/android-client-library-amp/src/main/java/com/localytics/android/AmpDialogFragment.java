@@ -54,7 +54,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 /**
  * Helper class to handle amp dialog work for the in-app message.
  */
-/* package */public class AmpDialogFragment extends DialogFragment 
+/* package */public class AmpDialogFragment extends DialogFragment
 {
 	public static final String DIALOG_TAG = "amp_dialog";
 	
@@ -530,8 +530,6 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 						
 			// Create and add the dismiss button dynamically
 			mBtnDismiss = new DismissButton(getContext(), null);
-			mDialogLayout.addView(mBtnDismiss);						
-			
 			mBtnDismiss.setOnClickListener(new View.OnClickListener()
 			{
 				public void onClick(View v)
@@ -542,8 +540,9 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 					}
 				}
 			});
-			
-			requestWindowFeature(Window.FEATURE_NO_TITLE);
+            mDialogLayout.addView(mBtnDismiss);
+
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
 			
 			setContentView(mRootLayout);
 		}
@@ -575,7 +574,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			
 			// Dialog in the center screen
 			if (mLocation.equals(LOCATION_CENTER))
-			{			
+			{
 				// Set dialog size (for center dialog size, the margin must be taken into account for displaying the dismiss button)
 				window.setLayout(mMetrics.widthPixels, mMetrics.heightPixels);
 				// Set the margin to place the dismiss button out of dialog's visible boundary
@@ -584,8 +583,8 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 				params.width  = (int) Math.min(maxWidth - (margin << 1), (int) (mWidth * mMetrics.density + 0.5f)) + (margin << 1);
 				params.height = (int) (Math.min(maxWidth - (margin << 1), (int) (mWidth * mMetrics.density + 0.5f)) * aspectRatio) + (margin << 1);
 				params.setMargins(margin, margin, margin, margin);
-				mWebView.requestLayout();								
-				mWebView.setLayoutParams(params);
+                mWebView.setLayoutParams(params);
+				mWebView.requestLayout();
 			}
 			// Dialog occupying the whole screen
 			else if (mLocation.equals(LOCATION_FULL))
@@ -597,7 +596,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			else if (mLocation.equals(LOCATION_TOP))
 			{
 				attributes.y = -0xFFFFFFF;
-				attributes.dimAmount = 0f;								
+//				attributes.dimAmount = 0f;
 		     	// Set dialog size
 		        window.setLayout((int) maxWidth, (int) (maxWidth * aspectRatio + 0.5f));	        
 			}
@@ -605,7 +604,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			else if (mLocation.equals(LOCATION_BOTTOM))
 			{			
 				attributes.y = 0xFFFFFFF;
-				attributes.dimAmount = 0f;
+//				attributes.dimAmount = 0f;
 		     	// Set dialog size
 				window.setLayout((int) maxWidth, (int) (maxWidth * aspectRatio + 0.5f));
 			}

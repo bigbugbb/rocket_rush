@@ -1,5 +1,17 @@
 package com.localytics.android;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
+
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -28,18 +40,6 @@ import com.localytics.android.LocalyticsProvider.InfoDbColumns;
 import com.localytics.android.LocalyticsProvider.SessionsDbColumns;
 import com.localytics.android.LocalyticsProvider.UploadBlobEventsDbColumns;
 import com.localytics.android.LocalyticsProvider.UploadBlobsDbColumns;
-
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
 
 /**
  * Helper class to handle session-related work on the {@link LocalyticsSession#sSessionHandlerThread}.

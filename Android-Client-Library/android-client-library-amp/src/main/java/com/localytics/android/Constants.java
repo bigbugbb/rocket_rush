@@ -103,7 +103,7 @@ import android.text.format.DateUtils;
      * Before releasing a production version of an app, this should be set to false for privacy and performance reasons. When
      * logging is enabled, sensitive information such as the device ID may be printed to the log.
      */
-    public static final boolean IS_LOGGABLE = false;
+    public static final boolean IS_LOGGABLE = true;
 
     /**
      * Flag indicating whether to use HTTPS for uploads
@@ -122,7 +122,7 @@ import android.text.format.DateUtils;
      * Normally this should be set to true. The only time this should be set to false is during development on the Localytics
      * library itself, in order to detect bugs more quickly.
      */
-    public static final boolean IS_EXCEPTION_SUPPRESSION_ENABLED = true;
+    public static final boolean IS_EXCEPTION_SUPPRESSION_ENABLED = false;
 
     /**
      * Flag to control whether device identifiers are uploaded.

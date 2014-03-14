@@ -127,7 +127,11 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
     {
         try
         {
-            super.handleMessage(msg);
+        	// Do this check otherwise the super class may throw exception
+        	if (msg.what != MESSAGE_TRIGGER_AMP) 
+        	{
+        		super.handleMessage(msg);
+        	}
 
             if (Constants.IS_LOGGABLE)
             {
@@ -172,13 +176,6 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
                     AmpSessionHandler.this.triggerAmp(event, attributes);
 
                     break;
-                }
-                default:
-                {
-                    /*
-                     * This should never happen
-                     */
-                    throw new RuntimeException("Fell through switch statement"); //$NON-NLS-1$
                 }
             }
         }
