@@ -1,31 +1,5 @@
 package com.localytics.android;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.zip.GZIPOutputStream;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Handler;
@@ -46,6 +20,32 @@ import com.localytics.android.LocalyticsProvider.SessionsDbColumns;
 import com.localytics.android.LocalyticsProvider.UploadBlobEventsDbColumns;
 import com.localytics.android.LocalyticsProvider.UploadBlobsDbColumns;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.zip.GZIPOutputStream;
+
 /**
  * Helper object to the {@link SessionHandler} which helps process upload requests.
  */
@@ -65,7 +65,7 @@ import com.localytics.android.LocalyticsProvider.UploadBlobsDbColumns;
     /**
      * Localytics upload URL for HTTPS
      */
-    private final static String ANALYTICS_URL_HTTPS = "https://analytics.localytics.com/api/v2/uploads"; //$NON-NLS-1$        
+    private final static String ANALYTICS_URL_HTTPS = "https://analytics.localytics.com/api/v2/uploads"; //$NON-NLS-1$
     
     /**
      * Handler message to upload all data collected so far
@@ -395,7 +395,7 @@ import com.localytics.android.LocalyticsProvider.UploadBlobsDbColumns;
                 /*
                  * Retrives the HTTP response as a string if available
                  */
-                retriveHttpResponse(connection.getInputStream());                
+                retriveHttpResponse(connection.getInputStream());
             }
             catch (final MalformedURLException e)
             {
@@ -892,8 +892,6 @@ import com.localytics.android.LocalyticsProvider.UploadBlobsDbColumns;
      * Helper method to generate the attributes object for a session
      *
      * @param provider Instance of the Localytics database provider. Cannot be null.
-     * @param apiKey Localytics API key. Cannot be null.
-     * @param sessionId The {@link SessionsDbColumns#_ID} of the session.
      * @return a JSONObject representation of the session attributes
      * @throws JSONException if a problem occurred converting the element to JSON.
      */

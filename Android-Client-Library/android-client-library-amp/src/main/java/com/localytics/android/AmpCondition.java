@@ -1,10 +1,10 @@
 package com.localytics.android;
 
+import android.util.Log;
+
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Vector;
-
-import android.util.Log;
 
 /**
  * The helper class to deal with amp condition checking.

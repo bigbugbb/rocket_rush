@@ -15,9 +15,8 @@ import android.text.format.DateUtils;
  * <p>
  * This is not a public API.
  */
-/* package */final class Constants
+/* package */class Constants
 {
-
     /**
      * Version number of this library. This number is primarily important in terms of changes to the upload format.
      */
@@ -103,7 +102,7 @@ import android.text.format.DateUtils;
      * Before releasing a production version of an app, this should be set to false for privacy and performance reasons. When
      * logging is enabled, sensitive information such as the device ID may be printed to the log.
      */
-    public static final boolean IS_LOGGABLE = true;
+    public static final boolean IS_LOGGABLE = false;
 
     /**
      * Flag indicating whether to use HTTPS for uploads
@@ -122,7 +121,7 @@ import android.text.format.DateUtils;
      * Normally this should be set to true. The only time this should be set to false is during development on the Localytics
      * library itself, in order to detect bugs more quickly.
      */
-    public static final boolean IS_EXCEPTION_SUPPRESSION_ENABLED = false;
+    public static final boolean IS_EXCEPTION_SUPPRESSION_ENABLED = true;
 
     /**
      * Flag to control whether device identifiers are uploaded.
@@ -141,7 +140,7 @@ import android.text.format.DateUtils;
      *
      * @throws UnsupportedOperationException because this class cannot be instantiated.
      */
-    private Constants()
+    protected Constants()
     {
         throw new UnsupportedOperationException("This class is non-instantiable"); //$NON-NLS-1$
     }

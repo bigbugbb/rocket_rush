@@ -8,11 +8,11 @@
 
 package com.localytics.android;
 
-import org.json.JSONArray;
-
 import android.Manifest.permission;
 
 import com.localytics.android.LocalyticsProvider.ApiKeysDbColumns;
+
+import org.json.JSONArray;
 
 /**
  * Set of constants for building JSON objects that get sent to the Localytics web service.

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/rocket_rush.iml" filepath="$PROJECT_DIR$/rocket_rush.iml" />
-      <module fileurl="file://$PROJECT_DIR$/rocket_rush.iml" filepath="$PROJECT_DIR$/rocket_rush.iml" />
       <module fileurl="file://$PROJECT_DIR$/rocketrush/rocketrush.iml" filepath="$PROJECT_DIR$/rocketrush/rocketrush.iml" />
     </modules>
   </component>

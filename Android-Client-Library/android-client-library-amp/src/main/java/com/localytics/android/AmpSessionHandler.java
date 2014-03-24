@@ -1,17 +1,5 @@
 package com.localytics.android;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -32,26 +20,43 @@ import com.localytics.android.LocalyticsProvider.AmpRuleEventDbColumns;
 import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 /**
  * Helper class to handle amp session-related work on the {@link LocalyticsAmpSession#sSessionHandlerThread}.
  */
-/* package */class AmpSessionHandler extends SessionHandler implements AmpDialogFragment.AmpDialogCallback
+/* package */class AmpSessionHandler extends SessionHandler
 {		
 	/**
 	 * The fragment manager bound for showing the amp dialog
 	 */
 	private FragmentManager mFragmentManager;
-	
+
 	/**
-     * Selection for {@link #getAmpMessageMap()}.
+     * Selection for {@link #getAmpMessageMaps()}.
      */
     private static final String SELECTION_AMP_RULES = String.format("%s > ?", AmpRulesDbColumns.EXPIRATION); //$NON-NLS-1$
-	
+
     /**
-     * Selection for {@link #getAmpMessageMap()}.
+     * Selection for {@link #getAmpMessageMaps()}.
      */
     private static final String SELECTION_AMP_RULEEVENTS = String.format("%s = ?", AmpRuleEventDbColumns.EVENT_NAME); //$NON-NLS-1$
-    
+
 	/**
      * Sort order for the amp rules.
      * <p>
@@ -256,8 +261,8 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 					}
 					final AmpDialogFragment fragment = AmpDialogFragment.newInstance();
 					fragment.setData(ampMessage)
-							.setOnAmpDestroyListener(AmpSessionHandler.this)
-							.setJavaScriptAPI(new JavaScriptClient(mContext, AmpSessionHandler.this, mProvider, fragment))
+							.setCallbacks(getDialogCallbacks())
+							.setJavaScriptClient(new JavaScriptClient(getJavaScriptClientCallbacks()))
 							.show(mFragmentManager, AmpDialogFragment.DIALOG_TAG);
 					
 					/* 
@@ -280,120 +285,448 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 				}			
 			}
 		});	
-    }     
-    
-    /**
-     * As a callback, this method will be called when the amp is being destroyed.
-     * 
-     * @param ampMessage The amp message from which to trigger the amp.
-     */
-	public void onAmpDestroy(final Map<String, Object> ampMessage)
-	{
-		try {
-	    	// Get the rule id and campaign id to querying the database
-	    	final int campaignId = (Integer) ampMessage.get(AmpRulesDbColumns.CAMPAIGN_ID);
-	    	final int ruleId = getRuleIdFromCampaignId(campaignId);
-	    	
-	    	mProvider.runBatchTransaction(new Runnable()
-	        {
-	            public void run()
-	            {
-	            	// Set the displayed state of this campaign to prevent it from being displayed twice.
-	            	final ContentValues values = new ContentValues();
-	                values.put(AmpDisplayedDbColumns.DISPLAYED, 1);
-	                values.put(AmpDisplayedDbColumns.CAMPAIGN_ID, campaignId);
-	                mProvider.insert(AmpDisplayedDbColumns.TABLE_NAME, values); //$NON-NLS-1$
-	                
-	                /**
-	                 * Clear the database after the campaign has been displayed.
-	                 */
-	                // First delete the associated amp conditions and amp condition values        
-	         		final long[] conditionIds = getConditionIdFromRuleId(ruleId);
-	         		for (long conditionId : conditionIds)
-	         		{
-	         			mProvider.delete(AmpConditionValuesDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionValuesDbColumns.CONDITION_ID_REF), new String[] { Long.toString(conditionId) }); //$NON-NLS-1$			
-	         		}
-	         		mProvider.delete(AmpConditionsDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionsDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
-	         		
-	         		// Then delete the binding between the event and this rule
-	         		mProvider.delete(AmpRuleEventDbColumns.TABLE_NAME, String.format("%s = ?", AmpRuleEventDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
-	         		
-	         		// Last delete the amp rule itself
-	         		mProvider.delete(AmpRulesDbColumns.TABLE_NAME, String.format("%s = ?", AmpRulesDbColumns._ID), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
-	            }
-	        });
-	    	
-	    	// Delete the decompressed file if it does exist
-	    	final String basepath = (String) ampMessage.get(AmpConstants.KEY_BASE_PATH);
-	    	if (null != basepath) 
-	    	{
-		    	File dir = new File(basepath);
-		    	if (dir.isDirectory()) 
-		    	{
-		            for (String childen : dir.list()) 
-		            {
-		                new File(dir, childen).delete();
-		            }
-		        }
-		    	
-		    	if (!dir.delete()) 
-		    	{
-		    		if (Constants.IS_LOGGABLE)
-	                {
-	                    Log.w(Constants.LOG_TAG, String.format("Delete %s failed.", basepath)); //$NON-NLS-1$
-	                }
-		    	}
-		    	
-		    	File zip = new File(basepath + ".zip");
-		    	if (!zip.delete())
-		    	{
-		    		if (Constants.IS_LOGGABLE)
-	                {
-	                    Log.w(Constants.LOG_TAG, String.format("Delete %s failed.", basepath + ".zip")); //$NON-NLS-1$
-	                }
-		    	}
-	    	}
-		}
-    	catch (final Exception e)
-		{
-			if (Constants.IS_LOGGABLE)
-            {
-                Log.e(Constants.LOG_TAG, "Localytics library threw an uncaught exception", e); //$NON-NLS-1$
-            }
+    }
 
-            if (!Constants.IS_EXCEPTION_SUPPRESSION_ENABLED)
-            {
-                throw new RuntimeException(e);
-            }
-		}
-	}
-	
-	/**
-     * As a callback, this method will be called when the amp action event should be tagged.
-     * 
-     * @param ampMessage The amp message from which to trigger the amp.
-     */
-	public void onTagAmpActionEvent(final String event, final Map<String, String> attributes) 
-	{
-        final String eventString = String.format(Constants.EVENT_FORMAT, mContext.getPackageName(), event);
-        
-        /*
-         * Convert the attributes into the internal representation of packagename:key
-         */
-        final TreeMap<String, String> remappedAttributes = new TreeMap<String, String>();
+    public Map<Integer, AmpCallable> getDialogCallbacks()
+    {
+        Map<Integer, AmpCallable> callbacks = new TreeMap<Integer, AmpCallable>();
 
-        if (null != attributes)
+        // ON_AMP_DESTROY
+        callbacks.put(AmpCallable.ON_AMP_DESTROY, new AmpCallable()
         {
-            final String packageName = mContext.getPackageName();
-            for (final Entry<String, String> entry : attributes.entrySet())
+            /**
+             * As a callback, this method will be called when the amp is being destroyed.
+             */
+            @Override
+            public Object call(Object[] params)
             {
-                remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), (String) entry.getValue());
-            }
-        }
+                // Get the amp message from which to trigger the amp.
+                final Map<String, Object> ampMessage = (Map<String, Object>) params[0];
 
-        sendMessage(obtainMessage(SessionHandler.MESSAGE_TAG_EVENT, new Object[] { eventString, new TreeMap<String, String>(remappedAttributes), null }));
-	}
-	
+                try {
+                    // Get the rule id and campaign id to querying the database
+                    final int campaignId = (Integer) ampMessage.get(AmpRulesDbColumns.CAMPAIGN_ID);
+                    final int ruleId = getRuleIdFromCampaignId(campaignId);
+
+                    mProvider.runBatchTransaction(new Runnable()
+                    {
+                        public void run()
+                        {
+                            // Set the displayed state of this campaign to prevent it from being displayed twice.
+                            final ContentValues values = new ContentValues();
+                            values.put(AmpDisplayedDbColumns.DISPLAYED, 1);
+                            values.put(AmpDisplayedDbColumns.CAMPAIGN_ID, campaignId);
+                            mProvider.insert(AmpDisplayedDbColumns.TABLE_NAME, values); //$NON-NLS-1$
+
+                            /**
+                             * Clear the database after the campaign has been displayed.
+                             */
+                            // First delete the associated amp conditions and amp condition values
+                            final long[] conditionIds = getConditionIdFromRuleId(ruleId);
+                            for (long conditionId : conditionIds)
+                            {
+                                mProvider.delete(AmpConditionValuesDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionValuesDbColumns.CONDITION_ID_REF), new String[] { Long.toString(conditionId) }); //$NON-NLS-1$
+                            }
+                            mProvider.delete(AmpConditionsDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionsDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
+
+                            // Then delete the binding between the event and this rule
+                            mProvider.delete(AmpRuleEventDbColumns.TABLE_NAME, String.format("%s = ?", AmpRuleEventDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
+
+                            // Last delete the amp rule itself
+                            mProvider.delete(AmpRulesDbColumns.TABLE_NAME, String.format("%s = ?", AmpRulesDbColumns._ID), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
+                        }
+                    });
+
+                    // Delete the decompressed file if it does exist
+                    final String basepath = (String) ampMessage.get(AmpConstants.KEY_BASE_PATH);
+                    if (null != basepath)
+                    {
+                        File dir = new File(basepath);
+                        if (dir.isDirectory())
+                        {
+                            for (String childen : dir.list())
+                            {
+                                new File(dir, childen).delete();
+                            }
+                        }
+
+                        if (!dir.delete())
+                        {
+                            if (Constants.IS_LOGGABLE)
+                            {
+                                Log.w(Constants.LOG_TAG, String.format("Delete %s failed.", basepath)); //$NON-NLS-1$
+                            }
+                        }
+
+                        File zip = new File(basepath + ".zip");
+                        if (!zip.delete())
+                        {
+                            if (Constants.IS_LOGGABLE)
+                            {
+                                Log.w(Constants.LOG_TAG, String.format("Delete %s failed.", basepath + ".zip")); //$NON-NLS-1$
+                            }
+                        }
+                    }
+                }
+                catch (final Exception e)
+                {
+                    if (Constants.IS_LOGGABLE)
+                    {
+                        Log.e(Constants.LOG_TAG, "Localytics library threw an uncaught exception", e); //$NON-NLS-1$
+                    }
+
+                    if (!Constants.IS_EXCEPTION_SUPPRESSION_ENABLED)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                return null;
+            }
+        });
+
+        // ON_AMP_TAG_ACTION
+        callbacks.put(AmpCallable.ON_AMP_TAG_ACTION, new AmpCallable()
+        {
+            @Override
+            public Object call(final Object[] params)
+            {
+                final String event = (String) params[0];
+                final Map<String, String> attributes = (Map<String, String>) params[1];
+                final String eventString = String.format(Constants.EVENT_FORMAT, mContext.getPackageName(), event);
+
+                /*
+                 * Convert the attributes into the internal representation of packagename:key
+                 */
+                final TreeMap<String, String> remappedAttributes = new TreeMap<String, String>();
+
+                if (null != attributes)
+                {
+                    final String packageName = mContext.getPackageName();
+                    for (final Entry<String, String> entry : attributes.entrySet())
+                    {
+                        remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), (String) entry.getValue());
+                    }
+                }
+
+                sendMessage(obtainMessage(SessionHandler.MESSAGE_TAG_EVENT, new Object[] { eventString, new TreeMap<String, String>(remappedAttributes), null }));
+
+                return null;
+            }
+        });
+
+        return callbacks;
+    }
+
+    public Map<Integer, AmpCallable> getJavaScriptClientCallbacks()
+    {
+        final Map<Integer, AmpCallable> callbacks = new TreeMap<Integer, AmpCallable>();
+
+        // ON_AMP_JS_CLOSE_WINDOW
+        // is added in setJavaScriptClient, other callbacks are added here.
+
+        // ON_AMP_JS_TAG_EVENT
+        callbacks.put(AmpCallable.ON_AMP_JS_TAG_EVENT, new AmpCallable()
+        {
+            @Override
+            Object call(Object[] params)
+            {
+                final String event = (String) params[0];
+                final String attributes = (String) params[1];
+                final String customDimensions = (String) params[2];
+                final long customerValueIncrease = (Long) params[3];
+
+                Map<String, Object> nativeAttributes = null;
+                List<String> nativeCustomDimensions = null;
+                try
+                {
+                    nativeAttributes = JsonHelper.toMap(new JSONObject(attributes));
+                    nativeCustomDimensions = JsonHelper.toList(new JSONArray(customDimensions));
+                }
+                catch (JSONException e)
+                {
+                    if (Constants.IS_LOGGABLE)
+                    {
+                        Log.w(Constants.LOG_TAG, "[JavaScriptClient]: Failed to parse the json object in tagEventNative"); //$NON-NLS-1$
+                    }
+                    return null;
+                }
+
+                if (Constants.IS_PARAMETER_CHECKING_ENABLED)
+                {
+                    if (null == event)
+                    {
+                        throw new IllegalArgumentException("event cannot be null"); //$NON-NLS-1$
+                    }
+
+                    if (0 == event.length())
+                    {
+                        throw new IllegalArgumentException("event cannot be empty"); //$NON-NLS-1$
+                    }
+
+                    if (null != attributes)
+                    {
+                        /*
+                         * Calling this with empty attributes is a smell that indicates a possible programming error on the part of the
+                         * caller
+                         */
+                        if (nativeAttributes.isEmpty())
+                        {
+                            if (Constants.IS_LOGGABLE)
+                            {
+                                Log.w(Constants.LOG_TAG, "attributes is empty.  Did the caller make an error?"); //$NON-NLS-1$
+                            }
+                        }
+
+                        if (nativeAttributes.size() > Constants.MAX_NUM_ATTRIBUTES)
+                        {
+                            if (Constants.IS_LOGGABLE)
+                            {
+                                Log.w(Constants.LOG_TAG, String.format("attributes size is %d, exceeding the maximum size of %d.  Did the caller make an error?", Integer.valueOf(nativeAttributes.size()), Integer.valueOf(Constants.MAX_NUM_ATTRIBUTES))); //$NON-NLS-1$
+                            }
+                        }
+
+                        for (final Entry<String, Object> entry : nativeAttributes.entrySet())
+                        {
+                            final String key = entry.getKey();
+                            final String value = (String) entry.getValue();
+
+                            if (null == key)
+                            {
+                                throw new IllegalArgumentException("attributes cannot contain null keys"); //$NON-NLS-1$
+                            }
+                            if (null == value)
+                            {
+                                throw new IllegalArgumentException("attributes cannot contain null values"); //$NON-NLS-1$
+                            }
+                            if (0 == key.length())
+                            {
+                                throw new IllegalArgumentException("attributes cannot contain empty keys"); //$NON-NLS-1$
+                            }
+                            if (0 == value.length())
+                            {
+                                throw new IllegalArgumentException("attributes cannot contain empty values"); //$NON-NLS-1$
+                            }
+                        }
+                    }
+
+                    if (null != nativeCustomDimensions)
+                    {
+                        /*
+                         * Calling this with empty dimensions is a smell that indicates a possible programming error on the part of the
+                         * caller
+                         */
+                        if (nativeCustomDimensions.isEmpty())
+                        {
+                            if (Constants.IS_LOGGABLE)
+                            {
+                                Log.w(Constants.LOG_TAG, "customDimensions is empty.  Did the caller make an error?"); //$NON-NLS-1$
+                            }
+                        }
+
+                        if (nativeCustomDimensions.size() > Constants.MAX_CUSTOM_DIMENSIONS)
+                        {
+                            if (Constants.IS_LOGGABLE)
+                            {
+                                Log.w(Constants.LOG_TAG, String.format("customDimensions size is %d, exceeding the maximum size of %d.  Did the caller make an error?", Integer.valueOf(nativeCustomDimensions.size()), Integer.valueOf(Constants.MAX_CUSTOM_DIMENSIONS))); //$NON-NLS-1$
+                            }
+                        }
+
+                        for (final Object element : nativeCustomDimensions)
+                        {
+                            if (null == element)
+                            {
+                                throw new IllegalArgumentException("customDimensions cannot contain null elements"); //$NON-NLS-1$
+                            }
+                            if (0 == ((String) element).length())
+                            {
+                                throw new IllegalArgumentException("customDimensions cannot contain empty elements"); //$NON-NLS-1$
+                            }
+                        }
+                    }
+                }
+
+                final String eventString = String.format(Constants.EVENT_FORMAT, mContext.getPackageName(), event);
+
+                if (null == nativeAttributes && null == nativeCustomDimensions)
+                {
+                    sendMessage(obtainMessage(SessionHandler.MESSAGE_TAG_EVENT, new Object[] { eventString, null, customerValueIncrease }));
+                }
+                else
+                {
+                    /*
+                     * Convert the attributes and custom dimensions into the internal representation of packagename:key
+                     */
+
+                    final TreeMap<String, String> remappedAttributes = new TreeMap<String, String>();
+
+                    if (null != attributes)
+                    {
+                        final String packageName = mContext.getPackageName();
+                        for (final Entry<String, Object> entry : nativeAttributes.entrySet())
+                        {
+                            remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), (String) entry.getValue());
+                        }
+                    }
+
+                    if (null != customDimensions)
+                    {
+                        remappedAttributes.putAll(convertDimensionsToAttributes(nativeCustomDimensions));
+                    }
+
+                    /*
+                     * Copying the map is very important to ensure that a client can't modify the map after this method is called. This is
+                     * especially important because the map is subsequently processed on a background thread.
+                     *
+                     * A TreeMap is used to ensure that the order that the attributes are written is deterministic. For example, if the
+                     * maximum number of attributes is exceeded the entries that occur later alphabetically will be skipped consistently.
+                     */
+
+                    sendMessage(obtainMessage(SessionHandler.MESSAGE_TAG_EVENT, new Object[] { eventString, new TreeMap<String, String>(remappedAttributes), customerValueIncrease }));
+                }
+
+                return null;
+            }
+
+            /**
+             * Helper to convert a list of dimensions into a set of attributes.
+             * <p>
+             * The number of dimensions is capped at 4. If there are more than 4 elements in {@code customDimensions}, all elements after
+             * 4 are ignored.
+             *
+             * @param customDimensions List of dimensions to convert.
+             * @return Attributes map for the set of dimensions.
+             */
+            private Map<String, String> convertDimensionsToAttributes(final List<String> customDimensions)
+            {
+                final TreeMap<String, String> attributes = new TreeMap<String, String>();
+
+                if (null != customDimensions)
+                {
+                    int index = 0;
+                    for (final String element : customDimensions)
+                    {
+                        if (0 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_1, element);
+                        }
+                        else if (1 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_2, element);
+                        }
+                        else if (2 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_3, element);
+                        }
+                        else if (3 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_4, element);
+                        }
+                        else if (4 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_5, element);
+                        }
+                        else if (5 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_6, element);
+                        }
+                        else if (6 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_7, element);
+                        }
+                        else if (7 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_8, element);
+                        }
+                        else if (8 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_9, element);
+                        }
+                        else if (9 == index)
+                        {
+                            attributes.put(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_10, element);
+                        }
+
+                        index++;
+                    }
+                }
+
+                return attributes;
+            }
+        });
+
+        // ON_AMP_JS_GET_IDENTIFIERS
+        callbacks.put(AmpCallable.ON_AMP_JS_GET_IDENTIFIERS, new AmpCallable()
+        {
+            @Override
+            Object call(Object[] params)
+            {
+                Cursor cursor = null;
+                try
+                {
+                    cursor = mProvider.query(LocalyticsProvider.IdentifiersDbColumns.TABLE_NAME, null, null, null, null);
+
+                    if (cursor.getCount() == 0)
+                    {
+                        return null;
+                    }
+
+                    final JSONObject identifiers = new JSONObject();
+
+                    final int keyColumn = cursor.getColumnIndexOrThrow(LocalyticsProvider.IdentifiersDbColumns.KEY);
+                    final int valueColumn = cursor.getColumnIndexOrThrow(LocalyticsProvider.IdentifiersDbColumns.VALUE);
+                    while (cursor.moveToNext())
+                    {
+                        final String key = cursor.getString(keyColumn);
+                        final String value = cursor.getString(valueColumn);
+
+                        identifiers.put(key.substring(mContext.getPackageName().length() + 1, key.length()), value);
+                    }
+
+                    return identifiers.toString();
+                }
+                catch (JSONException e)
+                {
+                    if (Constants.IS_LOGGABLE)
+                    {
+                        Log.w(Constants.LOG_TAG, "[JavaScriptClient]: Failed to get identifiers"); //$NON-NLS-1$
+                    }
+                    return null;
+                }
+                finally
+                {
+                    if (null != cursor)
+                    {
+                        cursor.close();
+                        cursor = null;
+                    }
+                }
+            };
+        });
+
+        // ON_AMP_JS_GET_CUSTOM_DIMENSIONS
+        callbacks.put(AmpCallable.ON_AMP_JS_GET_CUSTOM_DIMENSIONS, new AmpCallable()
+        {
+            @Override
+            Object call(Object[] params)
+            {
+                return null;
+            }
+        });
+
+        // ON_AMP_JS_GET_ATTRIBUTES
+        callbacks.put(AmpCallable.ON_AMP_JS_GET_ATTRIBUTES, new AmpCallable()
+        {
+            @Override
+            Object call(Object[] params)
+            {
+                return null;
+            }
+        });
+
+        return callbacks;
+    }
+
     /**
      * This method check whether the amp conditions are satisfied by the input attributes.
      * 
@@ -427,7 +760,7 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
     
     /**
      * Retrieve the whole amp conditions from the database by the amp message 
-     * @param ampMessage
+     * @param ruleId
      * @return
      */
     private Vector<AmpCondition> getAmpConditions(final int ruleId)
@@ -681,7 +1014,7 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 						
 			final String zipFileDirPath   = getZipFileDirPath();
 			final String unzipFileDirPath = getUnzipFileDirPath(ruleId);
-			if (getRemoteFileURL(candidate).endsWith(".zip")) // TODO: use constant
+			if (getRemoteFileURL(candidate).endsWith(".zip"))
 			{
 				// Decompress the zip file
 				if (decompressZipFile(zipFileDirPath, unzipFileDirPath, String.format("amp_rule_%d.zip", ruleId))) 
@@ -726,7 +1059,7 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
 			/**
 			 * Save the HTML URL, display with and display height
 			 */
-			candidate.put(AmpConstants.KEY_HTML_URL, localHtmlURL); // TODO: use constant
+			candidate.put(AmpConstants.KEY_HTML_URL, localHtmlURL);
 			candidate.put(AmpConstants.KEY_BASE_PATH, unzipFileDirPath);
 			candidate.put(AmpConstants.KEY_DISPLAY_WIDTH, (float) displayWidth);
 			candidate.put(AmpConstants.KEY_DISPLAY_HEIGHT, (float) displayHeight);
@@ -738,7 +1071,7 @@ import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
     /**
 	 * Get the URL from which the zip file can be grabbed.
 	 * 
-	 * @param ampMessage The map holding all the key/value pairs from the received amp message.
+	 * @param ampMap The map holding all the key/value pairs from the received amp message.
 	 * @return The URL address from which the zip file can be grabbed.
 	 */
 	private String getRemoteFileURL(final Map<String, Object> ampMap)

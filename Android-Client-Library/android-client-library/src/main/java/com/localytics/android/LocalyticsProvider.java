@@ -8,16 +8,6 @@
 
 package com.localytics.android;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -27,6 +17,16 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.provider.BaseColumns;
 import android.util.Log;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Implements the storage mechanism for the Localytics library. The interface and implementation are similar to a ContentProvider
@@ -64,7 +64,7 @@ class LocalyticsProvider
      * <li>10: Add {@link InfoDbColumns#PLAY_ATTRIBUTION}</li>
      * <li>11: Add {@link InfoDbColumns#REGISTRATION_ID}</li>
      * <li>12: Add {@link InfoDbColumns#FIRST_ANDROID_ID} and {@link SessionsDbColumns#DEVICE_ANDROID_ID}</li>
-     * <li>13: Add {@link EventsDbColumns#LAT_NAME} and {@link EventsDbColumns#LNG_NAME</li>
+     * <li>13: Add {@link EventsDbColumns#LAT_NAME} and {@link EventsDbColumns#LNG_NAME}</li>
      * </ol>
      */
     private static final int DATABASE_VERSION = 14;
@@ -368,7 +368,7 @@ class LocalyticsProvider
     /**
      * Executes an arbitrary runnable with exclusive access to the database, essentially allowing an atomic transaction.
      *
-     * @param runnable Callable to execute. Cannot be null.
+     * @param callable Callable to execute. Cannot be null.
      * @throws IllegalArgumentException if {@code callable} is null
      */
     /*
@@ -467,24 +467,12 @@ class LocalyticsProvider
         tables.add(UploadBlobEventsDbColumns.TABLE_NAME);
         tables.add(InfoDbColumns.TABLE_NAME);
         tables.add(IdentifiersDbColumns.TABLE_NAME);
-        
-		try 
-		{
-			@SuppressWarnings({ "rawtypes", "unused" })
-			Class clazz = Class.forName("com.localytics.android.LocalyticsAmpSession");
-			tables.add(AmpRulesDbColumns.TABLE_NAME);
-        	tables.add(AmpRuleEventDbColumns.TABLE_NAME);
-        	tables.add(AmpConditionsDbColumns.TABLE_NAME);
-        	tables.add(AmpConditionValuesDbColumns.TABLE_NAME);
-        	tables.add(AmpDisplayedDbColumns.TABLE_NAME);
-		}
-		catch (ClassNotFoundException e) 
-		{
-			if (Constants.IS_LOGGABLE)
-            {
-                Log.d(Constants.LOG_TAG, "There is no support for marketing platform in this library."); //$NON-NLS-1$
-            }
-		}
+
+        tables.add(AmpRulesDbColumns.TABLE_NAME);
+        tables.add(AmpRuleEventDbColumns.TABLE_NAME);
+        tables.add(AmpConditionsDbColumns.TABLE_NAME);
+        tables.add(AmpConditionValuesDbColumns.TABLE_NAME);
+        tables.add(AmpDisplayedDbColumns.TABLE_NAME);
 
         return tables;
     }

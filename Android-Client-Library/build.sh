@@ -5,6 +5,7 @@
 
 PACKAGE=/com/localytics/android/
 
+OS=$(uname -s)
 DIR=${PWD}
 SRC_PATH=/src/main/java/com/localytics/android
 AMP_SRC_DIR=$DIR/android-client-library-amp$SRC_PATH
@@ -42,6 +43,15 @@ echo "Compress analytics code into the zip file ..."
 cd $DIR/android-client-library/src/main/java/
 tar -zcvf $DIR/build/Localytics-Android-latest.src.zip com
 
+# modify the library version by modify 'androida' to 'android'
+echo "Correct library version for analytics ..."
+cd $ANALYTICS_SRC_DIR
+if [ "$OS" != 'Darwin' ]; then
+	find . -name "Constants.java" -type f -exec sed -i "s/androida/android/g" '{}' \;
+else
+	find . -name "Constants.java" -type f -exec sed -i "" "s/androida/android/g" '{}' \;
+fi
+
 # build project with gradle
 echo "Start to build Localytics project ..."
 cd $DIR
@@ -53,6 +63,3 @@ mv $AMP_LIB $DIR/build/android-client-library-amp.jar
 mv $ANALYTICS_LIB $DIR/build/android-client-library.jar
 
 cp $DIR/build/android-client-library-amp.jar ../rocketrush/libs
-
-
-

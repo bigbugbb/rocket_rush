@@ -1,12 +1,29 @@
 package com.localytics.android;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Build constants for the Localytics library.
  * <p>
  * This is not a public API.
  */
-/* package */final class AmpConstants
+/* package */class AmpConstants extends Constants
 {
+    /**
+     * Flag indicating whether amp testing is enabled. If not, the same campaign won't show twice.
+     */
+    private static final AtomicBoolean sIsAmpTesting = new AtomicBoolean(true);
+
+    public static void setAmpTesting(final boolean isAmpTesting)
+    {
+        sIsAmpTesting.set(isAmpTesting);
+    }
+
+    public static boolean isAmpTesting()
+    {
+        return sIsAmpTesting.get();
+    }
+
 	/**
 	 * AMP display events
 	 */
@@ -67,4 +84,14 @@ package com.localytics.android;
 	public static final String PROTOCOL_FILE  = "file";
 	public static final String PROTOCOL_HTTP  = "http";
 	public static final String PROTOCOL_HTTPS = "https";
+
+    /**
+     * Private constructor prevents instantiation
+     *
+     * @throws UnsupportedOperationException because this class cannot be instantiated.
+     */
+    private AmpConstants()
+    {
+        throw new UnsupportedOperationException("This class is non-instantiable"); //$NON-NLS-1$
+    }
 }

@@ -8,16 +8,6 @@
 
 package com.localytics.android;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +18,16 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.localytics.android.LocalyticsProvider.AttributesDbColumns;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * This class manages creating, collecting, and uploading a Localytics session. Please see the following guides for information on
@@ -182,12 +182,12 @@ public class LocalyticsSession
      * Creates a new Handler that runs on {@code looper}.
      *
      * @param context Application context. Cannot be null.
-     * @param apiKey Localytics API key. Cannot be null.
+     * @param appKey Localytics APP key. Cannot be null.
      * @param looper to run the Handler on. Cannot be null.
      */
-    protected SessionHandler createSessionHandler(final Context context, final String key, final Looper looper) 
+    protected SessionHandler createSessionHandler(final Context context, final String appKey, final Looper looper)
     {
-    	return new SessionHandler(context, key, sSessionHandlerThread.getLooper());
+    	return new SessionHandler(context, appKey, sSessionHandlerThread.getLooper());
     }
     
     /**

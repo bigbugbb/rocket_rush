@@ -1,16 +1,16 @@
 package com.localytics.android;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Environment;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LocalyticsAmpSession extends LocalyticsSession 
 {    
@@ -49,7 +49,7 @@ public class LocalyticsAmpSession extends LocalyticsSession
 		sSessionHandlerThread.setName(AmpSessionHandler.class.getSimpleName());
 		
 		// Create localytics directory on the app's folder
-		createLocalyticsDirectory(context);				
+		createLocalyticsDirectory(context);
 	}
 
 	/**
@@ -73,7 +73,6 @@ public class LocalyticsAmpSession extends LocalyticsSession
 	/**
 	 * 
 	 * @param eventName
-	 * @param attributes
 	 */
 	public void triggerAmp(final String eventName)
     {
@@ -182,7 +181,7 @@ public class LocalyticsAmpSession extends LocalyticsSession
      * Gets a new Handler that runs on {@code looper}.
      *
      * @param context Application context. Cannot be null.
-     * @param apiKey Localytics API key. Cannot be null.
+     * @param key Localytics API key. Cannot be null.
      * @param looper to run the Handler on. Cannot be null.
      */
 	@Override

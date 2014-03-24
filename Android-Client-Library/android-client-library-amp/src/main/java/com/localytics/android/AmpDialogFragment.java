@@ -1,16 +1,7 @@
 package com.localytics.android;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -27,6 +18,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.TextUtils;
@@ -51,18 +43,36 @@ import android.widget.RelativeLayout;
 
 import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Helper class to handle amp dialog work for the in-app message.
  */
 /* package */public class AmpDialogFragment extends DialogFragment
 {
+    /**
+     * Tag for this dialog fragment
+     */
 	public static final String DIALOG_TAG = "amp_dialog";
+
+    /**
+     * Id for the close button
+     */
+    public static final int CLOSE_BUTTON_ID = 1;
 	
 	private Map<String, Object> mAmpMessage;
 	
-	private JavaScriptAPI mJavaScriptAPI;
+	private JavaScriptClient mJavaScriptClient;
 	
-	private AmpDialogCallback mCallback;
+	private Map<Integer, AmpCallable> mCallbacks;
 	
 	private AtomicBoolean mUploadedViewEvent;
 	
@@ -76,13 +86,19 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 	 * This element prevents the dismiss animation from being shown multiple times	 
 	 */
 	private AtomicBoolean mExitAnimatable;
+
+//    /**
+//     * AmpDialogListener listener
+//     */
+//    private AmpDialogListener mListener;
+
 	
 	public AmpDialogFragment()
 	{
-		mEnterAnimatable = new AtomicBoolean(true);
-		mExitAnimatable  = new AtomicBoolean(true);
+		mEnterAnimatable   = new AtomicBoolean(true);
+		mExitAnimatable    = new AtomicBoolean(true);
 		mUploadedViewEvent = new AtomicBoolean(false);
-	}	
+	}
 	
 	@Override
 	public void onActivityCreated(Bundle arg0) 
@@ -172,15 +188,19 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
         {
 			Log.w("AmpDialogFragment", "onDestroy");
         }
-		if (null != mCallback)
+		if (null != mCallbacks)
 		{
-//			mCallback.onAmpDestroy(mAmpMessage);
+            AmpCallable callable = mCallbacks.get(AmpCallable.ON_AMP_DESTROY);
+            if (!AmpConstants.isAmpTesting() && callable != null)
+            {
+                callable.call(new Object[] { mAmpMessage });
+            }
 		}
 		super.onDestroy();
 	}
 
 	@Override
-	public void onStop() 
+	public void onStop()
 	{
 		if (Constants.IS_LOGGABLE)
         {
@@ -260,15 +280,28 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		return this;
 	}
 	
-	public AmpDialogFragment setJavaScriptAPI(final JavaScriptAPI javaScriptAPI)
+	public AmpDialogFragment setJavaScriptClient(final JavaScriptClient javaScriptClient)
 	{
-		mJavaScriptAPI = javaScriptAPI;
+		mJavaScriptClient = javaScriptClient;
+        Map<Integer, AmpCallable> callbacks = mJavaScriptClient.getCallbacks();
+
+        // Add close window callback: ON_AMP_CLICK_CLOSE_WINDOW
+        callbacks.put(AmpCallable.ON_AMP_JS_CLOSE_WINDOW, new AmpCallable()
+        {
+            @Override
+            Object call(Object[] params)
+            {
+                AmpDialogFragment.this.dismiss();
+                return null;
+            }
+        });
+
 		return this;
 	}
 	
-	public AmpDialogFragment setOnAmpDestroyListener(final AmpDialogCallback callback)
+	public AmpDialogFragment setCallbacks(final Map<Integer, AmpCallable> callbacks)
 	{
-		mCallback = callback;
+		mCallbacks = callbacks;
 		return this;
 	}
 	
@@ -322,20 +355,23 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		if (!LocalyticsAmpSession.isTestModeEnabled())
 		{
 			// Tag event with attributes & reporting attributes
-			if (null != mCallback)
-			{
-				mCallback.onTagAmpActionEvent(AmpConstants.AMP_EVENT_NAME_KEY, attributes);			
-			}
-			
-			if (Constants.IS_LOGGABLE)
-            {
-				final StringBuilder builder = new StringBuilder();
-				for (Map.Entry<String, String> entry : attributes.entrySet()) 
-				{ 
-					builder.append("Key = " + entry.getKey() + ", Value = " + entry.getValue()); 
+			if (mCallbacks != null) {
+	            AmpCallable callable = mCallbacks.get(AmpCallable.ON_AMP_TAG_ACTION);
+				if (null != callable)
+				{
+	                callable.call(new Object[] { AmpConstants.AMP_EVENT_NAME_KEY, attributes });
 				}
-                Log.w(Constants.LOG_TAG, String.format("AMP event tagged successfully.\n   Attributes Dictionary = \n%s", builder.toString())); //$NON-NLS-1$
-            }
+				
+				if (Constants.IS_LOGGABLE)
+	            {
+					final StringBuilder builder = new StringBuilder();
+					for (Map.Entry<String, String> entry : attributes.entrySet()) 
+					{ 
+						builder.append("Key = " + entry.getKey() + ", Value = " + entry.getValue()); 
+					}
+	                Log.w(Constants.LOG_TAG, String.format("AMP event tagged successfully.\n   Attributes Dictionary = \n%s", builder.toString())); //$NON-NLS-1$
+	            }
+			}
 		}    	
     }		    
     
@@ -370,7 +406,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
         
         return null;
     }
-	
+    
 	/**
 	 * Helper class to generate the amp dialog.
 	 */
@@ -407,9 +443,9 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		private WebView mWebView;
 		
 		/**
-		 * Dismiss button on the top left of the dialog
+		 * Close button on the top left of the dialog
 		 */
-		private DismissButton mBtnDismiss;
+		private CloseButton mBtnClose;
 		
 		/**
 		 * Display metrics from which we can get the current window size
@@ -470,7 +506,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 				return;
 			} 
 			mLocation = (String) mAmpMessage.get(AmpRulesDbColumns.LOCATION);
-			
+
 			setupViews();
 			createAnimations();
 			adjustLayout();
@@ -504,9 +540,9 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		@Override
 		protected void onStop() 
 		{
-			if (null != mBtnDismiss) 
+			if (null != mBtnClose)
 			{
-				mBtnDismiss.release();
+				mBtnClose.release();
 			}
 			super.onStop();
 		}
@@ -529,20 +565,25 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			mDialogLayout.addView(mWebView);
 						
 			// Create and add the dismiss button dynamically
-			mBtnDismiss = new DismissButton(getContext(), null);
-			mBtnDismiss.setOnClickListener(new View.OnClickListener()
-			{
-				public void onClick(View v)
-				{					
-					if (mExitAnimatable.getAndSet(false))
-					{
-						dismissWithAnimation();
-					}
-				}
-			});
-            mDialogLayout.addView(mBtnDismiss);
+			mBtnClose = new CloseButton(getContext(), null);
+			mBtnClose.setOnClickListener(new View.OnClickListener()
+            {
+                public void onClick(View v)
+                {
+                    if (mExitAnimatable.getAndSet(false))
+                    {
+                        dismissWithAnimation();
+                    }
+                }
+            });
+            mDialogLayout.addView(mBtnClose);
 
             requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+//            if (DatapointHelper.getApiLevel() >= 11) {
+//                final int visibility = getActivity().getWindow().getDecorView().getSystemUiVisibility();
+//                getWindow().getDecorView().setSystemUiVisibility(visibility);
+//            }
 			
 			setContentView(mRootLayout);
 		}
@@ -615,8 +656,8 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 				enterWithAnimation();
 			}
 			
-			// Prevent the top dialog from being cut off after KitKat
-			window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        	// Prevent the top dialog from being cut off after KitKat
+            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}	
 		
 		/**
@@ -624,9 +665,9 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		 */
 		private void createAnimations()
 		{
-			mAnimCenterIn  = new TranslateAnimation(Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 1, Animation.RELATIVE_TO_PARENT, 0);
+			mAnimCenterIn  = new TranslateAnimation(Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, 1, Animation.RELATIVE_TO_PARENT, 0);
 			mAnimCenterIn.setDuration(500);			
-			mAnimCenterOut = new TranslateAnimation(Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_PARENT, 1);
+			mAnimCenterOut = new TranslateAnimation(Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, 1);
 			mAnimCenterOut.setDuration(500);
 			
 			mAnimTopIn  = new TranslateAnimation(Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, 0, Animation.RELATIVE_TO_PARENT, -1, Animation.RELATIVE_TO_PARENT, 0);
@@ -727,7 +768,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		    {
 				super(context, attrs);
 				
-				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
 				params.gravity = Gravity.CENTER;
 				setLayoutParams(params);
 				
@@ -740,8 +781,8 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		    	
 		    	WebSettings settings = getSettings();
 		    	settings.setJavaScriptEnabled(true);
-		    	addJavascriptInterface(mJavaScriptAPI, "localytics");
-		    	settings.setUseWideViewPort(true); // Enable 'viewport' meta tag		    	
+		    	addJavascriptInterface(mJavaScriptClient, "localytics");
+		    	settings.setUseWideViewPort(true); // Enable 'viewport' meta tag			    	
 		    }				    		    
 		    
 		    public class AmpWebViewClient extends WebViewClient
@@ -766,7 +807,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
     	                "})()", viewportWidth, viewportHeight
 	    	        ));
 	    	        
-	    	        view.loadUrl(mJavaScriptAPI.getJsGlueCode());
+	    	        view.loadUrl(mJavaScriptClient.getJsGlueCode());
 	    	    } 
 	    		
 	    		@Override
@@ -779,11 +820,15 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 	    			
 	    			int result = 0;
 	    			try 
-	    			{
+	    			{	    					    				
+	    				// Construct the URL.
+	    				// Android doesn't support custom protocol unless the user defined URLStreamHandler is provided, which requires
+	    				// the set of URLStreamHandlerFactory. However URLStreamHandlerFactory can only be set once for the application.
+	    				// If the user's app has set it, reset it is not allowed. That's why we do the hack to the url string.
 						URL aURL = new URL(url);
+						
 						// Check URL for ampActions and tag them appropriately		    			
 		    			tagAmpActionForURL(aURL);
-		    			
 		    			
 		    			// If appropriate, handles navigation to the local creative files
 		    			if ((result = handleFileProtocolRequest(aURL)) > 0)
@@ -795,7 +840,7 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 		    			if ((result = handleHttpProtocolRequest(aURL)) > 0)
 		    			{
 		    				return result == OPENING_EXTERNAL;
-		    			}
+		    			}		    					    			
 		    			
 		    			// If appropriate, handles custom protocols which this app/other apps may be registered to handle
 		    			if ((result = handleCustomProtocolRequest(aURL)) > 0)
@@ -814,12 +859,13 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 	                    {
 	                        Log.w(Constants.LOG_TAG, String.format("[AMP Nav Handler]: Invalid url %s", url)); //$NON-NLS-1$
 	                    }
+	    				AmpDialogFragment.this.dismiss();
 					}
 	    			finally
 	    			{
 	    				if (result == OPENING_EXTERNAL)
 	    				{
-	    					//AmpDialogFragment.this.dismiss();
+	    					AmpDialogFragment.this.dismiss();
 	    				}
 	    			}
 	    			
@@ -907,11 +953,11 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			    }			    			   
 			}		    
 		}
-		
+
 		/**
 		 * Helper class to generate the dismiss button on the top-left side of the amp dialog.
 		 */
-		/* package */class DismissButton extends View
+		/* package */class CloseButton extends View
 		{		
 			// Paint for drawing the button
 			private Paint mPaint;
@@ -939,12 +985,17 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			// Bitmap of the button
 			private Bitmap mBitmap;
 			
-			// Bit map of the shadow behind the button
-			private Bitmap mShadowBitmap;
-			
-			public DismissButton(Context context, AttributeSet attrs) 
+			@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+			public CloseButton(Context context, AttributeSet attrs)
 			{
 				super(context, attrs);
+
+                setId(CLOSE_BUTTON_ID);
+
+				if (DatapointHelper.getApiLevel() >= 14) 
+				{
+					setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+				}
 				
 				final float dip = getResources().getDisplayMetrics().density;
 				
@@ -1007,24 +1058,5 @@ import com.localytics.android.LocalyticsProvider.AmpRulesDbColumns;
 			}
 		}
 	}
-	
-	/**
-	 * This callback interface is implemented by AmpSessionHandler
-	 */
-	interface AmpDialogCallback
-	{
-		void onAmpDestroy(final Map<String, Object> ampMessage);
-		void onTagAmpActionEvent(final String event, final Map<String, String> attributes);
-	}
-	
-	/**
-	 * JavaScript API interface which is implemented by JavaScriptClient
-	 */
-	interface JavaScriptAPI
-	{
-		public String getJsGlueCode();
-		public void tagEventNative(String event, String attributes, String customDimensions, long customerValueIncrease);
-		public void closeNative();
-	}
-	
+
 }
