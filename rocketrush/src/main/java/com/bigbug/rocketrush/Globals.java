@@ -2,9 +2,7 @@ package com.bigbug.rocketrush;
 
 import android.app.Activity;
 
-/**
- * Created by jefflopes on 3/5/14.
- */
+
 public class Globals {
 
     public static final String LOG_TAG = "com.bigbug.rocketrush";
@@ -41,5 +39,6 @@ public class Globals {
     public final static String _ATTR_KEY   = "_ATTR_KEY";
     public final static String _CUSTOM_DIMENSION_KEY = "_CUSTOM_KEY";
 
-    public final static String LOCALYTICS_SESSION_KEY = "f0d4b5fb7aadc3caefaff91-626d9720-aeb2-11e3-d642-0056aeeaa726";
+    public final static String LOCALYTICS_SESSION_KEY = //"be66099dcbd2aa53abad0a7-96252606-a8db-11e3-9803-005cf8cbabd8";
+            "f0d4b5fb7aadc3caefaff91-626d9720-aeb2-11e3-d642-0056aeeaa726";
 }

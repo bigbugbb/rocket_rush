@@ -60,12 +60,12 @@ import java.util.zip.GZIPOutputStream;
     /**
      * Localytics upload URL for HTTP, as a format string that contains a format for the API key.
      */
-    private final static String ANALYTICS_URL_HTTP = "http://analytics.localytics.com/api/v2/applications/%s/uploads"; //$NON-NLS-1$
+    private final static String ANALYTICS_URL_HTTP = "http://ec2-54-205-127-42.compute-1.amazonaws.com:8080/api/v2/applications/%s/uploads"; //$NON-NLS-1$
 
     /**
      * Localytics upload URL for HTTPS
      */
-    private final static String ANALYTICS_URL_HTTPS = "https://analytics.localytics.com/api/v2/uploads"; //$NON-NLS-1$
+    private final static String ANALYTICS_URL_HTTPS = "https://ec2-54-205-127-42.compute-1.amazonaws.com:8080/api/v2/uploads"; //$NON-NLS-1$
     
     /**
      * Handler message to upload all data collected so far

@@ -40,7 +40,7 @@ import android.text.format.DateUtils;
  	 * 2.17: Database migration fix
      */
     //@formatter:on
-    public static final String LOCALYTICS_CLIENT_LIBRARY_VERSION = "iOSa_2.20.0"; //"android_2.17"; //$NON-NLS-1$
+    public static final String LOCALYTICS_CLIENT_LIBRARY_VERSION = "androida_2.21"; //"android_2.17"; //$NON-NLS-1$
 
     /**
      * The package name of the Localytics library.
