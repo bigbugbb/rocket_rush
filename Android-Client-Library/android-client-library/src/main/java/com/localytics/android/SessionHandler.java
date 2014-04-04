@@ -29,7 +29,6 @@ import com.localytics.android.LocalyticsProvider.SessionsDbColumns;
 import com.localytics.android.LocalyticsProvider.UploadBlobEventsDbColumns;
 import com.localytics.android.LocalyticsProvider.UploadBlobsDbColumns;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -194,11 +193,6 @@ import java.util.UUID;
      * Application context
      */
     protected final Context mContext;
-    
-    /**
-     * Localytics session
-     */
-    protected WeakReference<LocalyticsSession> mSession;
 
     /**
      * Localytics database
@@ -208,7 +202,7 @@ import java.util.UUID;
     /**
      * The Localytics API key for the session.
      */
-    private final String mApiKey;
+    protected final String mApiKey;
 
     /**
      * {@link ApiKeysDbColumns#_ID} for the API key used by this Localytics session handler.
@@ -1101,15 +1095,15 @@ import java.util.UUID;
                                 }
                             }
 
-                            mProvider.delete(EventHistoryDbColumns.TABLE_NAME, SELECTION_OPEN_DELETE_EMPTIES_EVENT_HISTORY_SESSION_KEY_REF, sessionIdSelection);
+                            mProvider.remove(EventHistoryDbColumns.TABLE_NAME, SELECTION_OPEN_DELETE_EMPTIES_EVENT_HISTORY_SESSION_KEY_REF, sessionIdSelection);
                             for (final long blobId : blobsToDelete)
                             {
-                                mProvider.delete(UploadBlobsDbColumns.TABLE_NAME, SELECTION_OPEN_DELETE_EMPTIES_UPLOAD_BLOBS_ID, new String[]
+                                mProvider.remove(UploadBlobsDbColumns.TABLE_NAME, SELECTION_OPEN_DELETE_EMPTIES_UPLOAD_BLOBS_ID, new String[]
                                     { Long.toString(blobId) });
                             }
                             // mProvider.delete(AttributesDbColumns.TABLE_NAME, String.format("%s = ?",
                             // AttributesDbColumns.EVENTS_KEY_REF), selectionArgs)
-                            mProvider.delete(SessionsDbColumns.TABLE_NAME, SELECTION_OPEN_DELETE_EMPTIES_SESSIONS_ID, sessionIdSelection);
+                            mProvider.remove(SessionsDbColumns.TABLE_NAME, SELECTION_OPEN_DELETE_EMPTIES_SESSIONS_ID, sessionIdSelection);
                         }
                     }
                     finally
@@ -1203,7 +1197,7 @@ import java.util.UUID;
         values.put(SessionsDbColumns.DEVICE_SERIAL_NUMBER_HASH, DatapointHelper.getSerialNumberHashOrNull());
         values.put(SessionsDbColumns.DEVICE_TELEPHONY_ID, DatapointHelper.getTelephonyDeviceIdOrNull(mContext));
         values.putNull(SessionsDbColumns.DEVICE_TELEPHONY_ID_HASH);
-        values.put(SessionsDbColumns.DEVICE_WIFI_MAC_HASH, DatapointHelper.getWifiMacHashOrNull(mContext));
+        values.putNull(SessionsDbColumns.DEVICE_WIFI_MAC_HASH);
         values.put(SessionsDbColumns.LOCALE_COUNTRY, Locale.getDefault().getCountry());
         values.put(SessionsDbColumns.LOCALE_LANGUAGE, Locale.getDefault().getLanguage());
         values.put(SessionsDbColumns.LOCALYTICS_LIBRARY_VERSION, Constants.LOCALYTICS_CLIENT_LIBRARY_VERSION);
@@ -1339,8 +1333,8 @@ import java.util.UUID;
 
             if (cursor.moveToFirst())
             {
-                mProvider.delete(AttributesDbColumns.TABLE_NAME, SELECTION_OPEN_CLOSED_SESSION_ATTRIBUTES, selectionArgs);
-                mProvider.delete(EventsDbColumns.TABLE_NAME, SELECTION_OPEN_CLOSED_SESSION, selectionArgs);
+                mProvider.remove(AttributesDbColumns.TABLE_NAME, SELECTION_OPEN_CLOSED_SESSION_ATTRIBUTES, selectionArgs);
+                mProvider.remove(EventsDbColumns.TABLE_NAME, SELECTION_OPEN_CLOSED_SESSION, selectionArgs);
             }
             else
             {
@@ -1713,7 +1707,7 @@ import java.util.UUID;
             {
             	if (null == value)
             	{
-            		mProvider.delete(IdentifiersDbColumns.TABLE_NAME, String.format("%s = ?", IdentifiersDbColumns.KEY), new String[] { cursor.getString(cursor.getColumnIndexOrThrow(IdentifiersDbColumns.KEY)) }); //$NON-NLS-1$
+            		mProvider.remove(IdentifiersDbColumns.TABLE_NAME, String.format("%s = ?", IdentifiersDbColumns.KEY), new String[] { cursor.getString(cursor.getColumnIndexOrThrow(IdentifiersDbColumns.KEY)) }); //$NON-NLS-1$
             	}
             	else
             	{
@@ -1733,7 +1727,7 @@ import java.util.UUID;
             		mProvider.insert(IdentifiersDbColumns.TABLE_NAME, values);
             	}
             }
-            
+
         }
         finally
         {

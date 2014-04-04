@@ -74,6 +74,8 @@ public class Application extends android.app.Application {
      */
     private LocalyticsAmpSession mLocalyticsSession;
 
+    private LocalyticsAmpSession mTestSession;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -193,6 +195,8 @@ public class Application extends android.app.Application {
         };
 
         mLocalyticsSession = new LocalyticsAmpSession(getApplicationContext(), Globals.LOCALYTICS_SESSION_KEY);
+
+        mTestSession = new LocalyticsAmpSession(getApplicationContext(), "f737ce58a68aea90b4c79fc-0bc951b0-b42b-11e3-429f-00a426b17dd8");
     }
 
     public static Context getAppContext() {
@@ -217,6 +221,10 @@ public class Application extends android.app.Application {
 
     public static LocalyticsAmpSession getLocalyticsSession() {
         return sApplication.mLocalyticsSession;
+    }
+
+    public static LocalyticsAmpSession getTestSession() {
+        return sApplication.mTestSession;
     }
 
     public static Object[] getLocalyticsEventInfo(final String eventName) {

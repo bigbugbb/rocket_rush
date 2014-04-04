@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -47,14 +48,18 @@ import java.util.zip.ZipInputStream;
 	 */
 	private FragmentManager mFragmentManager;
 
-	/**
-     * Selection for {@link #getAmpMessageMaps()}.
+    /**
+     * The session wake lock
      */
-    private static final String SELECTION_AMP_RULES = String.format("%s > ?", AmpRulesDbColumns.EXPIRATION); //$NON-NLS-1$
+    private PowerManager.WakeLock mWakeLock;
 
     /**
-     * Selection for {@link #getAmpMessageMaps()}.
+     * The tag for session wakelock
      */
+    private static final String SESSION_WAKE_LOCK = "SESSION_WAKE_LOCK";
+
+    private static final String SELECTION_AMP_RULES = String.format("%s > ?", AmpRulesDbColumns.EXPIRATION); //$NON-NLS-1$
+
     private static final String SELECTION_AMP_RULEEVENTS = String.format("%s = ?", AmpRuleEventDbColumns.EVENT_NAME); //$NON-NLS-1$
 
 	/**
@@ -132,6 +137,8 @@ import java.util.zip.ZipInputStream;
     {
         try
         {
+            enterWakeLock();
+
         	// Do this check otherwise the super class may throw exception
         	if (msg.what != MESSAGE_TRIGGER_AMP) 
         	{
@@ -196,6 +203,47 @@ import java.util.zip.ZipInputStream;
                 throw new RuntimeException(e);
             }
         }
+        finally
+        {
+            exitWakeLock();
+        }
+    }
+
+    private void enterWakeLock()
+    {
+        // Acquire a wake lock so that the CPU will stay awake while the user's app goes to the back
+        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, SESSION_WAKE_LOCK);
+        mWakeLock.acquire();
+        if (!mWakeLock.isHeld())
+        {
+            if (Constants.IS_LOGGABLE)
+            {
+                Log.w(Constants.LOG_TAG, "Localytics library failed to get wake lock"); //$NON-NLS-1$
+            }
+        }
+    }
+
+    private void exitWakeLock()
+    {
+        if (!mWakeLock.isHeld())
+        {
+            if (Constants.IS_LOGGABLE)
+            {
+                Log.w(Constants.LOG_TAG, "WakeLock will be released but not held when should be."); //$NON-NLS-1$
+            }
+        }
+
+        // Release the wake lock so that the CPU can go back into low power mode
+        mWakeLock.release();
+
+        if (mWakeLock.isHeld())
+        {
+            if (Constants.IS_LOGGABLE)
+            {
+                Log.w(Constants.LOG_TAG, "WakeLock was not released when it should have been.");
+            }
+        }
     }
 	
 	/**
@@ -228,7 +276,7 @@ import java.util.zip.ZipInputStream;
     	// Get all amp messages associated with the input event
 		Vector<Map<String, Object>> ampMessages = getAmpMessageMaps(eventName);
 		if (ampMessages.size() == 0) {
-			if (eventName.startsWith(mContext.getPackageName())) 
+			if (eventName.startsWith(mContext.getPackageName()))
 			{			
 				final String eventString = eventName.substring(mContext.getPackageName().length() + 1, eventName.length());
 				ampMessages = getAmpMessageMaps(eventString);
@@ -253,7 +301,7 @@ import java.util.zip.ZipInputStream;
 					return;
 				}
 				
-				try 
+				try
 				{
 					if (mFragmentManager.findFragmentByTag(AmpDialogFragment.DIALOG_TAG) != null) 
 					{					
@@ -298,7 +346,7 @@ import java.util.zip.ZipInputStream;
              * As a callback, this method will be called when the amp is being destroyed.
              */
             @Override
-            public Object call(Object[] params)
+            public Object call(final Object[] params)
             {
                 // Get the amp message from which to trigger the amp.
                 final Map<String, Object> ampMessage = (Map<String, Object>) params[0];
@@ -325,15 +373,15 @@ import java.util.zip.ZipInputStream;
                             final long[] conditionIds = getConditionIdFromRuleId(ruleId);
                             for (long conditionId : conditionIds)
                             {
-                                mProvider.delete(AmpConditionValuesDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionValuesDbColumns.CONDITION_ID_REF), new String[] { Long.toString(conditionId) }); //$NON-NLS-1$
+                                mProvider.remove(AmpConditionValuesDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionValuesDbColumns.CONDITION_ID_REF), new String[] { Long.toString(conditionId) }); //$NON-NLS-1$
                             }
-                            mProvider.delete(AmpConditionsDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionsDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
+                            mProvider.remove(AmpConditionsDbColumns.TABLE_NAME, String.format("%s = ?", AmpConditionsDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
 
                             // Then delete the binding between the event and this rule
-                            mProvider.delete(AmpRuleEventDbColumns.TABLE_NAME, String.format("%s = ?", AmpRuleEventDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
+                            mProvider.remove(AmpRuleEventDbColumns.TABLE_NAME, String.format("%s = ?", AmpRuleEventDbColumns.RULE_ID_REF), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
 
                             // Last delete the amp rule itself
-                            mProvider.delete(AmpRulesDbColumns.TABLE_NAME, String.format("%s = ?", AmpRulesDbColumns._ID), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
+                            mProvider.remove(AmpRulesDbColumns.TABLE_NAME, String.format("%s = ?", AmpRulesDbColumns._ID), new String[] { Integer.toString(ruleId) }); //$NON-NLS-1$
                         }
                     });
 
@@ -405,7 +453,7 @@ import java.util.zip.ZipInputStream;
                     final String packageName = mContext.getPackageName();
                     for (final Entry<String, String> entry : attributes.entrySet())
                     {
-                        remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), (String) entry.getValue());
+                        remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), entry.getValue());
                     }
                 }
 
@@ -437,11 +485,29 @@ import java.util.zip.ZipInputStream;
                 final long customerValueIncrease = (Long) params[3];
 
                 Map<String, Object> nativeAttributes = null;
+                try
+                {
+                    if (!TextUtils.isEmpty(attributes))
+                    {
+                        nativeAttributes = JsonHelper.toMap(new JSONObject(attributes));
+                    }
+                }
+                catch (JSONException e)
+                {
+                    if (Constants.IS_LOGGABLE)
+                    {
+                        Log.w(Constants.LOG_TAG, "[JavaScriptClient]: Failed to parse the json object in tagEventNative"); //$NON-NLS-1$
+                    }
+                    return null;
+                }
+
                 List<String> nativeCustomDimensions = null;
                 try
                 {
-                    nativeAttributes = JsonHelper.toMap(new JSONObject(attributes));
-                    nativeCustomDimensions = JsonHelper.toList(new JSONArray(customDimensions));
+                    if (!TextUtils.isEmpty(customDimensions))
+                    {
+                        nativeCustomDimensions = JsonHelper.toList(new JSONArray(customDimensions));
+                    }
                 }
                 catch (JSONException e)
                 {
@@ -659,7 +725,7 @@ import java.util.zip.ZipInputStream;
         callbacks.put(AmpCallable.ON_AMP_JS_GET_IDENTIFIERS, new AmpCallable()
         {
             @Override
-            Object call(Object[] params)
+            Object call(final Object[] params)
             {
                 Cursor cursor = null;
                 try
@@ -720,6 +786,31 @@ import java.util.zip.ZipInputStream;
             @Override
             Object call(Object[] params)
             {
+                /*
+                 * Get the last attribute from the attributes table
+                 */
+//                Cursor attributesCursor = null;
+//                try
+//                {
+//                    attributesCursor = mProvider.query(AttributesDbColumns.TABLE_NAME, null, String.format("%s = ?", AttributesDbColumns.EVENTS_KEY_REF), new String[] { Long.toString(eventId) }, null); //$NON-NLS-1$
+//
+//                    final int keyColumn = attributesCursor.getColumnIndexOrThrow(AttributesDbColumns.ATTRIBUTE_KEY);
+//                    final int valueColumn = attributesCursor.getColumnIndexOrThrow(AttributesDbColumns.ATTRIBUTE_VALUE);
+//                    while (attributesCursor.moveToNext())
+//                    {
+//                        final String key = attributesCursor.getString(keyColumn);
+//                        final String value = attributesCursor.getString(valueColumn);
+//
+//                    }
+//                }
+//                finally
+//                {
+//                    if (null != attributesCursor)
+//                    {
+//                        attributesCursor.close();
+//                        attributesCursor = null;
+//                    }
+//                }
                 return null;
             }
         });
@@ -746,14 +837,17 @@ import java.util.zip.ZipInputStream;
     	final Vector<AmpCondition> ampConditions = getAmpConditions(ruleId);
     	
     	// If all amp conditions are satisfied by the attributes, then the amp message is satisfied.
-    	for (final AmpCondition condition : ampConditions)
-    	{
-    		if (!condition.isSatisfiedByAttributes(attributes))
-    		{
-    			satisfied = false;
-    			break;
-    		}
-    	}
+        if (null != ampConditions)
+        {
+            for (final AmpCondition condition : ampConditions)
+            {
+                if (!condition.isSatisfiedByAttributes(attributes))
+                {
+                    satisfied = false;
+                    break;
+                }
+            }
+        }
     	
     	return satisfied;
     }   
@@ -783,8 +877,10 @@ import java.util.zip.ZipInputStream;
         		{
         			ampConditions = new Vector<AmpCondition>();            			
         		}
-        		
-        		ampConditions.add(new AmpCondition(name, operator, values));
+
+                AmpCondition condition = new AmpCondition(name, operator, values);
+                condition.setPackageName(mContext.getPackageName());
+        		ampConditions.add(condition);
             }
         }
         finally
@@ -1186,7 +1282,7 @@ import java.util.zip.ZipInputStream;
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (LocalyticsAmpSession.USE_EXTERNAL_DIRECTORY)
+		if (AmpConstants.USE_EXTERNAL_DIRECTORY)
 		{
 			builder.append(Environment.getExternalStorageDirectory().getAbsolutePath());			
 		}
@@ -1195,9 +1291,9 @@ import java.util.zip.ZipInputStream;
 			builder.append(mContext.getFilesDir().getAbsolutePath());
 		}		
 		builder.append(File.separator);
-		builder.append(LocalyticsAmpSession.LOCALYTICS_DIR);
+		builder.append(AmpConstants.LOCALYTICS_DIR);
 		builder.append(File.separator);
-		builder.append(LocalyticsAmpSession.LOCALYTICS_AMPDIR);
+		builder.append(mApiKey);
 		
 		return builder.toString();
 	}
@@ -1212,7 +1308,7 @@ import java.util.zip.ZipInputStream;
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (LocalyticsAmpSession.USE_EXTERNAL_DIRECTORY)
+		if (AmpConstants.USE_EXTERNAL_DIRECTORY)
 		{
 			builder.append(Environment.getExternalStorageDirectory().getAbsolutePath());			
 		}
@@ -1221,9 +1317,9 @@ import java.util.zip.ZipInputStream;
 			builder.append(mContext.getFilesDir().getAbsolutePath());
 		}		
 		builder.append(File.separator);
-		builder.append(LocalyticsAmpSession.LOCALYTICS_DIR);
+		builder.append(AmpConstants.LOCALYTICS_DIR);
 		builder.append(File.separator);
-		builder.append(LocalyticsAmpSession.LOCALYTICS_AMPDIR);
+		builder.append(mApiKey);
 		builder.append(File.separator);
 		builder.append(String.format("amp_rule_%d", ruleId));
 		

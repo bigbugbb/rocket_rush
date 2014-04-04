@@ -1,36 +1,30 @@
 package com.localytics.android;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Environment;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LocalyticsAmpSession extends LocalyticsSession 
-{    
-	/**
-     * Name of the directory in which all Localytics data is stored
-     */	
-	public static final String LOCALYTICS_DIR = ".localytics";
-	
-	/**
-	 * Name of the directory in which amp data is stored
-	 */
-	public static final String LOCALYTICS_AMPDIR = "ampData";
-	
-	/**
-	 * Temporary constant for testing only, remove it later
-	 */
-	public static final boolean USE_EXTERNAL_DIRECTORY = true;		
-	
-	private static AtomicBoolean mTestModeEnabled = new AtomicBoolean(false);
-	
+{
+    /**
+     * Constructs a new {@link LocalyticsAmpSession} object.
+     *
+     * @param context The context used to access resources on behalf of the app. It is recommended to use
+     *            {@link Context#getApplicationContext()} to avoid the potential memory leak incurred by maintaining references to
+     *            {@code Activity} instances. Cannot be null.
+     * @throws IllegalArgumentException if {@code context} is null
+     * @throws IllegalArgumentException if LOCALYTICS_APP_KEY in AndroidManifest.xml is null or empty
+     */
+    public LocalyticsAmpSession(final Context context)
+    {
+        this(context, null);
+    }
+
     /**
      * Constructs a new {@link LocalyticsAmpSession} object.
      *
@@ -71,7 +65,9 @@ public class LocalyticsAmpSession extends LocalyticsSession
     }
 	
 	/**
-	 * 
+	 * Trigger the in-app-messaging dialog with the given event name.
+     * This event should be uploaded first by tagEvent and the campaign associated with this event should be created.
+     *
 	 * @param eventName
 	 */
 	public void triggerAmp(final String eventName)
@@ -80,9 +76,11 @@ public class LocalyticsAmpSession extends LocalyticsSession
     }
 	
 	/**
-	 * 
-	 * @param eventName
-	 * @param attributes
+     * Trigger the in-app-messaging dialog with the given event name.
+     * This event should be uploaded first by tagEvent and the campaign associated with this event should be created.
+     *
+	 * @param eventName The event name, must not be null.
+	 * @param attributes The attributes associated with the event. These attributes should be uploaded first by tagEvent.
 	 */
 	public void triggerAmp(final String eventName, final Map<String, String> attributes)
     {	
@@ -100,12 +98,10 @@ public class LocalyticsAmpSession extends LocalyticsSession
 	 * Attach the current foreground activity to the amp session. The fragment manager associated with each activity
 	 * is needed for showing the dialog fragment which hosts the amp dialog. This method gets the fragment manager
 	 * from the input activity and attaches it with the amp session handler which controls the amp trigger.
-	 * <p>
-     * Note: This method should be called before call to {@link #open()} or {@link #open(List)}
-	 *  
+	 *
 	 * @param activity The foreground activity, must not be null.
 	 */
-	public void attach(final Activity activity)
+	public void attach(final FragmentActivity activity)
 	{
 		if (activity == null)
         {
@@ -113,48 +109,52 @@ public class LocalyticsAmpSession extends LocalyticsSession
         }
 		
 		AmpSessionHandler handler = (AmpSessionHandler) getSessionHandler();
-		if (activity instanceof FragmentActivity)
-		{
-			handler.setFragmentManager(((FragmentActivity) activity).getSupportFragmentManager());
-		}
-		else
-		{
-			handler.setFragmentManager(null);
-		}
+        handler.setFragmentManager(activity.getSupportFragmentManager());
 	}
 	
 	/**
 	 * Opposite from the attach, this method detaches any fragment manager from the amp session.
-	 * <p>
-     * Note: This method should be called after call to {@link #close()} or {@link #close(List)}
 	 */
 	public void detach()
 	{		
 		AmpSessionHandler handler = (AmpSessionHandler) getSessionHandler();
 		handler.setFragmentManager(null);
 	}
-	
+
+    /**
+     * Determine whether the test mode is enabled.
+     *
+     * @return true if the test mode is enabled, otherwise false.
+     */
 	public static boolean isTestModeEnabled()
 	{
-		return mTestModeEnabled.get();
+		return AmpConstants.isTestModeEnabled();
 	}
-	
-	public static void setTestMode(boolean enabled)
+
+    /**
+     * Enable/Disable the test mode with the given flag.
+     * If the user is not in the test mode, all in-app-message dialog will not show once and the information
+     * to show the dialog will be deleted after the dialog is closed. In test mode, the information will never
+     * be deleted so the same in-app-message dialog will always show under the right condition.
+     *
+     * @param enabled Flag to indicate whether to enable the test mode or not.
+     */
+	public static void setTestModeEnabled(final boolean enabled)
 	{
-		mTestModeEnabled.set(enabled);
+		AmpConstants.setTestModeEnabled(enabled);
 	}
 	
 	/**
 	 * Create the localytics directory in which the amp data should be saved.
 	 *   
-	 * @param context 
+	 * @param context The application context
 	 * @return true if the directory does exist or has been created, false if the directory cannot be created.
 	 */
 	private boolean createLocalyticsDirectory(final Context context) 
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (LocalyticsAmpSession.USE_EXTERNAL_DIRECTORY)
+		if (AmpConstants.USE_EXTERNAL_DIRECTORY)
 		{
 			builder.append(Environment.getExternalStorageDirectory().getAbsolutePath());			
 		}
@@ -163,7 +163,7 @@ public class LocalyticsAmpSession extends LocalyticsSession
 			builder.append(context.getFilesDir().getAbsolutePath());
 		}	
 		builder.append(File.separator);
-		builder.append(LOCALYTICS_DIR);
+		builder.append(AmpConstants.LOCALYTICS_DIR);
 		
 		File dir = new File(builder.toString());
 		

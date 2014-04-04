@@ -18,7 +18,7 @@ document.getElementById(id+'Link').style.display = 'none';
 <body>
 <h1>Lint Report</h1>
 <div class="titleSeparator"></div>
-Check performed at Sun Mar 23 22:49:43 EDT 2014.<br/>
+Check performed at Fri Apr 04 17:48:57 EDT 2014.<br/>
 0 errors and 2 warnings found:<br/><br/>
 <table class="overview">
 <tr><td></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
@@ -42,13 +42,13 @@ Check performed at Sun Mar 23 22:49:43 EDT 2014.<br/>
 <div class="id"><a href="#" title="Return to top">DefaultLocale: Implied default locale in case conversion</a><div class="issueSeparator"></div>
 </div>
 <div class="warningslist">
-<span class="location"><a href="../src/main/java/com/localytics/android/DatapointHelper.java">../src/main/java/com/localytics/android/DatapointHelper.java</a>:183</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead</span><br /><pre class="errorlines">
-<span class="lineno"> 180</span>         }
-<span class="lineno"> 181</span> 
-<span class="lineno"> 182</span>         final String androidId = android.provider.Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-<span class="lineno"> 183</span>         if (androidId == null || androidId.<span class="errorspan">toLowerCase().equals(INVALID_ANDROID_ID))</span>
-<span class="lineno"> 184</span>         {
-<span class="lineno"> 185</span>             return null;
+<span class="location"><a href="../src/main/java/com/localytics/android/DatapointHelper.java">../src/main/java/com/localytics/android/DatapointHelper.java</a>:181</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use toLowerCase(Locale) instead</span><br /><pre class="errorlines">
+<span class="lineno"> 178</span>         }
+<span class="lineno"> 179</span> 
+<span class="lineno"> 180</span>         final String androidId = android.provider.Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+<span class="lineno"> 181</span>         if (androidId == null || androidId.<span class="errorspan">toLowerCase().equals(INVALID_ANDROID_ID))</span>
+<span class="lineno"> 182</span>         {
+<span class="lineno"> 183</span>             return null;
 </pre>
 </div>
 <div class="metadata">Priority: 6 / 10<br/>

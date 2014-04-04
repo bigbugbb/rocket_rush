@@ -12,17 +12,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
     /**
      * Flag indicating whether amp testing is enabled. If not, the same campaign won't show twice.
      */
-    private static final AtomicBoolean sIsAmpTesting = new AtomicBoolean(true);
+    private static final AtomicBoolean sTestModeEnabled = new AtomicBoolean(false);
 
-    public static void setAmpTesting(final boolean isAmpTesting)
+    public static void setTestModeEnabled(final boolean enabled)
     {
-        sIsAmpTesting.set(isAmpTesting);
+        sTestModeEnabled.set(enabled);
     }
 
-    public static boolean isAmpTesting()
+    public static boolean isTestModeEnabled()
     {
-        return sIsAmpTesting.get();
+        return sTestModeEnabled.get();
     }
+
+    /**
+     * Temporary constant for testing only, remove it later
+     */
+    public static final boolean USE_EXTERNAL_DIRECTORY = false;
+
+    /**
+     * Name of the directory in which all Localytics data is stored
+     */
+    public static final String LOCALYTICS_DIR = ".localytics";
 
 	/**
 	 * AMP display events

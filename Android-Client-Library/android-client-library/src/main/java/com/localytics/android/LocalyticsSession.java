@@ -1007,5 +1007,57 @@ public class LocalyticsSession
         }
 
         return attributes;
-    }    
+    }
+
+    /**
+     * TODO:
+     */
+    public static void setLoggingEnabled(boolean enabled)
+    {
+        Constants.IS_LOGGABLE = enabled;
+    }
+
+    /**
+     * TODO:
+     */
+    public static boolean isLoggingEnabled()
+    {
+        return Constants.IS_LOGGABLE;
+    }
+
+    /**
+     * TODO:
+     * @param enabled
+     */
+    public static void setHttpsEnabled(boolean enabled)
+    {
+        Constants.USE_HTTPS = enabled;
+    }
+
+    /**
+     * TODO:
+     * @return
+     */
+    public static boolean isUsingHttps()
+    {
+        return Constants.USE_HTTPS;
+    }
+
+    /**
+     * TODO:
+     * @param expiration
+     */
+    public static void setSessionExpiration(long expiration)
+    {
+        Constants.SESSION_EXPIRATION = expiration;
+    }
+
+    /**
+     * TODO:
+     * @return
+     */
+    public static long getSessionExpiration()
+    {
+        return Constants.SESSION_EXPIRATION;
+    }
 }

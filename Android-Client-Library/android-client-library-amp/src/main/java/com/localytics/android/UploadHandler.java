@@ -60,12 +60,12 @@ import java.util.zip.GZIPOutputStream;
     /**
      * Localytics upload URL for HTTP, as a format string that contains a format for the API key.
      */
-    private final static String ANALYTICS_URL_HTTP = "http://ec2-54-205-127-42.compute-1.amazonaws.com:8080/api/v2/applications/%s/uploads"; //$NON-NLS-1$
+    private final static String ANALYTICS_URL_HTTP = "http://analytics.localytics.com/api/v2/applications/%s/uploads"; //$NON-NLS-1$
 
     /**
      * Localytics upload URL for HTTPS
      */
-    private final static String ANALYTICS_URL_HTTPS = "https://ec2-54-205-127-42.compute-1.amazonaws.com:8080/api/v2/uploads"; //$NON-NLS-1$
+    private final static String ANALYTICS_URL_HTTPS = "https://analytics.localytics.com/api/v2/uploads"; //$NON-NLS-1$
     
     /**
      * Handler message to upload all data collected so far
@@ -102,7 +102,7 @@ import java.util.zip.GZIPOutputStream;
     /**
      * The Localytics API key
      */
-    private final String mApiKey;
+    protected final String mApiKey;
     
     /**
      * The Localytics Install ID
@@ -680,7 +680,7 @@ import java.util.zip.GZIPOutputStream;
                 final long eventId = blobEvents.getLong(eventIdColumn);
 
                 // delete the blobevent
-                provider.delete(UploadBlobEventsDbColumns.TABLE_NAME, String.format("%s = ?", UploadBlobEventsDbColumns._ID), new String[] { Long.toString(blobEventId) }); //$NON-NLS-1$
+                provider.remove(UploadBlobEventsDbColumns.TABLE_NAME, String.format("%s = ?", UploadBlobEventsDbColumns._ID), new String[] { Long.toString(blobEventId) }); //$NON-NLS-1$
 
                 /*
                  * Add the blob to the list of blobs to be deleted
@@ -688,7 +688,7 @@ import java.util.zip.GZIPOutputStream;
                 blobsToDelete.add(Long.valueOf(blobId));
 
                 // delete all attributes for the event
-                provider.delete(AttributesDbColumns.TABLE_NAME, String.format("%s = ?", AttributesDbColumns.EVENTS_KEY_REF), new String[] { Long.toString(eventId) }); //$NON-NLS-1$
+                provider.remove(AttributesDbColumns.TABLE_NAME, String.format("%s = ?", AttributesDbColumns.EVENTS_KEY_REF), new String[] { Long.toString(eventId) }); //$NON-NLS-1$
 
                 /*
                  * Check to see if the event is a close event, indicating that the session is complete and can also be deleted
@@ -706,7 +706,7 @@ import java.util.zip.GZIPOutputStream;
                     {
                         final long sessionId = eventCursor.getLong(eventCursor.getColumnIndexOrThrow(EventsDbColumns.SESSION_KEY_REF));
 
-                        provider.delete(EventHistoryDbColumns.TABLE_NAME, String.format("%s = ?", EventHistoryDbColumns.SESSION_KEY_REF), new String[] //$NON-NLS-1$
+                        provider.remove(EventHistoryDbColumns.TABLE_NAME, String.format("%s = ?", EventHistoryDbColumns.SESSION_KEY_REF), new String[] //$NON-NLS-1$
                             { Long.toString(sessionId) });
 
                         sessionsToDelete.add(Long.valueOf(eventCursor.getLong(eventCursor.getColumnIndexOrThrow(EventsDbColumns.SESSION_KEY_REF))));
@@ -722,7 +722,7 @@ import java.util.zip.GZIPOutputStream;
                 }
 
                 // delete the event
-                provider.delete(EventsDbColumns.TABLE_NAME, String.format("%s = ?", EventsDbColumns._ID), new String[] { Long.toString(eventId) }); //$NON-NLS-1$
+                provider.remove(EventsDbColumns.TABLE_NAME, String.format("%s = ?", EventsDbColumns._ID), new String[] { Long.toString(eventId) }); //$NON-NLS-1$
             }
         }
         finally
@@ -737,13 +737,13 @@ import java.util.zip.GZIPOutputStream;
         // delete blobs
         for (final long x : blobsToDelete)
         {
-            provider.delete(UploadBlobsDbColumns.TABLE_NAME, String.format("%s = ?", UploadBlobsDbColumns._ID), new String[] { Long.toString(x) }); //$NON-NLS-1$
+            provider.remove(UploadBlobsDbColumns.TABLE_NAME, String.format("%s = ?", UploadBlobsDbColumns._ID), new String[] { Long.toString(x) }); //$NON-NLS-1$
         }
 
         // delete sessions
         for (final long x : sessionsToDelete)
         {
-            provider.delete(SessionsDbColumns.TABLE_NAME, String.format("%s = ?", SessionsDbColumns._ID), new String[] { Long.toString(x) }); //$NON-NLS-1$
+            provider.remove(SessionsDbColumns.TABLE_NAME, String.format("%s = ?", SessionsDbColumns._ID), new String[] { Long.toString(x) }); //$NON-NLS-1$
         }
     }
     
@@ -815,8 +815,6 @@ import java.util.zip.GZIPOutputStream;
                 result.put(JsonObjects.BlobHeader.Attributes.KEY_DEVICE_SERIAL_HASH, cursor.isNull(cursor.getColumnIndexOrThrow(SessionsDbColumns.DEVICE_SERIAL_NUMBER_HASH)) ? JSONObject.NULL
                         : cursor.getString(cursor.getColumnIndexOrThrow(SessionsDbColumns.DEVICE_SERIAL_NUMBER_HASH)));
                 result.put(JsonObjects.BlobHeader.Attributes.KEY_DEVICE_SDK_LEVEL, cursor.getString(cursor.getColumnIndexOrThrow(SessionsDbColumns.ANDROID_SDK)));
-                result.put(JsonObjects.BlobHeader.Attributes.KEY_DEVICE_WIFI_MAC_HASH, cursor.isNull(cursor.getColumnIndexOrThrow(SessionsDbColumns.DEVICE_WIFI_MAC_HASH)) ? JSONObject.NULL
-                        : cursor.getString(cursor.getColumnIndexOrThrow(SessionsDbColumns.DEVICE_WIFI_MAC_HASH)));
                 result.put(JsonObjects.BlobHeader.Attributes.KEY_LOCALYTICS_API_KEY, apiKey);
                 result.put(JsonObjects.BlobHeader.Attributes.KEY_LOCALYTICS_CLIENT_LIBRARY_VERSION, cursor.getString(cursor.getColumnIndexOrThrow(SessionsDbColumns.LOCALYTICS_LIBRARY_VERSION)));
                 result.put(JsonObjects.BlobHeader.Attributes.KEY_LOCALYTICS_DATA_TYPE, JsonObjects.BlobHeader.Attributes.VALUE_DATA_TYPE);
@@ -1478,7 +1476,7 @@ import java.util.zip.GZIPOutputStream;
      * Private helper to get a column value from the InfoDb table
      *
      * @param provider Localytics database provider. Cannot be null.
-     * @param Database key. Cannot be null.
+     * @param key Database key. Cannot be null.
      * @return The requested string
      */
     /* package */static String getStringFromAppInfo(final LocalyticsProvider provider, final String key)

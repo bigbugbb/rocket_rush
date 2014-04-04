@@ -67,13 +67,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
      * Id for the close button
      */
     public static final int CLOSE_BUTTON_ID = 1;
-	
+
+    /**
+     * Amp message from which the in-app-message dialog is created.
+     */
 	private Map<String, Object> mAmpMessage;
-	
+
+    /**
+     * Javascript client object which implements the javascript api
+     */
 	private JavaScriptClient mJavaScriptClient;
-	
+
+    /**
+     * Callbacks for the amp dialog implementation to reduce to coupling
+     */
 	private Map<Integer, AmpCallable> mCallbacks;
-	
+
+    /**
+     * Flag to indicate whether the view event is uploaded.
+     */
 	private AtomicBoolean mUploadedViewEvent;
 	
 	/**
@@ -87,12 +99,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	 */
 	private AtomicBoolean mExitAnimatable;
 
-//    /**
-//     * AmpDialogListener listener
-//     */
-//    private AmpDialogListener mListener;
-
-	
 	public AmpDialogFragment()
 	{
 		mEnterAnimatable   = new AtomicBoolean(true);
@@ -191,7 +197,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		if (null != mCallbacks)
 		{
             AmpCallable callable = mCallbacks.get(AmpCallable.ON_AMP_DESTROY);
-            if (!AmpConstants.isAmpTesting() && callable != null)
+            if (!AmpConstants.isTestModeEnabled() && callable != null)
             {
                 callable.call(new Object[] { mAmpMessage });
             }
@@ -436,6 +442,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		 * Margin around the dialog in center mode
 		 */
 		private final static int MARGIN = 10; // in dip
+
+        /**
+         * Default maximum width for banner in dip
+         */
+        private final static int MAX_BANNER_WIDTH_DIP = 360;
 		
 		/**
 		 * Web view to hold the HTML content
@@ -497,8 +508,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		 */
 		public AmpDialog(Context context, int theme)
 		{
-			super(context, theme);						
-			
+			super(context, theme);
+
 			// When user switches from the other app, the amp message here is invalid.
 			if (null == mAmpMessage)
 			{				
@@ -602,13 +613,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  			
  			// Get display dimension based on the device type
  			final float aspectRatio = mHeight / mWidth;
- 			final float maxWidth = Math.min(mMetrics.widthPixels, mMetrics.heightPixels);
+ 			final float maxWidth = Math.min(MAX_BANNER_WIDTH_DIP * mMetrics.density, Math.min(mMetrics.widthPixels, mMetrics.heightPixels));
 	        
 			/**
 			 *  Set display size and location according to the amp message
 			 */
 	        final Window window = getWindow();		
-	        final WindowManager.LayoutParams attributes = window.getAttributes();			
+	        final WindowManager.LayoutParams attributes = window.getAttributes();
 			
 			window.setBackgroundDrawable(new ColorDrawable(0)); // Set transparent background		
 			window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL); // Enable background clickable
@@ -763,10 +774,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		 */
 		/* package */class AmpWebView extends WebView 
 		{			
-		    @SuppressLint("SetJavaScriptEnabled")
+		    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+            @SuppressLint("SetJavaScriptEnabled")
 			public AmpWebView(Context context, AttributeSet attrs) 
 		    {
 				super(context, attrs);
+
+                // This is a workaround for Android 4.4 bug <http://stackoverflow.com/questions/19742350/android-skips-ondraw-when-i-run-my-animation-in-reverse>
+                if (DatapointHelper.getApiLevel() >= 19)
+                {
+                    setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                }
 				
 				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
 				params.gravity = Gravity.CENTER;
@@ -992,6 +1010,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
                 setId(CLOSE_BUTTON_ID);
 
+                // Turn off the hardware accerlation for BlurMaskFilter
 				if (DatapointHelper.getApiLevel() >= 14) 
 				{
 					setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -1045,7 +1064,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 				canvas.drawCircle(mCenterX + dip, mCenterY + dip, mRadius - dip, mShadowInnerPaint);
 				canvas.drawCircle(mCenterX + dip, mCenterY + dip, mRadius - dip, mShadowOuterPaint);
-				canvas.drawBitmap(mBitmap, 0, 0, mPaint);										
+                if (mBitmap != null) // This is needed for android version < 3.0
+                {
+                    canvas.drawBitmap(mBitmap, 0, 0, mPaint);
+                }
 			}
 
 			public void release()

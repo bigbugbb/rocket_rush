@@ -14,6 +14,10 @@ import java.util.Map;
  */
 /* package */final class JavaScriptClient
 {
+    /**
+     * Callbacks which implement the corresponding methods.
+     * The keys are defined in AmpCallable. Use callbacks to minimize the coupling.
+     */
 	private Map<Integer, AmpCallable> mCallbacks;
 	
 	public JavaScriptClient(Map<Integer, AmpCallable> callbacks)
@@ -56,7 +60,7 @@ import java.util.Map;
             Log.w(Constants.LOG_TAG, "[JavaScriptClient]: nativeTagEvent is being called"); //$NON-NLS-1$
         }
 
-        callMethod(AmpCallable.ON_AMP_JS_TAG_EVENT, new Object[] { event, attributes, customDimensions, customerValueIncrease });
+        invoke(AmpCallable.ON_AMP_JS_TAG_EVENT, new Object[]{event, attributes, customDimensions, customerValueIncrease});
 	}
 	
 	@JavascriptInterface
@@ -71,30 +75,30 @@ import java.util.Map;
 		{
 			public void run() 
 			{
-                callMethod(AmpCallable.ON_AMP_JS_CLOSE_WINDOW, null);
+                invoke(AmpCallable.ON_AMP_JS_CLOSE_WINDOW, null);
 			}
 		});
 	}						
 
 	public String getIdentifiers()
     {
-        String identifiers = (String) callMethod(AmpCallable.ON_AMP_JS_GET_IDENTIFIERS, null);
+        String identifiers = (String) invoke(AmpCallable.ON_AMP_JS_GET_IDENTIFIERS, null);
         return identifiers;
     }
     
     public String getCustomDimensions()
     {
-        String customDimensions = (String) callMethod(AmpCallable.ON_AMP_JS_GET_CUSTOM_DIMENSIONS, null);
+        String customDimensions = (String) invoke(AmpCallable.ON_AMP_JS_GET_CUSTOM_DIMENSIONS, null);
     	return customDimensions;
     }
     
     public String getAttributes()
     {
-        String customDimensions = (String) callMethod(AmpCallable.ON_AMP_JS_GET_ATTRIBUTES, null);
+        String customDimensions = (String) invoke(AmpCallable.ON_AMP_JS_GET_ATTRIBUTES, null);
         return customDimensions;
     }
 
-    private Object callMethod(int methodId, final Object[] params)
+    private Object invoke(int methodId, final Object[] params)
     {
         Object result = null;
 

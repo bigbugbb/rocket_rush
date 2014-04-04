@@ -78,7 +78,7 @@ import java.util.Map;
         return list;
     }
 
-    private static Object fromJson(Object json) throws JSONException 
+    public static Object fromJson(Object json) throws JSONException
     {
         if (json == JSONObject.NULL) 
         {
@@ -96,5 +96,103 @@ import java.util.Map;
         {
             return json;
         }
+    }
+
+    public static String getSafeStringFromValue(Object value)
+    {
+        String stringValue = null;
+
+        if (null == value)
+        {
+            return null;
+        }
+        else if (value instanceof Integer)
+        {
+            stringValue = Integer.toString((Integer) value);
+        }
+        else if (value instanceof String)
+        {
+            stringValue = (String) value;
+        }
+
+        return stringValue;
+    }
+
+    public static int getSafeIntegerFromMap(Map<String, Object> map, String key)
+    {
+        int integerValue = 0;
+        Object value = map.get(key);
+
+        if (null == value)
+        {
+            return 0;
+        }
+        else if (value instanceof Integer )
+        {
+            integerValue = (Integer) value;
+        }
+        else if (value instanceof String)
+        {
+            integerValue = Integer.parseInt((String) value);
+        }
+
+        return integerValue;
+    }
+
+    public static String getSafeStringFromMap(Map<String, Object> map, String key)
+    {
+        String stringValue = null;
+        Object value = map.get(key);
+
+        if (null == value)
+        {
+            return null;
+        }
+        else if (value instanceof Integer)
+        {
+            stringValue = Integer.toString((Integer) value);
+        }
+        else if (value instanceof String)
+        {
+            stringValue = (String) value;
+        }
+
+        return stringValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> getSafeMapFromMap(Map<String, Object> map, String key)
+    {
+        Map<String, Object> mapValue = null;
+        Object value = map.get(key);
+
+        if (null == value)
+        {
+            return null;
+        }
+        else if (value instanceof Map)
+        {
+            mapValue = (Map<String, Object>) value;
+        }
+
+        return mapValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Object> getSafeListFromMap(Map<String, Object> map, String key)
+    {
+        List<Object> listValue = null;
+        Object value = map.get(key);
+
+        if (null == value)
+        {
+            return null;
+        }
+        else if (value instanceof List)
+        {
+            listValue = (List<Object>) value;
+        }
+
+        return listValue;
     }
 }

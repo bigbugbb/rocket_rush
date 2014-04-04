@@ -34,7 +34,7 @@ import java.util.concurrent.Callable;
  * <p>
  * This is not a public API.
  */
-class LocalyticsProvider
+/* package */class LocalyticsProvider
 {
     /**
      * Name of the Localytics database, stored in the host application's {@link Context#getDatabasePath(String)}.
@@ -287,6 +287,9 @@ class LocalyticsProvider
 
     /**
      * Deletes row(s).
+     *
+     * WORKAROUND for ART verifier bug in KitKat: Changed method name from delete to remove
+     *
      * <p>
      * Note: this method may perform disk operations.
      *
@@ -297,7 +300,7 @@ class LocalyticsProvider
      * @return The number of rows affected, which is in the range from 0 to the number of items in the table.
      * @throws IllegalArgumentException if tableName is null or not a valid table name.
      */
-    public int delete(final String tableName, final String selection, final String[] selectionArgs)
+    public int remove(final String tableName, final String selection, final String[] selectionArgs)
     {
         if (Constants.IS_PARAMETER_CHECKING_ENABLED)
         {

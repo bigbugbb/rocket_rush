@@ -38,11 +38,6 @@ cp ${ANALYTICS_SRC[*]} $ANALYTICS_SRC_DIR
 # create the new directory for the generating jar/zip
 mkdir -p $DIR/build
 
-# compress the analytics src code
-echo "Compress analytics code into the zip file ..."
-cd $DIR/android-client-library/src/main/java/
-tar -zcvf $DIR/build/Localytics-Android-latest.src.zip com
-
 # modify the library version by modify 'androida' to 'android'
 echo "Correct library version for analytics ..."
 cd $ANALYTICS_SRC_DIR
@@ -52,8 +47,13 @@ else
 	find . -name "Constants.java" -type f -exec sed -i "" "s/androida/android/g" '{}' \;
 fi
 
+# compress the analytics src code
+echo "Compress analytics code into the zip file ..."
+cd $DIR/android-client-library/src/main/java/
+tar -zcvf $DIR/build/Localytics-Android-latest.src.zip com
+
 # build project with gradle
-echo "Start to build Localytics project ..."
+echo "Building Localytics project ..."
 cd $DIR
 gradle build --stacktrace
 
@@ -62,4 +62,12 @@ echo "Moves jar to targeting directory: "$DIR/build/
 mv $AMP_LIB $DIR/build/android-client-library-amp.jar
 mv $ANALYTICS_LIB $DIR/build/android-client-library.jar
 
-cp $DIR/build/android-client-library-amp.jar ../rocketrush/libs
+# package the zip for localytics IAM library
+cd $DIR/build/
+mkdir localytics-in-app
+mv android-client-library-amp.jar localytics-in-app
+mv $ANALYTICS_SRC_DIR/LICENSE localytics-in-app
+tar -zcvf $DIR/build/localytics-in-app.zip localytics-in-app
+rm -rf localytics-in-app
+
+#cp $DIR/build/android-client-library-amp.jar ../rocketrush/libs

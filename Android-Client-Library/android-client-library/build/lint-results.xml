@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="4" by="lint 22.6">
+<issues format="4" by="lint 22.6.2">
 
     <issue
         id="DefaultLocale"
@@ -16,8 +16,8 @@ If you want the methods to just perform ASCII replacement, for example to conver
         errorLine1="        if (androidId == null || androidId.toLowerCase().equals(INVALID_ANDROID_ID))"
         errorLine2="                                           ~~~~~~~~~~~">
         <location
-            file="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/java/com/localytics/android/DatapointHelper.java"
-            line="183"
+            file="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/java/com/localytics/android/DatapointHelper.java"
+            line="181"
             column="44"/>
     </issue>
 
@@ -32,7 +32,7 @@ If you want the methods to just perform ASCII replacement, for example to conver
         errorLine1="    buildToolsVersion &quot;19.0.1&quot;"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/build.gradle"
+            file="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/build.gradle"
             line="5"
             column="5"/>
     </issue>

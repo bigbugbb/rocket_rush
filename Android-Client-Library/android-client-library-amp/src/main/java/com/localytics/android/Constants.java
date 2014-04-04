@@ -38,9 +38,11 @@ import android.text.format.DateUtils;
  	 * 2.15: KitKat GZIP bug workaround, optional HTTPS, setLocation API, and default to 50 attributes
  	 * 2.16: Improved handling of missing meta-data in AndroidManifest.xml
  	 * 2.17: Database migration fix
+ 	 * 2.18: Workaround for ART verifier bug on KitKat
+ 	 * 2.19: Remove collection of unused Wi-Fi MAC address
      */
     //@formatter:on
-    public static final String LOCALYTICS_CLIENT_LIBRARY_VERSION = "androida_2.21"; //"android_2.17"; //$NON-NLS-1$
+    public static final String LOCALYTICS_CLIENT_LIBRARY_VERSION = "androida_2.25"; //$NON-NLS-1$
 
     /**
      * The package name of the Localytics library.
@@ -89,7 +91,7 @@ import android.text.format.DateUtils;
      * For example, if the user opens an app, presses home, and opens the app again in less than this number of milliseconds, that
      * will count as one session rather than two sessions.
      */
-    public static final long SESSION_EXPIRATION = 15 * DateUtils.SECOND_IN_MILLIS;
+    public static long SESSION_EXPIRATION = 15 * DateUtils.SECOND_IN_MILLIS;
 
     /**
      * logcat log tag
@@ -102,12 +104,12 @@ import android.text.format.DateUtils;
      * Before releasing a production version of an app, this should be set to false for privacy and performance reasons. When
      * logging is enabled, sensitive information such as the device ID may be printed to the log.
      */
-    public static final boolean IS_LOGGABLE = false;
+    public static boolean IS_LOGGABLE = false;
 
     /**
      * Flag indicating whether to use HTTPS for uploads
      */
-    public static final boolean USE_HTTPS = false;    
+    public static boolean USE_HTTPS = false;
     
     /**
      * Flag indicating whether runtime method parameter checking is performed.

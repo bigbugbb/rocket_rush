@@ -33,6 +33,11 @@ import java.util.Vector;
 	 * The Opt type name
 	 */
 	private Opt mOpt;
+
+    /**
+     * The package name
+     */
+    private String mPkgName;
 	
 	/**
 	 * The values associated with this event
@@ -45,7 +50,12 @@ import java.util.Vector;
 		mOpt    = stringToOperator(operator);
 		mValues = values;
 	}
-	
+
+    public void setPackageName(final String pkgName)
+    {
+        mPkgName = pkgName;
+    }
+
 	/**
 	 * This method checks whether this condition is satisfied by the input attributes
 	 * 
@@ -60,7 +70,11 @@ import java.util.Vector;
 		}
 		
 		// Get the attribute value from the event key
-		final Object attributeValue = attributes.get(mName);
+		Object attributeValue = attributes.get(mName);
+        if (null == attributeValue)
+        {
+            attributeValue = attributes.get(mPkgName + ":" + mName);
+        }
 		
 		// Check whether the attribute value does exist
 		if (null == attributeValue)
