@@ -2,39 +2,39 @@
 <merger>
 
     <dataSet config="main" >
-        <source path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/res" >
+        <source path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/res" >
             <file
                 name="ic_launcher"
-                path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/res/drawable-hdpi/ic_launcher.png"
+                path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/res/drawable-hdpi/ic_launcher.png"
                 qualifiers="hdpi"
                 type="drawable" />
             <file
                 name="ic_launcher"
-                path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/res/drawable-mdpi/ic_launcher.png"
+                path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/res/drawable-mdpi/ic_launcher.png"
                 qualifiers="mdpi"
                 type="drawable" />
             <file
                 name="ic_launcher"
-                path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/res/drawable-xhdpi/ic_launcher.png"
+                path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/res/drawable-xhdpi/ic_launcher.png"
                 qualifiers="xhdpi"
                 type="drawable" />
             <file
                 name="ic_launcher"
-                path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/res/drawable-xxhdpi/ic_launcher.png"
+                path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/res/drawable-xxhdpi/ic_launcher.png"
                 qualifiers="xxhdpi"
                 type="drawable" />
             <file
-                path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/res/values/strings.xml"
+                path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/res/values/strings.xml"
                 qualifiers="" >
                 <string name="app_name" >Android-Client-Library
                 </string>
             </file>
         </source>
-        <source path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/build/res/rs/release" />
-        <source path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/build/res/generated/release" />
+        <source path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/build/res/rs/release" />
+        <source path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/build/res/generated/release" />
     </dataSet>
     <dataSet config="release" >
-        <source path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/release/res" />
+        <source path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/release/res" />
     </dataSet>
 
 </merger>

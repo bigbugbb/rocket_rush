@@ -169,7 +169,7 @@ import java.util.concurrent.Callable;
 		for (final String eventName : eventNames)
 		{				        
         	final ContentValues values = new ContentValues(); 
-            values.put(AmpRuleEventDbColumns.EVENT_NAME, eventName);    	
+            values.put(AmpRuleEventDbColumns.EVENT_NAME, eventName);
             values.put(AmpRuleEventDbColumns.RULE_ID_REF, ruleId);                
         	mProvider.insert(AmpRuleEventDbColumns.TABLE_NAME, values);
 		}

@@ -59,8 +59,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	/**
 	 * Default name for decompressed html
 	 */
-	public static final String DEFAULT_ZIP_PAGE = "index.html";
-	
+	public static final String DEFAULT_HTML_PAGE = "index.html";
+
+    /**
+     * Default name for compressed html
+     */
+    public static final String DEFAULT_ZIP_PAGE = "amp_rule_%d.zip";
+
 	/**
 	 * Device to show amp message
 	 */

@@ -83,13 +83,29 @@ public class LocalyticsAmpSession extends LocalyticsSession
 	 * @param attributes The attributes associated with the event. These attributes should be uploaded first by tagEvent.
 	 */
 	public void triggerAmp(final String eventName, final Map<String, String> attributes)
-    {	
+    {
+        /*
+         * Convert the event and attributes into the internal representation of packagename:eventName and packagename:key
+         */
+        final String eventString = String.format(Constants.EVENT_FORMAT, mContext.getPackageName(), eventName);
+
+        final TreeMap<String, String> remappedAttributes = new TreeMap<String, String>();
+
+        if (null != attributes)
+        {
+            final String packageName = mContext.getPackageName();
+            for (final Map.Entry<String, String> entry : attributes.entrySet())
+            {
+                remappedAttributes.put(String.format(LocalyticsProvider.AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), entry.getValue());
+            }
+        }
+
 		final AmpSessionHandler handler = (AmpSessionHandler) getSessionHandler();
 		handler.sendMessage(handler.obtainMessage(SessionHandler.MESSAGE_UPLOAD, new Runnable() 
 		{
 			public void run()
 			{
-				handler.sendMessage(handler.obtainMessage(AmpSessionHandler.MESSAGE_TRIGGER_AMP, new Object[] { eventName, (attributes == null) ? null : new TreeMap<String, String>(attributes) }));
+				handler.sendMessage(handler.obtainMessage(AmpSessionHandler.MESSAGE_TRIGGER_AMP, new Object[] { eventString, (attributes == null) ? null : remappedAttributes }));
 			}
 		}));
     }

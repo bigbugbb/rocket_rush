@@ -2,10 +2,10 @@
 <merger>
 
     <dataSet config="main" >
-        <source path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/assets" />
+        <source path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/assets" />
     </dataSet>
     <dataSet config="release" >
-        <source path="/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/release/assets" />
+        <source path="/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/release/assets" />
     </dataSet>
 
 </merger>

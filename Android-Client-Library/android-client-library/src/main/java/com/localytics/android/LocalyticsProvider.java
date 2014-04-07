@@ -65,6 +65,7 @@ import java.util.concurrent.Callable;
      * <li>11: Add {@link InfoDbColumns#REGISTRATION_ID}</li>
      * <li>12: Add {@link InfoDbColumns#FIRST_ANDROID_ID} and {@link SessionsDbColumns#DEVICE_ANDROID_ID}</li>
      * <li>13: Add {@link EventsDbColumns#LAT_NAME} and {@link EventsDbColumns#LNG_NAME}</li>
+     * <li>14: Add {@link AmpRulesDbColumns} and {@link AmpDisplayedDbColumns} and {@link AmpRuleEventDbColumns} and {@link AmpConditionsDbColumns} and {@link AmpConditionValuesDbColumns}</li>
      * </ol>
      */
     private static final int DATABASE_VERSION = 14;
@@ -1903,7 +1904,7 @@ import java.util.concurrent.Callable;
          */
         public static final String DEVICES = "devices";        
     }
-    
+
     /**
      * Database table for the amp display status. 
      * <p>
@@ -1944,7 +1945,7 @@ import java.util.concurrent.Callable;
          */
         public static final String CAMPAIGN_ID = "campaign_id";                
     }
-    
+
     /**
      * Database table for the amp rule event. 
      * <p>
@@ -1986,7 +1987,7 @@ import java.util.concurrent.Callable;
          */
         public static final String RULE_ID_REF = "rule_id_ref";
     }
-    
+
     /**
      * Database table for the amp rule event. 
      * <p>
@@ -2036,7 +2037,7 @@ import java.util.concurrent.Callable;
          */
         public static final String RULE_ID_REF = "rule_id_ref";
     }
-    
+
     /**
      * Database table for the amp rule event. 
      * <p>

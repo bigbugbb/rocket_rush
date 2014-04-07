@@ -59,15 +59,15 @@ gradle build --stacktrace
 
 # rename the generated jar
 echo "Moves jar to targeting directory: "$DIR/build/
-mv $AMP_LIB $DIR/build/android-client-library-amp.jar
+mv $AMP_LIB $DIR/build/localytics.jar
 mv $ANALYTICS_LIB $DIR/build/android-client-library.jar
 
 # package the zip for localytics IAM library
-cd $DIR/build/
-mkdir localytics-in-app
-mv android-client-library-amp.jar localytics-in-app
-mv $ANALYTICS_SRC_DIR/LICENSE localytics-in-app
-tar -zcvf $DIR/build/localytics-in-app.zip localytics-in-app
-rm -rf localytics-in-app
+#cd $DIR/build/
+#mkdir localytics-in-app
+#mv localytics.jar localytics-in-app
+#mv $ANALYTICS_SRC_DIR/LICENSE localytics-in-app
+#tar -zcvf $DIR/build/localytics-in-app.zip localytics-in-app
+#rm -rf localytics-in-app
 
-#cp $DIR/build/android-client-library-amp.jar ../rocketrush/libs
+cp $DIR/build/localytics.jar ../rocketrush/libs

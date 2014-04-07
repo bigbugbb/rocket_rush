@@ -277,12 +277,12 @@ import java.util.zip.ZipInputStream;
 		Vector<Map<String, Object>> ampMessages = getAmpMessageMaps(eventName);
 		if (ampMessages.size() == 0) {
 			if (eventName.startsWith(mContext.getPackageName()))
-			{			
+			{
 				final String eventString = eventName.substring(mContext.getPackageName().length() + 1, eventName.length());
 				ampMessages = getAmpMessageMaps(eventString);
 			}
 		}
-		
+
 		// Retrieve the suitable amp message for displaying the amp dialog
 		final Map<String, Object> ampMessage = retrieveDisplayingCandidate(ampMessages, attributes);
 		
@@ -310,7 +310,7 @@ import java.util.zip.ZipInputStream;
 					final AmpDialogFragment fragment = AmpDialogFragment.newInstance();
 					fragment.setData(ampMessage)
 							.setCallbacks(getDialogCallbacks())
-							.setJavaScriptClient(new JavaScriptClient(getJavaScriptClientCallbacks()))
+							.setJavaScriptClient(new JavaScriptClient(getJavaScriptClientCallbacks(attributes)))
 							.show(mFragmentManager, AmpDialogFragment.DIALOG_TAG);
 					
 					/* 
@@ -466,7 +466,7 @@ import java.util.zip.ZipInputStream;
         return callbacks;
     }
 
-    public Map<Integer, AmpCallable> getJavaScriptClientCallbacks()
+    public Map<Integer, AmpCallable> getJavaScriptClientCallbacks(final Map<String, String> attributes)
     {
         final Map<Integer, AmpCallable> callbacks = new TreeMap<Integer, AmpCallable>();
 
@@ -612,7 +612,15 @@ import java.util.zip.ZipInputStream;
                     }
                 }
 
-                final String eventString = String.format(Constants.EVENT_FORMAT, mContext.getPackageName(), event);
+                String eventString = null;
+                if (event.startsWith(mContext.getPackageName() + ":"))
+                {
+                    eventString = event;
+                }
+                else
+                {
+                    eventString = String.format(Constants.EVENT_FORMAT, mContext.getPackageName(), event);
+                }
 
                 if (null == nativeAttributes && null == nativeCustomDimensions)
                 {
@@ -631,7 +639,14 @@ import java.util.zip.ZipInputStream;
                         final String packageName = mContext.getPackageName();
                         for (final Entry<String, Object> entry : nativeAttributes.entrySet())
                         {
-                            remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), (String) entry.getValue());
+                            if (entry.getKey().startsWith(packageName + ":"))
+                            {
+                                remappedAttributes.put(entry.getKey(), (String) entry.getValue());
+                            }
+                            else
+                            {
+                                remappedAttributes.put(String.format(AttributesDbColumns.ATTRIBUTE_FORMAT, packageName, entry.getKey()), (String) entry.getValue());
+                            }
                         }
                     }
 
@@ -737,7 +752,7 @@ import java.util.zip.ZipInputStream;
                         return null;
                     }
 
-                    final JSONObject identifiers = new JSONObject();
+                    final JSONObject jsonIdentifiers = new JSONObject();
 
                     final int keyColumn = cursor.getColumnIndexOrThrow(LocalyticsProvider.IdentifiersDbColumns.KEY);
                     final int valueColumn = cursor.getColumnIndexOrThrow(LocalyticsProvider.IdentifiersDbColumns.VALUE);
@@ -746,10 +761,10 @@ import java.util.zip.ZipInputStream;
                         final String key = cursor.getString(keyColumn);
                         final String value = cursor.getString(valueColumn);
 
-                        identifiers.put(key.substring(mContext.getPackageName().length() + 1, key.length()), value);
+                        jsonIdentifiers.put(key.substring(mContext.getPackageName().length() + 1, key.length()), value);
                     }
 
-                    return identifiers.toString();
+                    return jsonIdentifiers.toString();
                 }
                 catch (JSONException e)
                 {
@@ -786,32 +801,46 @@ import java.util.zip.ZipInputStream;
             @Override
             Object call(Object[] params)
             {
-                /*
-                 * Get the last attribute from the attributes table
-                 */
-//                Cursor attributesCursor = null;
-//                try
-//                {
-//                    attributesCursor = mProvider.query(AttributesDbColumns.TABLE_NAME, null, String.format("%s = ?", AttributesDbColumns.EVENTS_KEY_REF), new String[] { Long.toString(eventId) }, null); //$NON-NLS-1$
-//
-//                    final int keyColumn = attributesCursor.getColumnIndexOrThrow(AttributesDbColumns.ATTRIBUTE_KEY);
-//                    final int valueColumn = attributesCursor.getColumnIndexOrThrow(AttributesDbColumns.ATTRIBUTE_VALUE);
-//                    while (attributesCursor.moveToNext())
-//                    {
-//                        final String key = attributesCursor.getString(keyColumn);
-//                        final String value = attributesCursor.getString(valueColumn);
-//
-//                    }
-//                }
-//                finally
-//                {
-//                    if (null != attributesCursor)
-//                    {
-//                        attributesCursor.close();
-//                        attributesCursor = null;
-//                    }
-//                }
-                return null;
+                if (null == attributes)
+                {
+                    return null;
+                }
+
+                // Remove all custom dimensions
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_1);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_2);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_3);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_4);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_5);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_6);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_7);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_8);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_9);
+                attributes.remove(AttributesDbColumns.ATTRIBUTE_CUSTOM_DIMENSION_10);
+
+                if (attributes.size() == 0)
+                {
+                    return null;
+                }
+
+                // Convert java map into a json object
+                try
+                {
+                    final JSONObject jsonAttributes = new JSONObject();
+                    for (Entry<String, String> entry : attributes.entrySet())
+                    {
+                        jsonAttributes.put(entry.getKey(), entry.getValue());
+                    }
+                    return jsonAttributes.toString();
+                }
+                catch (JSONException e)
+                {
+                    if (Constants.IS_LOGGABLE)
+                    {
+                        Log.w(Constants.LOG_TAG, "[JavaScriptClient]: Failed to get attributes"); //$NON-NLS-1$
+                    }
+                    return null;
+                }
             }
         });
 
@@ -1106,22 +1135,36 @@ import java.util.zip.ZipInputStream;
 	    	 * Get the local URL of the HTML file
 	    	 */
 			String localHtmlURL = null;
-			final int ruleId = (Integer) candidate.get(AmpRulesDbColumns._ID);    		
-						
+			final int ruleId = (Integer) candidate.get(AmpRulesDbColumns._ID);
 			final String zipFileDirPath   = getZipFileDirPath();
 			final String unzipFileDirPath = getUnzipFileDirPath(ruleId);
-			if (getRemoteFileURL(candidate).endsWith(".zip"))
+            final boolean isZipped = getRemoteFileURL(candidate).endsWith(".zip");
+
+            // Download the creative file if it doesn't exist.
+            if (!doesCreativeExist(ruleId, isZipped))
+            {
+                // Fetch the attached ZIP or HTML file
+                final String remoteFileURL = AmpDownloader.getRemoteFileURL(candidate);
+                final String localFileURL  = AmpDownloader.getLocalFileURL(mContext, mApiKey, ruleId, isZipped);
+                if (!TextUtils.isEmpty(remoteFileURL) && !TextUtils.isEmpty(localFileURL))
+                {
+                    AmpDownloader.downloadFile(remoteFileURL, localFileURL, true); // Enable the overwrite so the file can be updated
+                }
+            }
+
+            // Get the correct html file path on the device
+			if (isZipped)
 			{
 				// Decompress the zip file
-				if (decompressZipFile(zipFileDirPath, unzipFileDirPath, String.format("amp_rule_%d.zip", ruleId))) 
+				if (decompressZipFile(zipFileDirPath, unzipFileDirPath, String.format(AmpConstants.DEFAULT_ZIP_PAGE, ruleId)))
 				{
 					// Use WebView.loadUrl rather than first read HTML into the String
-					localHtmlURL = AmpConstants.PROTOCOL_FILE + "://" + unzipFileDirPath + File.separator + AmpConstants.DEFAULT_ZIP_PAGE; 
+					localHtmlURL = AmpConstants.PROTOCOL_FILE + "://" + unzipFileDirPath + File.separator + AmpConstants.DEFAULT_HTML_PAGE;
 				}
 			}
 			else
 			{
-				localHtmlURL = AmpConstants.PROTOCOL_FILE + "://" + unzipFileDirPath + File.separator + AmpConstants.DEFAULT_ZIP_PAGE;
+				localHtmlURL = AmpConstants.PROTOCOL_FILE + "://" + unzipFileDirPath + File.separator + AmpConstants.DEFAULT_HTML_PAGE;
 			}
 			
 			if (TextUtils.isEmpty(localHtmlURL))
@@ -1162,6 +1205,29 @@ import java.util.zip.ZipInputStream;
     	}
     	
     	return candidate;
+    }
+
+    /**
+     * Check whether the creative file does exist on the device.
+     *
+     * @param ruleId The rule id identifies the amp message.
+     * @param isZipped Flag to indicate whether the creative file is zipped or not.
+     * @return true if the creative does exist, otherwise false.
+     */
+    private boolean doesCreativeExist(final int ruleId, final boolean isZipped)
+    {
+        File file;
+
+        if (isZipped)
+        {
+            file = new File(getZipFileDirPath() + File.separator + String.format(AmpConstants.DEFAULT_ZIP_PAGE, ruleId));
+        }
+        else
+        {
+            file = new File(getUnzipFileDirPath(ruleId) + File.separator + AmpConstants.DEFAULT_HTML_PAGE);
+        }
+
+        return file.exists();
     }
     
     /**

@@ -1,4 +1,4 @@
-<!-- From: file:/Develop/Git/AndroidStudioLibrary/Android-Client-Library/android-client-library/src/main/AndroidManifest.xml -->
+<!-- From: file:/Develop/Git/AndroidStudioLibrary/rocket_rush/Android-Client-Library/android-client-library/src/main/AndroidManifest.xml -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="com.localytics.android">
     <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="19"/>
 

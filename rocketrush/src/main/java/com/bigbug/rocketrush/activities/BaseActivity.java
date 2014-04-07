@@ -14,7 +14,7 @@ public class BaseActivity extends FragmentActivity {
 
     protected LocalyticsAmpSession mAmpSession = Application.getLocalyticsSession();
 
-    protected LocalyticsAmpSession mTestSession = Application.getTestSession();
+//    protected LocalyticsAmpSession mTestSession = Application.getTestSession();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +31,8 @@ public class BaseActivity extends FragmentActivity {
         mAmpSession.open();
         mAmpSession.attach(this);
 
-        mTestSession.open();
-        mTestSession.attach(this);
+//        mTestSession.open();
+//        mTestSession.attach(this);
 
 //        if (Build.VERSION.SDK_INT >= 11) {
 //            getWindow().getDecorView().setSystemUiVisibility(
@@ -55,8 +55,8 @@ public class BaseActivity extends FragmentActivity {
         mAmpSession.close();
         mAmpSession.upload();
 
-        mTestSession.detach();
-        mTestSession.close();
-        mTestSession.upload();
+//        mTestSession.detach();
+//        mTestSession.close();
+//        mTestSession.upload();
     }
 }

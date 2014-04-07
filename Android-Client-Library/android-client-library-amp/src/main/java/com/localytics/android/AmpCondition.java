@@ -75,7 +75,7 @@ import java.util.Vector;
         {
             attributeValue = attributes.get(mPkgName + ":" + mName);
         }
-		
+
 		// Check whether the attribute value does exist
 		if (null == attributeValue)
 		{

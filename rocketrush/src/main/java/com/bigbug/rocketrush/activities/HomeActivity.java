@@ -43,7 +43,6 @@ import com.google.android.gms.plus.model.people.Person;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -352,11 +351,11 @@ public class HomeActivity extends BaseActivity implements
         btnAbout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(HomeActivity.this, AboutActivity.class));
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put("test-key", "0");
-                mAmpSession.tagEvent("test-multi-app-key", map);
-                mTestSession.tagEvent("test-multi-app-key", map);
+                startActivity(new Intent(HomeActivity.this, AboutActivity.class));
+//                HashMap<String, String> map = new HashMap<String, String>();
+//                map.put("test-key", "0");
+//                mAmpSession.tagEvent("test-multi-app-key", map);
+//                mTestSession.tagEvent("test-multi-app-key", map);
             }
         });
 

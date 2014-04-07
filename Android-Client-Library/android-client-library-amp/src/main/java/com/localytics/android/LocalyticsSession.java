@@ -671,7 +671,6 @@ public class LocalyticsSession
             /*
              * Convert the attributes and custom dimensions into the internal representation of packagename:key
              */
-
             final TreeMap<String, String> remappedAttributes = new TreeMap<String, String>();
 
             if (null != attributes)
