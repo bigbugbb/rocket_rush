@@ -1,2 +1,0 @@
-include ':android-client-library-amp', ':testapp'
-include ':android-client-library'
