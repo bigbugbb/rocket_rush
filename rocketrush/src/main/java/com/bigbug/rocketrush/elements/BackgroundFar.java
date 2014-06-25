@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppCtrl;
 import com.bigbug.rocketrush.utils.BitmapHelper;
@@ -42,7 +42,7 @@ public class BackgroundFar extends Background {
 		super(context);
 		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y * mDip);
 		setMaxSpeed(0, DEFAULT_SPEED_Y * 3 * mDip);
-		setAccSpeed(0, DEFAULT_SPEED_Y * mDip / (1000 / Globals.DATA_UPDATE_INTERVAL));
+		setAccSpeed(0, DEFAULT_SPEED_Y * mDip / (1000 / Constants.DATA_UPDATE_INTERVAL));
 		setZOrder(ZOrders.BACKGROUND_FAR);
 
 		loadImages(context, new int[] { R.drawable.bg1_far, R.drawable.bg2_far, R.drawable.bg3_far, R.drawable.b1_to_b2, R.drawable.b2_to_b3 });
@@ -101,7 +101,7 @@ public class BackgroundFar extends Background {
 		if (mAccMoveDuration > 0) {
 			mSpeedY = Math.min(mSpeedY + mAccSpeedY, mMaxSpeedY);
 			mY += mSpeedY;
-			mAccMoveDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mAccMoveDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else {
 			mSpeedY = Math.max(mSpeedY - mAccSpeedY, DEFAULT_SPEED_Y);
 			mY += mSpeedY;

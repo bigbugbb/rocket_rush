@@ -16,7 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bigbug.rocketrush.Application;
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.activities.BaseActivity;
 
@@ -48,12 +48,12 @@ public class GameMenuDialog extends BaseActivity {
                 } else if (position == 1) {
                     Object[] info = Application.getLocalyticsEventInfo("Click 'Retry'");
                     Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-                    setResult(Globals.RESTART_GAME);
+                    setResult(Constants.RESTART_GAME);
                     finish();
                 } else if (position == 2) {
                     Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
                     Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-                    setResult(Globals.STOP_GAME);
+                    setResult(Constants.STOP_GAME);
                     finish();
                 }
             }

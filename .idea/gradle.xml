@@ -8,6 +8,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/apputils" />
             <option value="$PROJECT_DIR$/rocketrush" />
           </set>
         </option>

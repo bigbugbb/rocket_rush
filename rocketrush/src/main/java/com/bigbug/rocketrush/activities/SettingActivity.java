@@ -37,9 +37,9 @@ public class SettingActivity extends BaseActivity implements SeekBar.OnSeekBarCh
         adjustLayout();
 
         Object[] info = Application.getLocalyticsEventInfo("Click 'Setting'");
-        mAmpSession.tagScreen("Setting");
-        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-        mAmpSession.upload();
+        mSession.tagScreen("Setting");
+        mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mSession.upload();
     }
 
     @Override

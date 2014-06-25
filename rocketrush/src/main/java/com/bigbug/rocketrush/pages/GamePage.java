@@ -11,7 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.activities.SettingActivity;
 import com.bigbug.rocketrush.basic.AppCtrl;
@@ -98,7 +98,7 @@ public class GamePage extends AppPage implements SensorEventListener {
                                 // Trigger callback method
                                 if (mListener != null) {
                                     final HashMap<String, Object> results = new HashMap<String, Object>();
-                                    results.put(Globals.KEY_DISTANCE, stateEvent.mExtra);
+                                    results.put(Constants.KEY_DISTANCE, stateEvent.mExtra);
                                     mListener.onGameOver(results);
                                 }
                             }

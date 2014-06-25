@@ -7,7 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Typeface;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.basic.AppScale;
 
 public class Curtain extends Utility {
@@ -70,7 +70,7 @@ public class Curtain extends Utility {
 		if (mCloseDuration > 0) {
 			mBottom += mDelta;
 			mUpper  -= mDelta;
-			mCloseDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mCloseDuration -= Constants.DATA_UPDATE_INTERVAL;
 			if (mUpper <= mBottom) {
 				mCloseDuration = 0;
 				mDelayDuration = 500;
@@ -79,11 +79,11 @@ public class Curtain extends Utility {
 				}
 			}
 		} else if (mDelayDuration > 0) {
-			mDelayDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mDelayDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else if (mOpenDuration > 0) {
 			mBottom -= mDelta;
 			mUpper  += mDelta;
-			mOpenDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mOpenDuration -= Constants.DATA_UPDATE_INTERVAL;
 			if (mBottom <= 0 && mUpper >= mHeight) {
 				mOpenDuration = 0;
 				if (mListener != null) {
@@ -112,7 +112,7 @@ public class Curtain extends Utility {
 		
 		mBottom = 0;
 		mUpper  = mHeight;		
-		mDelta  = mHeight / (1000f / Globals.DATA_UPDATE_INTERVAL / 2);
+		mDelta  = mHeight / (1000f / Constants.DATA_UPDATE_INTERVAL / 2);
 	}
 
 	public interface OnCurtainEventListener {

@@ -7,7 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.basic.AppCtrl;
 
 public class SpeedBar extends Utility {
@@ -72,7 +72,7 @@ public class SpeedBar extends Utility {
 	public void onUpdate() {
 		if (mUpDuration > 0) {
 			mY = Math.max(mY - mSpeedY, mBarTop);
-			mUpDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mUpDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else {
 			mY = Math.min(mY + mSpeedY, mBarBottom);
 			mUpDuration = 0;
@@ -117,7 +117,7 @@ public class SpeedBar extends Utility {
 	    mBarTop    = mCanvasHeight * 0.58f + 2 * mDip;
 	    mBarBottom = mCanvasHeight * 0.9f - 2 * mDip;
 	    mY = mBarBottom;
-	    setSpeed(0, (mBarBottom - mBarTop) / (3000f / Globals.DATA_UPDATE_INTERVAL));
+	    setSpeed(0, (mBarBottom - mBarTop) / (3000f / Constants.DATA_UPDATE_INTERVAL));
 	}
 
 	@Override

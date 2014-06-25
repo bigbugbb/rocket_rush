@@ -24,11 +24,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bigbug.rocketrush.Application;
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.game.GameResult;
 import com.bigbug.rocketrush.game.GameResults;
 import com.bigbug.rocketrush.pages.HomePage;
+import com.bigbug.rocketrush.provider.BackendHandler;
+import com.bigbug.rocketrush.provider.RocketRushProvider;
 import com.bigbug.rocketrush.sdktest.EventSetupActivity;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 import com.bigbug.rocketrush.views.GraphView;
@@ -45,6 +47,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 public class HomeActivity extends BaseActivity implements
@@ -92,6 +95,8 @@ public class HomeActivity extends BaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        mSession.handleIntent(getIntent(), "f0d4b5fb7aadc3caefaff91-626d9720-aeb2-11e3-d642-0056aeeaa726");
+
         mBitmaps = BitmapHelper.loadBitmaps(this, new int[]{R.drawable.btn_start, R.drawable.btn_start_press, R.drawable.btn_settings, R.drawable.btn_settings_press, R.drawable.btn_help, R.drawable.btn_help_press, R.drawable.btn_rank, R.drawable.btn_rank_press, R.drawable.btn_about, R.drawable.btn_about_press});
 
         // get views and set listeners
@@ -110,19 +115,19 @@ public class HomeActivity extends BaseActivity implements
         // Initializing google plus api client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
             .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this).addApi(Plus.API, null)
+            .addOnConnectionFailedListener(this).addApi(Plus.API)
             .addScope(Plus.SCOPE_PLUS_LOGIN).build();
 
         // Localytics Amp events
-        mAmpSession.tagScreen("Home");
+        mSession.tagScreen("Home");
         if (getIntent().getBooleanExtra(KEY_OPEN_FROM_TUTORIAL, false)) {
             Object[] info = Application.getLocalyticsEventInfo("Click 'Start Journey'");
-            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+            mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
         } else if (getIntent().getBooleanExtra(KEY_BACK_FROM_GAME, false)) {
             Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
-            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+            mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
         }
-        mAmpSession.upload();
+        mSession.upload();
     }
 
     @Override
@@ -248,9 +253,9 @@ public class HomeActivity extends BaseActivity implements
         super.onNewIntent(intent);
         if (intent.getBooleanExtra(KEY_BACK_FROM_GAME, false)) {
             Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
-            mAmpSession.tagScreen("Home");
-            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-            mAmpSession.upload();
+            mSession.tagScreen("Home");
+            mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+            mSession.upload();
         }
         setIntent(intent);
     }
@@ -337,7 +342,7 @@ public class HomeActivity extends BaseActivity implements
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomeActivity.this, RankActivity.class);
-                intent.putExtra(Globals.KEY_GAME_RESULTS, getGameResults());
+                intent.putExtra(Constants.KEY_GAME_RESULTS, getGameResults());
                 startActivity(intent);
             }
         });
@@ -435,10 +440,10 @@ public class HomeActivity extends BaseActivity implements
         GameResults results = new GameResults();
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        int size = sp.getInt(Globals.KEY_RANK_SIZE, 0);
+        int size = sp.getInt(Constants.KEY_RANK_SIZE, 0);
         for (int i = 0; i < size; ++i) {
-            int score   = sp.getInt(Globals.KEY_RANK_SCORE + i, 0);
-            String date = sp.getString(Globals.KEY_RANK_TIME + i, "");
+            int score   = sp.getInt(Constants.KEY_RANK_SCORE + i, 0);
+            String date = sp.getString(Constants.KEY_RANK_TIME + i, "");
             GameResult result = new GameResult(score, date);
             results.add(result);
         }
@@ -449,44 +454,54 @@ public class HomeActivity extends BaseActivity implements
 
     /**
      * Fetching user's information name, email, profile pic
-     * */
-    private void getProfileInformation() {
+     *
+     * @return email of the current selected account when it is successful, otherwise null.
+     */
+    private String getProfileInformation() {
+        String email = null;
+
         try {
             if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
                 Person currentPerson = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
                 String personName = currentPerson.getDisplayName();
                 String personPhotoUrl = currentPerson.getImage().getUrl();
-                String personGooglePlusProfile = currentPerson.getUrl();
-                String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+                String personGPlusProfile = currentPerson.getUrl();
+                email = Plus.AccountApi.getAccountName(mGoogleApiClient);
 
-                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                sp.edit().putString(Globals.KEY_USER_NAME, personName);
+                Map<String, String> userInfo = new TreeMap<String, String>();
+                userInfo.put(RocketRushProvider.UsersDbColumns.NAME, personName);
+                userInfo.put(RocketRushProvider.UsersDbColumns.EMAIL, email);
+                userInfo.put(RocketRushProvider.UsersDbColumns.SCORE, "0");
+                userInfo.put(RocketRushProvider.UsersDbColumns.IMAGE_URL, personPhotoUrl);
+                mBackendHandler.sendMessage(mBackendHandler.obtainMessage(BackendHandler.MESSAGE_UPDATE_USER, userInfo));
+
+                if (Constants.IS_LOGGABLE) {
+                    Log.v(TAG, String.format("Name: %s\nPlusProfile: %s\nEmail: %s\nImage: %s\n", personName, personGPlusProfile, email, personPhotoUrl));
+                }
 
                 mTextWelcome.setText(String.format("Welcome! %s", personName));
-
-//                Log.e(TAG, "Name: " + personName + ", plusProfile: "
-//                        + personGooglePlusProfile + ", email: " + email
-//                        + ", Image: " + personPhotoUrl);
-//
-//                txtName.setText(personName);
-//                txtEmail.setText(email);
-//
-//                // by default the profile url gives 50x50 px image only
-//                // we can replace the value with whatever dimension we want by
-//                // replacing sz=X
+                // by default the profile url gives 50x50 px image only
+                // we can replace the value with whatever dimension we want by
+                // replacing sz=X
 //                personPhotoUrl = personPhotoUrl.substring(0,
 //                        personPhotoUrl.length() - 2)
 //                        + PROFILE_PIC_SIZE;
-//
 //                new LoadProfileImage(imgProfilePic).execute(personPhotoUrl);
-
             } else {
-                Toast.makeText(getApplicationContext(),
-                        "Person information is null", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Person information is null", Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.w(Constants.LOG_TAG, "Caught exception", e); //$NON-NLS-1$
         }
+
+        return email;
+    }
+
+    /**
+     * Sign in the backend with the user's profile information
+     */
+    private void signInBackend(final String email) {
+        mBackendHandler.sendMessage(mBackendHandler.obtainMessage(BackendHandler.MESSAGE_SIGN_IN, email));
     }
 
     /**
@@ -523,10 +538,13 @@ public class HomeActivity extends BaseActivity implements
         mSignInClicked = false;
         Log.d(TAG, "User is connected!");
 
-        // Get user's information
-        getProfileInformation();
+        // Get user's information from G+
+        final String email = getProfileInformation();
 
-        // Update the UI after signin
+        // Sign in to rocket rush backend
+        signInBackend(email);
+
+        // Update the UI after signing in
         updateUI(true);
     }
 
@@ -584,4 +602,49 @@ public class HomeActivity extends BaseActivity implements
             mImage.setImageBitmap(result);
         }
     }
+
+//
+//    /**
+//     * Stores the registration ID and the app versionCode in the application's
+//     * {@code SharedPreferences}.
+//     *
+//     * @param context application's context.
+//     * @param regId registration ID
+//     */
+//    private void storeRegistrationId(Context context, String regId) {
+//        final SharedPreferences prefs = getGcmPreferences(context);
+//        int appVersion = getAppVersion(context);
+//        Log.i(TAG, "Saving regId on app version " + appVersion);
+//        SharedPreferences.Editor editor = prefs.edit();
+//        editor.putString(PROPERTY_REG_ID, regId);
+//        editor.putInt(PROPERTY_APP_VERSION, appVersion);
+//        editor.commit();
+//    }
+//
+//    /**
+//     * Gets the current registration ID for application on GCM service, if there is one.
+//     * <p>
+//     * If result is empty, the app needs to register.
+//     *
+//     * @return registration ID, or empty string if there is no existing
+//     *         registration ID.
+//     */
+//    private String getRegistrationId(Context context) {
+//        final SharedPreferences prefs = getGcmPreferences(context);
+//        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+//        if (registrationId.isEmpty()) {
+//            Log.i(TAG, "Registration not found.");
+//            return "";
+//        }
+//        // Check if app was updated; if so, it must clear the registration ID
+//        // since the existing regID is not guaranteed to work with the new
+//        // app version.
+//        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+//        int currentVersion = getAppVersion(context);
+//        if (registeredVersion != currentVersion) {
+//            Log.i(TAG, "App version changed.");
+//            return "";
+//        }
+//        return registrationId;
+//    }
 }

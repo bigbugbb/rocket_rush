@@ -1,1 +1,1 @@
-include ':rocketrush'
+include ':rocketrush', ':apputils'

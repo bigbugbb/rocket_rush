@@ -12,7 +12,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.bigbug.rocketrush.Application;
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.game.GameResult;
 
@@ -30,7 +30,7 @@ public class RankActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rank);
 
-        mResults = (List<GameResult>) getIntent().getSerializableExtra(Globals.KEY_GAME_RESULTS);
+        mResults = (List<GameResult>) getIntent().getSerializableExtra(Constants.KEY_GAME_RESULTS);
 
         // get views and set listeners
         setupViews();
@@ -38,9 +38,9 @@ public class RankActivity extends BaseActivity {
         adjustLayout();
 
         Object[] info = Application.getLocalyticsEventInfo("Click 'Rank'");
-        mAmpSession.tagScreen("Rank");
-        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-        mAmpSession.upload();
+        mSession.tagScreen("Rank");
+        mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mSession.upload();
     }
 
     private void setupViews() {

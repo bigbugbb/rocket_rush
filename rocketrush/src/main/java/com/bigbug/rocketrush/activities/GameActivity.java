@@ -15,7 +15,7 @@ import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
 import com.bigbug.rocketrush.Application;
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.dialogs.GameMenuDialog;
 import com.bigbug.rocketrush.dialogs.GameOverDialog;
@@ -71,9 +71,9 @@ public class GameActivity extends BaseActivity implements GamePage.OnGameStatusC
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Object[] info = Application.getLocalyticsEventInfo("Click 'Play'");
-        mAmpSession.tagScreen("Game");
-        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-        mAmpSession.upload();
+        mSession.tagScreen("Game");
+        mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mSession.upload();
     }
 
     @Override
@@ -133,7 +133,7 @@ public class GameActivity extends BaseActivity implements GamePage.OnGameStatusC
 
                 synchronized (mLock) {
                     try {
-                        mLock.wait(Globals.GRAPH_DRAW_INTERVAL);
+                        mLock.wait(Constants.GRAPH_DRAW_INTERVAL);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -157,7 +157,7 @@ public class GameActivity extends BaseActivity implements GamePage.OnGameStatusC
 
                 synchronized (mLock) {
                     try {
-                        mLock.wait(Globals.DATA_UPDATE_INTERVAL);
+                        mLock.wait(Constants.DATA_UPDATE_INTERVAL);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -194,12 +194,11 @@ public class GameActivity extends BaseActivity implements GamePage.OnGameStatusC
 
     @Override
     public void onGameOver(final HashMap<String, Object> results) {
-
         Intent intent = new Intent(GameActivity.this, GameOverDialog.class);
-        intent.putExtra(Globals.KEY_GAME_RESULTS, results);
+        intent.putExtra(Constants.KEY_GAME_RESULTS, results);
         startActivityForResult(intent, GAMEOVER_DIALOG_REQUEST);
 
-        int distance = (Integer) results.get(Globals.KEY_DISTANCE);
+        int distance = (Integer) results.get(Constants.KEY_DISTANCE);
         recordGameResult(distance, DateFormat.getDateInstance().format(new Date()));
     }
 
@@ -222,14 +221,14 @@ public class GameActivity extends BaseActivity implements GamePage.OnGameStatusC
         switch (requestCode) {
         case GAMEMENU_DIALOG_REQUEST:
         case GAMEOVER_DIALOG_REQUEST:
-            if (resultCode == Globals.RESTART_GAME) {
+            if (resultCode == Constants.RESTART_GAME) {
                 Log.d(TAG, "mGamePage.restart()");
                 mGamePage.restart();
                 // Update event
                 Object[] info = Application.getLocalyticsEventInfo("Click 'Retry/Restart'");
-                mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-                mAmpSession.upload();
-            } else if (resultCode == Globals.STOP_GAME) {
+                mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+                mSession.upload();
+            } else if (resultCode == Constants.STOP_GAME) {
                 finish();
                 Intent intent = new Intent(GameActivity.this, HomeActivity.class);
                 intent.putExtra(HomeActivity.KEY_BACK_FROM_GAME, true);
@@ -242,9 +241,9 @@ public class GameActivity extends BaseActivity implements GamePage.OnGameStatusC
 
     private void recordGameResult(int score, String time) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        int size = sp.getInt(Globals.KEY_RANK_SIZE, 0);
-        sp.edit().putInt(Globals.KEY_RANK_SIZE, size + 1).commit();
-        sp.edit().putInt(Globals.KEY_RANK_SCORE + size, score).commit();
-        sp.edit().putString(Globals.KEY_RANK_TIME + size, time).commit();
+        int size = sp.getInt(Constants.KEY_RANK_SIZE, 0);
+        sp.edit().putInt(Constants.KEY_RANK_SIZE, size + 1).commit();
+        sp.edit().putInt(Constants.KEY_RANK_SCORE + size, score).commit();
+        sp.edit().putString(Constants.KEY_RANK_TIME + size, time).commit();
     }
 }

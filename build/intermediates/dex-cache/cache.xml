@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pre-dex-items>
+
+    <item
+        dex="/Develop/Git/rocket_rush/rocketrush/build/intermediates/pre-dexed/debug/classes-0c729d9277e84602c88bb516617032829b844ae8.jar"
+        jar="/Develop/Git/rocket_rush/build/intermediates/exploded-aar/rocket_rush/apputils/unspecified/classes.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="9733b8f6c1fd35a7346c08bf458a20524eb22f5f"/>
+    <item
+        dex="/Develop/Git/rocket_rush/rocketrush/build/intermediates/pre-dexed/debug/gson-2.2.4-825232f41bd175f5e1eae2fe2b641dec0048aeef.jar"
+        jar="/Users/jefflopes/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.2.4/a60a5e993c98c864010053cb901b7eab25306568/gson-2.2.4.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="a60a5e993c98c864010053cb901b7eab25306568"/>
+    <item
+        dex="/Develop/Git/rocket_rush/rocketrush/build/intermediates/pre-dexed/debug/support-v4-19.1.0-176c01bd0d0f62fd0a525b4bc4297ceffc5fd41a.jar"
+        jar="/Develop/android_sdk/extras/android/m2repository/com/android/support/support-v4/19.1.0/support-v4-19.1.0.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="85f201b380937e61a9dce6ca90ccf6872abbfb67"/>
+    <item
+        dex="/Develop/Git/rocket_rush/rocketrush/build/intermediates/pre-dexed/debug/classes-92f6686a2be17124a5978da0bc6e8e216c349ef0.jar"
+        jar="/Develop/Git/rocket_rush/build/intermediates/exploded-aar/com.google.android.gms/play-services/4.4.52/classes.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="3dfdf1db5ce5ea2999a5dcde8c8e650b02660059"/>
+    <item
+        dex="/Develop/Git/rocket_rush/rocketrush/build/intermediates/pre-dexed/debug/localytics-8c1c3e4aab1cad6891f36c32e4792b7d10de08f8.jar"
+        jar="/Develop/Git/rocket_rush/rocketrush/libs/localytics.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="cbcf431146e6b7ed4d8b5930867ddcdea22b2610"/>
+    <item
+        dex="/Develop/Git/rocket_rush/rocketrush/build/intermediates/pre-dexed/debug/classes-bfd556d18797cf35991455123a6608b7c0a3fd2d.jar"
+        jar="/Develop/Git/rocket_rush/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.1.0/classes.jar"
+        jumboMode="false"
+        revision="19.1.0"
+        sha1="3499ceba05ca1f6037c6a2fad73df8f636224a28"/>
+
+</pre-dex-items>

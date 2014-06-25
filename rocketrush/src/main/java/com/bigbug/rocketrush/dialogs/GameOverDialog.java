@@ -13,7 +13,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.bigbug.rocketrush.Application;
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.activities.BaseActivity;
 import com.bigbug.rocketrush.utils.BitmapHelper;
@@ -40,7 +40,7 @@ public class GameOverDialog extends BaseActivity {
 
         mBitmaps = BitmapHelper.loadBitmaps(this, new int[] { R.drawable.btn_retry, R.drawable.btn_retry_press, R.drawable.btn_back, R.drawable.btn_back_press, R.drawable.bg_gameover });
 
-        mResults = (HashMap<String, Object>) getIntent().getExtras().get(Globals.KEY_GAME_RESULTS);
+        mResults = (HashMap<String, Object>) getIntent().getExtras().get(Constants.KEY_GAME_RESULTS);
 
         // Start buttons
         StateListDrawable states = new StateListDrawable();
@@ -54,7 +54,7 @@ public class GameOverDialog extends BaseActivity {
                 Object[] info = Application.getLocalyticsEventInfo("Click 'Retry'");
                 Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
 
-                setResult(Globals.RESTART_GAME);
+                setResult(Constants.RESTART_GAME);
                 finish();
             }
         });
@@ -70,7 +70,7 @@ public class GameOverDialog extends BaseActivity {
                 Object[] info = Application.getLocalyticsEventInfo("Click 'Back'");
                 Application.getLocalyticsSession().tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
 
-                setResult(Globals.STOP_GAME);
+                setResult(Constants.STOP_GAME);
                 finish();
             }
         });
@@ -78,7 +78,7 @@ public class GameOverDialog extends BaseActivity {
         mTextView = (TextView) findViewById(R.id.text_distance);
         mTextView.setTextColor(Color.RED);
         mTextView.getPaint().setFakeBoldText(true);
-        mTextView.setText(String.valueOf(mResults.get(Globals.KEY_DISTANCE)));
+        mTextView.setText(String.valueOf(mResults.get(Constants.KEY_DISTANCE)));
 
         getWindow().setBackgroundDrawable(new BitmapDrawable(getResources(), mBitmaps.get(4)));
         if (Build.VERSION.SDK_INT >= 11) {

@@ -19,7 +19,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -69,8 +69,8 @@ public class EventSetupDialog extends FragmentActivity {
          * Construct the list view with the attributes and custom dimensions
          */
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        final String jsonAttributes = mSharedPref.getString(mEventName + Globals._ATTR_KEY, "");
-        final String jsonCustomDimensions = mSharedPref.getString(mEventName + Globals._CUSTOM_DIMENSION_KEY, "");
+        final String jsonAttributes = mSharedPref.getString(mEventName + Constants._ATTR_KEY, "");
+        final String jsonCustomDimensions = mSharedPref.getString(mEventName + Constants._CUSTOM_DIMENSION_KEY, "");
 
         if (!TextUtils.isEmpty(jsonAttributes)) {
             mAttributesData = new Gson().fromJson(jsonAttributes, new TypeToken<LinkedList<Pair<String, String>>>(){}.getType());
@@ -145,10 +145,10 @@ public class EventSetupDialog extends FragmentActivity {
 
                 SharedPreferences.Editor editor = mSharedPref.edit();
                 if (attributes.size() > 0) {
-                    editor.putString(mEventName + Globals._ATTR_KEY, new Gson().toJson(attributes));
+                    editor.putString(mEventName + Constants._ATTR_KEY, new Gson().toJson(attributes));
                 }
                 if (customDimensions.size() > 0) {
-                    editor.putString(mEventName + Globals._CUSTOM_DIMENSION_KEY, new Gson().toJson(customDimensions));
+                    editor.putString(mEventName + Constants._CUSTOM_DIMENSION_KEY, new Gson().toJson(customDimensions));
                 }
                 editor.commit();
 

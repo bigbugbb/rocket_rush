@@ -11,14 +11,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
 import android.view.Display;
 import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.bigbug.rocketrush.Application;
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppScale;
 import com.bigbug.rocketrush.utils.BitmapHelper;
@@ -26,7 +25,7 @@ import com.bigbug.rocketrush.utils.BitmapHelper;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public class SplashActivity extends FragmentActivity {
+public class SplashActivity extends BaseActivity {
 
     /**
      * Update handler from the application
@@ -69,7 +68,7 @@ public class SplashActivity extends FragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean(Globals.KEY_FIRST_GAME, false).commit();
+        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean(Constants.KEY_FIRST_GAME, false).commit();
         mSplashView.release();
     }
 
@@ -93,7 +92,7 @@ public class SplashActivity extends FragmentActivity {
 
                     synchronized (mLock) {
                         try {
-                            mLock.wait(Globals.DATA_UPDATE_INTERVAL);
+                            mLock.wait(Constants.DATA_UPDATE_INTERVAL);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -102,7 +101,7 @@ public class SplashActivity extends FragmentActivity {
                     return Application.RESULT_SUCCESS;
                 } else {
                     // Record the opened status
-                    boolean first = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean(Globals.KEY_FIRST_GAME, true);
+                    boolean first = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean(Constants.KEY_FIRST_GAME, true);
                     // Start the next activity
                     startActivity(new Intent(SplashActivity.this, first ? TutorialActivity.class : HomeActivity.class));
                     overridePendingTransition(R.anim.enter_from_right, R.anim.exit_on_left);

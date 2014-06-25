@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.utils.BitmapHelper;
 
@@ -36,7 +36,7 @@ public class Bird extends Barrier {
 	}
 	
 	public void initSpeeds(float x, float y, int accTime) {		
-		float accSpeedY = y / (1000 / Globals.DATA_UPDATE_INTERVAL);
+		float accSpeedY = y / (1000 / Constants.DATA_UPDATE_INTERVAL);
 		setSpeed(x, y + accSpeedY * accTime);
 		setMinSpeed(x, y);
 		setMaxSpeed(x, y + y + y);
@@ -62,7 +62,7 @@ public class Bird extends Barrier {
 	public void onUpdate() {
 		if (mAccMoveDuration > 0) {
 			mSpeedY = Math.min(mSpeedY + mAccSpeedY, mMaxSpeedY);
-			mAccMoveDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mAccMoveDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else {
 			mSpeedY = Math.max(mSpeedY - mAccSpeedY, mMinSpeedY);
 		}

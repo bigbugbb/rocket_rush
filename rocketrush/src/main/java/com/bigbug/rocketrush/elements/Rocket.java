@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.R;
 import com.bigbug.rocketrush.basic.AppCtrl;
 import com.bigbug.rocketrush.basic.AppObject;
@@ -88,15 +88,15 @@ public class Rocket extends AppObject {
 	public void onUpdate() {
 		if (mLeftDuration > 0) {
 			mX = Math.max(mX - mSpeedX, 0);
-			mLeftDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mLeftDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else if (mRightDuration > 0) {
 			mX = Math.min(mX + mSpeedX, mCanvasWidth - mWidth); 
-			mRightDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mRightDuration -= Constants.DATA_UPDATE_INTERVAL;
 		}
 		
 		if (mUpDuration > 0) {
 			mY = Math.max(mY - mSpeedY, mUpper);
-			mUpDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mUpDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else {
 			mY = Math.min(mY + mSpeedY, mBottom);
 		}
@@ -105,13 +105,13 @@ public class Rocket extends AppObject {
 			if (mVibrateDuration == MIN_VIBRATE_DURATION) { // first
 				mVibrateCount = 0;
 				mX += -3 * mDip;
-			} else if (mVibrateDuration == Globals.DATA_UPDATE_INTERVAL) {
+			} else if (mVibrateDuration == Constants.DATA_UPDATE_INTERVAL) {
 				mX += 3 * mDip;
 			} else {
 				mX += ((mVibrateCount & 1) == 0 ? -6 : 6) * mDip;
 			}
 			++mVibrateCount;
-			mVibrateDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mVibrateDuration -= Constants.DATA_UPDATE_INTERVAL;
 		}
 		
 		mRect.left   = (int)(mX + mCollideArea[0]);
@@ -134,8 +134,8 @@ public class Rocket extends AppObject {
 	
 		mUpper  = (mCanvasHeight - mHeight) * 9 / 20;
 		mBottom = (mCanvasHeight - mHeight) / 2 + mCanvasHeight / 4;
-		setSpeed(DEFAULT_SPEED_X * mDip, (mBottom - mUpper) / (float)(3000 / Globals.DATA_UPDATE_INTERVAL));
-		setMaxSpeed(DEFAULT_SPEED_X * mDip, (mBottom - mUpper) / (float)(3000 / Globals.DATA_UPDATE_INTERVAL));
+		setSpeed(DEFAULT_SPEED_X * mDip, (mBottom - mUpper) / (float)(3000 / Constants.DATA_UPDATE_INTERVAL));
+		setMaxSpeed(DEFAULT_SPEED_X * mDip, (mBottom - mUpper) / (float)(3000 / Constants.DATA_UPDATE_INTERVAL));
 	}
 
 	@Override
@@ -147,10 +147,10 @@ public class Rocket extends AppObject {
 		int command = ctrl.getCommand();
 		
 		if (command == AppCtrl.MOVE_LEFT) {
-			mLeftDuration  = Globals.DATA_UPDATE_INTERVAL;
+			mLeftDuration  = Constants.DATA_UPDATE_INTERVAL;
 			mRightDuration = 0;
 		} else if (command == AppCtrl.MOVE_RIGHT) {
-			mRightDuration = Globals.DATA_UPDATE_INTERVAL;
+			mRightDuration = Constants.DATA_UPDATE_INTERVAL;
 			mLeftDuration  = 0;
 		} else if (command == AppCtrl.MOVE_VERT) {
 			mUpDuration = 1000;

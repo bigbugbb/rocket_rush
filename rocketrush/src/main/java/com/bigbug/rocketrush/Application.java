@@ -1,17 +1,13 @@
 package com.bigbug.rocketrush;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Message;
+import android.os.*;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 
+import com.bigbug.rocketrush.provider.BackendHandler;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.localytics.android.LocalyticsAmpSession;
@@ -58,29 +54,44 @@ public class Application extends android.app.Application {
     private static Application sApplication;
 
     /**
-     * Drawer thread and Updater thread.
+     * Drawer thread, Updater thread and Backend thread
      */
-    private static HandlerThread sDrawer  = getHandlerThread("Drawer");
-    private static HandlerThread sUpdater = getHandlerThread("Updater");
+    private static final HandlerThread sDrawer;
+    private static final HandlerThread sUpdater;
+    private static final HandlerThread sBackend;
 
     /**
-     * Handlers bound to the drawer thread and updater thread
+     * Handlers bound to the threads
      */
     private Handler mDrawerHandler;
     private Handler mUpdateHandler;
+    private Handler mBackendHandler;
 
     /**
      * Localytics amp session
      */
     private LocalyticsAmpSession mLocalyticsSession;
 
-//    private LocalyticsAmpSession mTestSession;
+    static {
+        sDrawer = new HandlerThread("Drawer", android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
+        sDrawer.start();
+
+        sUpdater = new HandlerThread("Updater", android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
+        sUpdater.start();
+
+        sBackend = new HandlerThread("Backend", android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        sBackend.start();
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         sApplication = this;
+
+        mBackendHandler = new BackendHandler(getApplicationContext(), sBackend.getLooper());
+        mBackendHandler.sendMessage(mBackendHandler.obtainMessage(BackendHandler.MESSAGE_INIT));
+        mBackendHandler.sendMessage(mBackendHandler.obtainMessage(BackendHandler.MESSAGE_UPDATE_IDENTITY));
 
         mDrawerHandler = new Handler(sDrawer.getLooper()) {
 
@@ -92,8 +103,8 @@ public class Application extends android.app.Application {
                 try {
                     super.handleMessage(msg);
 
-                    if (Globals.IS_LOGGABLE) {
-                        Log.v(Globals.LOG_TAG, String.format("Handler received %s", msg)); //$NON-NLS-1$
+                    if (Constants.IS_LOGGABLE) {
+                        Log.v(Constants.LOG_TAG, String.format("Handler received %s", msg)); //$NON-NLS-1$
                     }
 
                     switch (msg.what) {
@@ -127,11 +138,11 @@ public class Application extends android.app.Application {
                         throw new RuntimeException("Fell through switch statement"); //$NON-NLS-1$
                     }
                 } catch (final Exception e) {
-                    if (Globals.IS_LOGGABLE) {
-                        Log.e(Globals.LOG_TAG, "UpdateHandler threw an uncaught exception", e); //$NON-NLS-1$
+                    if (Constants.IS_LOGGABLE) {
+                        Log.e(Constants.LOG_TAG, "UpdateHandler threw an uncaught exception", e); //$NON-NLS-1$
                     }
 
-                    if (!Globals.IS_EXCEPTION_SUPPRESSION_ENABLED) {
+                    if (!Constants.IS_EXCEPTION_SUPPRESSION_ENABLED) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -148,8 +159,8 @@ public class Application extends android.app.Application {
                 try {
                     super.handleMessage(msg);
 
-                    if (Globals.IS_LOGGABLE) {
-                        Log.v(Globals.LOG_TAG, String.format("Handler received %s", msg)); //$NON-NLS-1$
+                    if (Constants.IS_LOGGABLE) {
+                        Log.v(Constants.LOG_TAG, String.format("Handler received %s", msg)); //$NON-NLS-1$
                     }
 
                     switch (msg.what) {
@@ -183,32 +194,22 @@ public class Application extends android.app.Application {
                         throw new RuntimeException("Fell through switch statement"); //$NON-NLS-1$
                     }
                 } catch (final Exception e) {
-                    if (Globals.IS_LOGGABLE) {
-                        Log.e(Globals.LOG_TAG, "DrawerHandler threw an uncaught exception", e); //$NON-NLS-1$
+                    if (Constants.IS_LOGGABLE) {
+                        Log.e(Constants.LOG_TAG, "DrawerHandler threw an uncaught exception", e); //$NON-NLS-1$
                     }
 
-                    if (!Globals.IS_EXCEPTION_SUPPRESSION_ENABLED) {
+                    if (!Constants.IS_EXCEPTION_SUPPRESSION_ENABLED) {
                         throw new RuntimeException(e);
                     }
                 }
             }
         };
 
-        mLocalyticsSession = new LocalyticsAmpSession(getApplicationContext(), Globals.LOCALYTICS_SESSION_KEY);
-
-//        mTestSession = new LocalyticsAmpSession(getApplicationContext(), "f737ce58a68aea90b4c79fc-0bc951b0-b42b-11e3-429f-00a426b17dd8");
+        mLocalyticsSession = new LocalyticsAmpSession(getApplicationContext(), Constants.LOCALYTICS_SESSION_KEY);
     }
 
-    public static Context getAppContext() {
-        return sApplication.getApplicationContext();
-    }
-
-    public static Resources getAppResources() {
-        return sApplication.getResources();
-    }
-
-    public static AssetManager getAppAssets() {
-        return sApplication.getAssets();
+    public static Handler getBackendHandler() {
+        return sApplication.mBackendHandler;
     }
 
     public static Handler getUpdateHandler() {
@@ -223,14 +224,10 @@ public class Application extends android.app.Application {
         return sApplication.mLocalyticsSession;
     }
 
-//    public static LocalyticsAmpSession getTestSession() {
-//        return sApplication.mTestSession;
-//    }
-
     public static Object[] getLocalyticsEventInfo(final String eventName) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(sApplication.getApplicationContext());
-        final String jsonAttributes = sp.getString(eventName + Globals._ATTR_KEY, "");
-        final String jsonCustomDimensions = sp.getString(eventName + Globals._CUSTOM_DIMENSION_KEY, "");
+        final String jsonAttributes = sp.getString(eventName + Constants._ATTR_KEY, "");
+        final String jsonCustomDimensions = sp.getString(eventName + Constants._CUSTOM_DIMENSION_KEY, "");
 
         Map<String, String> attributesMap = null;
         if (!TextUtils.isEmpty(jsonAttributes)) {
@@ -252,12 +249,4 @@ public class Application extends android.app.Application {
         return new Object[] { eventName, attributesMap, customDimensionsData };
     }
 
-    private static HandlerThread getHandlerThread(final String name) {
-
-        final HandlerThread thread = new HandlerThread(name, android.os.Process.THREAD_PRIORITY_URGENT_DISPLAY);
-
-        thread.start();
-
-        return thread;
-    }
 }

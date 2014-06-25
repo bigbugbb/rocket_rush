@@ -6,7 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.basic.AppCtrl;
 import com.bigbug.rocketrush.basic.AppScale;
 
@@ -28,7 +28,7 @@ public class Odometer extends Utility {
 		setZOrder(ZOrders.ODOMETER);
 		setSpeed(DEFAULT_SPEED_X, DEFAULT_SPEED_Y);
 		setMaxSpeed(0, DEFAULT_SPEED_Y * 3);
-		setAccSpeed(0, DEFAULT_SPEED_Y / (1000 / Globals.DATA_UPDATE_INTERVAL));
+		setAccSpeed(0, DEFAULT_SPEED_Y / (1000 / Constants.DATA_UPDATE_INTERVAL));
 		
 		mX = 24 * mDip;
         mY = 72 * mDip;
@@ -66,7 +66,7 @@ public class Odometer extends Utility {
 		}
 		if (mAccMoveDuration > 0) {
 			mSpeedY = Math.min(mSpeedY + mAccSpeedY, mMaxSpeedY);			
-			mAccMoveDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mAccMoveDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else {
 			mSpeedY = Math.max(mSpeedY - mAccSpeedY, DEFAULT_SPEED_Y);
 		}

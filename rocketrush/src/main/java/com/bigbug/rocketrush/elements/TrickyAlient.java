@@ -2,7 +2,7 @@ package com.bigbug.rocketrush.elements;
 
 import android.content.Context;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 
 
 public class TrickyAlient extends Alient {
@@ -16,8 +16,8 @@ public class TrickyAlient extends Alient {
 	
 	@Override
 	public void initSpeeds(float x, float y, int accTime) {		
-		float accSpeedX = - x / ((mType == 0 ? 2000 : 320) / Globals.DATA_UPDATE_INTERVAL);
-		float accSpeedY = y / (1000 / Globals.DATA_UPDATE_INTERVAL);
+		float accSpeedX = - x / ((mType == 0 ? 2000 : 320) / Constants.DATA_UPDATE_INTERVAL);
+		float accSpeedY = y / (1000 / Constants.DATA_UPDATE_INTERVAL);
 		setSpeed(x, y + accSpeedY * accTime);
 		setMinSpeed(0, y);
 		setMaxSpeed(x, y + y);
@@ -34,7 +34,7 @@ public class TrickyAlient extends Alient {
 		
 		if (mAccMoveDuration > 0) {
 			mSpeedY = Math.min(mSpeedY + mAccSpeedY, mMaxSpeedY);
-			mAccMoveDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mAccMoveDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else {
 			mSpeedY = Math.max(mSpeedY - mAccSpeedY, mMinSpeedY);
 		}

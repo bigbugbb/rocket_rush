@@ -1,10 +1,16 @@
 package com.bigbug.rocketrush.activities;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.WindowManager;
 
 import com.bigbug.rocketrush.Application;
+import com.bigbug.rocketrush.Constants;
+import com.bigbug.rocketrush.provider.BackendHandler;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.localytics.android.LocalyticsAmpSession;
 
 /**
@@ -12,27 +18,37 @@ import com.localytics.android.LocalyticsAmpSession;
  */
 public class BaseActivity extends FragmentActivity {
 
-    protected LocalyticsAmpSession mAmpSession = Application.getLocalyticsSession();
+    protected LocalyticsAmpSession mSession = Application.getLocalyticsSession();
 
-//    protected LocalyticsAmpSession mTestSession = Application.getTestSession();
+    protected Handler mBackendHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Instantiate the object
-        mAmpSession.open();
-        mAmpSession.attach(this);
-        mAmpSession.upload();
+        mSession.open();
+        mSession.attach(this);
+        mSession.upload();
+
+        // Get backend handler
+        mBackendHandler = Application.getBackendHandler();
+
+        // Check device for Play Services APK. If check succeeds, proceed with gcm registration.
+        if (checkPlayServices()) {
+            mBackendHandler.sendMessage(mBackendHandler.obtainMessage(BackendHandler.MESSAGE_REGISTER_GCM, null));
+        } else {
+            Log.i(Constants.LOG_TAG, "No valid Google Play Services APK found.");
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mAmpSession.open();
-        mAmpSession.attach(this);
+        mSession.open();
+        mSession.attach(this);
 
-//        mTestSession.open();
-//        mTestSession.attach(this);
+        // Check device for Play Services APK.
+        checkPlayServices();
 
 //        if (Build.VERSION.SDK_INT >= 11) {
 //            getWindow().getDecorView().setSystemUiVisibility(
@@ -51,12 +67,28 @@ public class BaseActivity extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mAmpSession.detach();
-        mAmpSession.close();
-        mAmpSession.upload();
+        mSession.detach();
+        mSession.close();
+        mSession.upload();
+    }
 
-//        mTestSession.detach();
-//        mTestSession.close();
-//        mTestSession.upload();
+    /**
+     * Check the device to make sure it has the Google Play Services APK. If
+     * it doesn't, display a dialog that allows users to download the APK from
+     * the Google Play Store or enable it in the device's system settings.
+     */
+    private boolean checkPlayServices() {
+        final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Log.i(Constants.LOG_TAG, "This device is not supported.");
+            }
+            return false;
+        }
+        return true;
     }
 }

@@ -68,12 +68,12 @@ public class TutorialActivity extends BaseActivity {
 
         setupView();
 
-        mAmpSession.tagScreen("Tutorial");
+        mSession.tagScreen("Tutorial");
         if (getIntent().getBooleanExtra(KEY_OPEN_MANUALLY, false)) {
             Object[] info = Application.getLocalyticsEventInfo("Click 'Help'");
-            mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+            mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
         }
-        mAmpSession.upload();
+        mSession.upload();
     }
 
     private void setupView() {

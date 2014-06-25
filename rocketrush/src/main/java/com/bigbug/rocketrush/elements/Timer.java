@@ -6,13 +6,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.basic.AppScale;
 
 public class Timer extends Utility {
 
 	protected Paint mPaint;
-	protected int mTime = Globals.GAME_TIME;
+	protected int mTime = Constants.GAME_TIME;
 	protected int mOneSecond = 1000;
 	protected String mTextTime = "Time " + mTime;
 	protected int mCanvasWidth;
@@ -56,7 +56,7 @@ public class Timer extends Utility {
 				mTimeUpdateListener.onTimeUpdate(mTime);
 			}
 		}
-		mOneSecond -= Globals.DATA_UPDATE_INTERVAL;
+		mOneSecond -= Constants.DATA_UPDATE_INTERVAL;
 
 		super.onUpdate();
 	}		
@@ -79,7 +79,7 @@ public class Timer extends Utility {
 				mPaint.setColor(Color.WHITE);
 			}
 		}
-		mHalfSecond -= Globals.DATA_UPDATE_INTERVAL;
+		mHalfSecond -= Constants.DATA_UPDATE_INTERVAL;
 		c.drawText(mTextTime, mCanvasWidth - mPaint.measureText(mTextTime) - 24 * mDip, 40 * mDip, mPaint);
 	}
 

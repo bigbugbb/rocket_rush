@@ -16,9 +16,9 @@ public class AboutActivity extends BaseActivity {
         setContentView(R.layout.activity_about);
 
         Object[] info = Application.getLocalyticsEventInfo("Click 'About'");
-        mAmpSession.tagScreen("About");
-        mAmpSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
-        mAmpSession.upload();
+        mSession.tagScreen("About");
+        mSession.tagEvent((String) info[0], (Map<String, String>) info[1], (List<String>) info[2]);
+        mSession.upload();
     }
 
     @Override

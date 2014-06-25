@@ -8,7 +8,7 @@ import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 
-import com.bigbug.rocketrush.Globals;
+import com.bigbug.rocketrush.Constants;
 import com.bigbug.rocketrush.basic.AppScale;
 
 public class Level extends Utility {
@@ -61,7 +61,7 @@ public class Level extends Utility {
 
 		mTextWidth = mPaint.measureText("Level " + String.valueOf(mLevel));	
 		float centerX = (mWidth + mTextWidth) / 2;		
-		mSpeedX = centerX / (DEFAULT_MOVE_DURATION / Globals.DATA_UPDATE_INTERVAL);
+		mSpeedX = centerX / (DEFAULT_MOVE_DURATION / Constants.DATA_UPDATE_INTERVAL);
 		
 		mX = -mTextWidth / 2;
 	}
@@ -70,12 +70,12 @@ public class Level extends Utility {
 	public void onUpdate() {
 		if (mDisplayDuration > DEFAULT_STAY_DURATION + DEFAULT_MOVE_DURATION) {
 			mX += mSpeedX;
-			mDisplayDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mDisplayDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else if (mDisplayDuration >= DEFAULT_MOVE_DURATION) {
-			mDisplayDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mDisplayDuration -= Constants.DATA_UPDATE_INTERVAL;
 		} else if (mDisplayDuration > 0) {
 			mX += mSpeedX;
-			mDisplayDuration -= Globals.DATA_UPDATE_INTERVAL;
+			mDisplayDuration -= Constants.DATA_UPDATE_INTERVAL;
 		}				
 	}
 
@@ -94,7 +94,7 @@ public class Level extends Utility {
 			
 		mTextWidth = mPaint.measureText("Level " + mLevel);
 		float centerX = (mWidth + mTextWidth) / 2;		
-		mSpeedX = centerX / (DEFAULT_MOVE_DURATION / Globals.DATA_UPDATE_INTERVAL);
+		mSpeedX = centerX / (DEFAULT_MOVE_DURATION / Constants.DATA_UPDATE_INTERVAL);
 		
 		mX = -mTextWidth / 2;
 		
